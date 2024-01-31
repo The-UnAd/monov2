@@ -3,11 +3,11 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "5.9.0"
+      version = "5.34.0"
     }
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.0"
+      version = "~> 3"
     }
   }
 }
@@ -23,10 +23,4 @@ resource "aws_ssm_parameter" "region" {
   type  = "String"
   value = var.region
 }
-
-module "gcp" {
-  source = "../gcp"
-}
-
-
 

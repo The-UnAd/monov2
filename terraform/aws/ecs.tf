@@ -13,7 +13,7 @@ resource "aws_service_discovery_private_dns_namespace" "this" {
 }
 
 resource "aws_ecs_cluster" "cluster" {
-  name = "UnAd-cluster"
+  name = "unad-cluster"
 
   setting {
     name  = "containerInsights"
@@ -85,8 +85,8 @@ resource "aws_security_group" "ecs_private" {
 
 resource "aws_security_group_rule" "ecs_egress_redis" {
   type              = "egress"
-  from_port         = aws_memorydb_cluster.UnAd.port
-  to_port           = aws_memorydb_cluster.UnAd.port
+  from_port         = aws_memorydb_cluster.unad.port
+  to_port           = aws_memorydb_cluster.unad.port
   protocol          = "tcp"
   cidr_blocks       = [var.vpc_cidr]
   security_group_id = aws_security_group.ecs_private.id
@@ -122,14 +122,14 @@ resource "aws_security_group_rule" "ecs_ingress_http" {
   security_group_id = aws_security_group.ecs_private.id
 }
 
-resource "aws_security_group_rule" "ecs_egress_rds" {
-  type              = "egress"
-  from_port         = aws_rds_cluster.aurora.port
-  to_port           = aws_rds_cluster.aurora.port
-  protocol          = "tcp"
-  cidr_blocks       = [var.vpc_cidr]
-  security_group_id = aws_security_group.ecs_private.id
-}
+# resource "aws_security_group_rule" "ecs_egress_rds" {
+#   type              = "egress"
+#   from_port         = aws_rds_cluster.aurora.port
+#   to_port           = aws_rds_cluster.aurora.port
+#   protocol          = "tcp"
+#   cidr_blocks       = [var.vpc_cidr]
+#   security_group_id = aws_security_group.ecs_private.id
+# }
 
 resource "aws_security_group_rule" "ecs_egress_msk" {
   type              = "egress"
@@ -167,15 +167,6 @@ module "signup-site" {
   task_memory                = 512
   ssl_certificate_arn        = aws_acm_certificate.wildcard.arn
   container_secrets = [{
-    name      = "DB_PASSWORD"
-    valueFrom = "${aws_ssm_parameter.rds_cluster_password.arn}"
-    }, {
-    name      = "DB_USER"
-    valueFrom = "${aws_ssm_parameter.rds_cluster_user.arn}"
-    }, {
-    name      = "DB_PORT"
-    valueFrom = "${aws_ssm_parameter.rds_cluster_db_port.arn}"
-    }, {
     name      = "REDIS_KEY"
     valueFrom = "${aws_ssm_parameter.redis_password.arn}"
     }
@@ -188,7 +179,7 @@ module "signup-site" {
     value = "80"
     }, {
     name  = "REDIS_USER"
-    value = "${aws_memorydb_user.UnAd_redis_user.user_name}"
+    value = "${aws_memorydb_user.unad_redis_user.user_name}"
     }, {
     name  = "REDIS_CLUSTER_NODES"
     value = "${join(",", [for node in local.redis_nodes : "${node.address}:${node.port}"])}"

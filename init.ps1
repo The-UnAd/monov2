@@ -1,6 +1,6 @@
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-$envFile = Join-Path $scriptDir ".env.default"
+$envFile = Join-Path $scriptDir ".env"
 $vaultFile = Join-Path $scriptDir ".env.vault"
 $envMeFile = Join-Path $scriptDir ".env.me"
   

@@ -9,8 +9,8 @@ resource "random_password" "redis_password" {
   special = false
 }
 
-resource "aws_memorydb_user" "UnAd_redis_user" {
-  user_name     = "UnAd-redis-user"
+resource "aws_memorydb_user" "unad_redis_user" {
+  user_name     = "unad-redis-user"
   access_string = "on ~* &* +@all"
 
   authentication_mode {
@@ -21,12 +21,12 @@ resource "aws_memorydb_user" "UnAd_redis_user" {
 
 resource "aws_memorydb_acl" "redis_acl" {
   name       = "livt-redis-acl"
-  user_names = [aws_memorydb_user.UnAd_redis_user.user_name]
+  user_names = [aws_memorydb_user.unad_redis_user.user_name]
 }
 
-resource "aws_memorydb_cluster" "UnAd" {
+resource "aws_memorydb_cluster" "unad" {
   acl_name                   = aws_memorydb_acl.redis_acl.name
-  name                       = "UnAd-redis"
+  name                       = "unad-redis"
   node_type                  = "db.t4g.small"
   auto_minor_version_upgrade = true
   num_shards                 = 1
@@ -46,8 +46,8 @@ resource "aws_security_group" "redis" {
 # Public because https://docs.aws.amazon.com/memorydb/latest/devguide/accessing-memorydb.html
 resource "aws_security_group_rule" "redis_ingress" {
   type              = "ingress"
-  from_port         = aws_memorydb_cluster.UnAd.port
-  to_port           = aws_memorydb_cluster.UnAd.port
+  from_port         = aws_memorydb_cluster.unad.port
+  to_port           = aws_memorydb_cluster.unad.port
   protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.redis.id
@@ -55,7 +55,7 @@ resource "aws_security_group_rule" "redis_ingress" {
 
 locals {
   redis_nodes = flatten([
-    for shard in aws_memorydb_cluster.UnAd.shards : [
+    for shard in aws_memorydb_cluster.unad.shards : [
       for node in shard.nodes : [
         for endpoint in node.endpoint : {
           address = endpoint.address
@@ -71,15 +71,15 @@ output "redis_nodes" {
 }
 
 output "redis_endpoints" {
-  value = join(",", [for endpoint in aws_memorydb_cluster.UnAd.cluster_endpoint : "${endpoint.address}:${aws_memorydb_cluster.UnAd.port}"])
+  value = join(",", [for endpoint in aws_memorydb_cluster.unad.cluster_endpoint : "${endpoint.address}:${aws_memorydb_cluster.unad.port}"])
 }
 
 output "redis_username" {
-  value = aws_memorydb_user.UnAd_redis_user.user_name
+  value = aws_memorydb_user.unad_redis_user.user_name
 }
 
 output "redis_port" {
-  value = aws_memorydb_cluster.UnAd.port
+  value = aws_memorydb_cluster.unad.port
 }
 
 output "redis_password" {
@@ -95,7 +95,7 @@ resource "aws_ssm_parameter" "redis_password" {
 resource "aws_ssm_parameter" "redis_username" {
   name  = "/redis/username"
   type  = "String"
-  value = aws_memorydb_user.UnAd_redis_user.user_name
+  value = aws_memorydb_user.unad_redis_user.user_name
 }
 
 resource "aws_ssm_parameter" "redis_hosts" {
@@ -107,7 +107,7 @@ resource "aws_ssm_parameter" "redis_hosts" {
 resource "aws_ssm_parameter" "redis_connection_string" {
   name  = "/redis/connection_string"
   type  = "SecureString"
-  value = "${join(",", [for node in local.redis_nodes : "${node.address}:${node.port}"])},ssl=true,abortConnect=false,user=${aws_memorydb_user.UnAd_redis_user.user_name},password=${random_password.redis_password.result}"
+  value = "${join(",", [for node in local.redis_nodes : "${node.address}:${node.port}"])},ssl=true,abortConnect=false,user=${aws_memorydb_user.unad_redis_user.user_name},password=${random_password.redis_password.result}"
 }
 
 

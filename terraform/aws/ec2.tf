@@ -9,7 +9,7 @@ data "aws_ami" "ubuntu" {
 }
 
 data "aws_secretsmanager_secret" "jumpbox_ssh_keys" {
-  name = "/UnAd/ec2/jumpbox/ssh-keys"
+  name = "/unad/ec2/jumpbox/ssh-keys"
 }
 
 data "aws_secretsmanager_secret_version" "jumpbox_ssh_keys" {
@@ -83,19 +83,19 @@ resource "aws_security_group_rule" "jumpbox_egress_msk" {
   security_group_id = aws_security_group.jumpbox.id
 }
 
-resource "aws_security_group_rule" "jumpbox_egress_postgres" {
-  type              = "egress"
-  from_port         = aws_rds_cluster.aurora.port
-  to_port           = aws_rds_cluster.aurora.port
-  protocol          = "tcp"
-  cidr_blocks       = [var.vpc_cidr]
-  security_group_id = aws_security_group.jumpbox.id
-}
+# resource "aws_security_group_rule" "jumpbox_egress_postgres" {
+#   type              = "egress"
+#   from_port         = aws_rds_cluster.aurora.port
+#   to_port           = aws_rds_cluster.aurora.port
+#   protocol          = "tcp"
+#   cidr_blocks       = [var.vpc_cidr]
+#   security_group_id = aws_security_group.jumpbox.id
+# }
 
 resource "aws_security_group_rule" "jumpbox_egress_redis" {
   type              = "egress"
-  from_port         = aws_memorydb_cluster.UnAd.port
-  to_port           = aws_memorydb_cluster.UnAd.port
+  from_port         = aws_memorydb_cluster.unad.port
+  to_port           = aws_memorydb_cluster.unad.port
   protocol          = "tcp"
   cidr_blocks       = [var.vpc_cidr]
   security_group_id = aws_security_group.jumpbox.id
@@ -122,6 +122,4 @@ resource "aws_security_group_rule" "jumpbox_egress_dns_udp" {
 output "jumpbox_host" {
   value = aws_instance.jumpbox.public_dns
 }
-
-
 

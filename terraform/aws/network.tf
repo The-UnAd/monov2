@@ -1,7 +1,7 @@
 
 resource "aws_vpc" "vpc" {
   tags = {
-    Name = "UnAd-vpc"
+    Name = "unad-vpc"
   }
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
@@ -100,7 +100,7 @@ resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
 
   tags = {
-    Name = "UnAd-igw"
+    Name = "unad-igw"
   }
 }
 
@@ -122,14 +122,4 @@ resource "aws_route_table_association" "public_route_table_association" {
   subnet_id      = aws_subnet.public_subnet[count.index].id
   route_table_id = aws_route_table.public_route_table.id
 }
-
-data "aws_route53_zone" "unad_dev" {
-  name = "unad.dev"
-}
-
-data "aws_route53_zone" "unad_me" {
-  name = "unad.me"
-}
-
-
 
