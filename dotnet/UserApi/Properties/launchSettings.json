@@ -1,0 +1,33 @@
+{
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5300",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "COGNITO_ENDPOINT": "localhost.localstack.cloud:4566/us-east-2_bee4ed0b8e514aee8fd76ca6e0348fcd",
+        "REDIS_URL": "localhost:6379"
+      }
+    },
+    "export": {
+      "commandName": "Project",
+      "commandLineArgs": "schema export --output schema.graphql",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "REDIS_URL": "localhost:6379"
+      },
+      "dotnetRunMessages": true
+    }
+  }
+}
+
+
+
+
+
+
+
+
+

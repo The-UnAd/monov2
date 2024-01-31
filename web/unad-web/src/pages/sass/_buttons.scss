@@ -1,0 +1,188 @@
+@import './mixins';
+@import './variables';
+
+.btn, button, [type=button], [type=reset], [type=submit] {
+    border-radius: $br-btn;
+    font-size: $fs-lg-4;
+    line-height: $f-lh-3;
+    @include font ($secondary-font, $bold);
+    display: block;
+    width: 100%;
+    // margin-bottom: $f-m;
+    //nest word test-
+    text: {
+        // transform: uppercase;
+        decoration: none;
+        align: center;
+    }
+    
+    @include transitions();
+
+}
+
+.btn:disabled, .disabled{
+    @include btn-theme($grey,$d-grey,$grey,$d-grey);
+    opacity: 0.4;
+}
+.disabled-2{
+    @include btn-theme($grey,$d-grey,$tertiary,$d-grey);
+    opacity: 0.4;
+}
+.btn-nav{
+    font-size: $fs-sm-4;
+}
+.btn-social-media{
+    font-size: $fs-md-4 !important;
+    padding: 10px 8px !important;
+    font-weight: weight(semibold);
+}
+.btn-sm, .selector-sm{
+    padding: 5px 10px;
+    max-width: 200px;
+    // min-width: 230px;
+}
+.btn-lg, .selector-lg{
+    padding: 12px 20px;
+    max-width: 300px;
+}
+.selector-xlg{
+    padding: 10px;
+    max-width: 450px;
+}
+
+.btn-1{
+    @include btn-theme($tertiary,$white,$quaternary,$white);
+}
+.btn-2{
+    @include btn-theme($secondary,$white,$quaternary,$white);
+}
+.btn-3{
+    @include btn-theme($primary,$white,$quaternary,$white);
+}
+.btn-4{
+    @include btn-theme($primary,$white,$quaternary,$white);
+}
+.btn-5{
+    @include btn-theme($l-grey,$white,$quaternary,$white);
+}
+.btn-6{
+    @include btn-theme($l-grey,$white,$quaternary,$white);
+}
+.btn-7{
+    @include btn-theme($d-grey,$white,$secondary,$white);
+}
+.btn-8{
+    @include btn-theme($d-grey,$white,$tertiary,$primary);
+}
+.btn-9{
+    @include btn-theme-2($transparent,$white,$tertiary,$white, $white, 2px);
+}
+.btn-facebook{
+    @include btn-theme($facebook,$white,$secondary,$white);
+}
+.btn-linkedin{
+    @include btn-theme($linkedin,$white,$secondary,$white);
+}
+.btn-instagram{
+    @include btn-theme($instagram,$white,$secondary,$white);
+}
+.btn-twitter{
+    @include btn-theme($twitter,$white,$secondary,$white);
+}
+.links{
+    @include transitions();
+    font-weight: $medium;
+    // text-decoration: none;
+    text-underline-offset: 3px;
+    &:hover{
+        text-decoration: underline !important;
+    }
+}
+.link-1{
+    @include links-theme($white,$primary);
+}
+.link-2{
+    @include links-theme($white,$secondary);
+}
+.link-3{
+    @include links-theme($white,$tertiary);
+}
+.link-4{
+    @include links-theme($white,$quaternary);
+}
+.link-5{
+    @include links-theme($tertiary,$white);
+}
+.link-6{
+    @include links-theme($grey,$tertiary);
+    font-size: $fs-sm-5 !important;
+}
+.link-7{
+    @include links-theme($white,$tertiary);
+    font-size: $fs-sm-6 !important;
+}
+.link-8{
+    @include links-theme($tertiary,$white);
+    font-size: $fs-sm-6 !important;
+}
+
+// Selectors
+
+.selector {
+    border-radius: $br-btn;
+    font-size: $fs-md-4;
+    line-height: $f-lh-3;
+    font-family: $secondary-font;
+    display: block;
+    line-height: 1.1;
+    text: {
+        // transform: uppercase;
+        decoration: none;
+        align: center;
+    }
+    @include transitions();
+    @include selector-theme($transparent,$white,$tertiary,$black);
+    border: 1px solid $d-grey-2;
+    // The hover was removed because of issue on IOS
+    &.selected, &:active, &:focus, &.focus{
+        @include shadow($tertiary,$opa-shadow-1);
+    }
+    &:hover{
+        color: $white;
+        cursor: pointer;
+    }
+    &.selected:hover,&.selected p{
+        color: $d-grey;
+        cursor: pointer;
+    }
+
+}
+
+.selector-big-text{
+    align-items: center;
+    text-align: center;
+    font-size: $fs-md-4;
+    margin: 5px auto !important;
+    width: 100%;
+    max-width: 100% !important;
+    display: -ms-inline-grid;
+    display: inline-grid;
+    height: 60px;
+    padding: 5px 30px;
+}
+
+.selected{
+    background-color: $tertiary;
+    color: $black;
+    border: 1px solid $tertiary;
+}
+.disabled{
+    opacity: 0.5;
+    pointer-events: none;
+}
+.disabled-2{
+    opacity: 0.7;
+}
+.disabled-3{
+    opacity: 0.15;
+}

@@ -1,0 +1,127 @@
+import Head from 'next/head';
+import Image from 'next/image';
+import Script from 'next/script';
+import type { GetServerSidePropsContext } from 'next/types';
+import { useTranslations } from 'next-intl';
+import type { ParsedUrlQuery } from 'querystring';
+import Stripe from 'stripe';
+
+import { createTranslator, importMessages } from '@/lib/i18n';
+import { createModelFactory } from '@/lib/redis';
+
+interface PageData {
+  clientId: string;
+  pricingTableId: string;
+}
+
+interface ServerProps extends ParsedUrlQuery {
+  clientId: string;
+}
+
+function Pay({ clientId, pricingTableId }: PageData) {
+  const t = useTranslations('pages/pay/[clientId]');
+  return (
+    <>
+      <Head>
+        <title>{t('title')}</title>
+      </Head>
+      <Script async src="https://js.stripe.com/v3/pricing-table.js" />
+      <section className="app">
+        <div className="container-app h100 d-flex align-items-center">
+          <div className="col-12 text-center">
+            <div className="box box-1">
+              <div>
+                <Image
+                  src="/img/UnAd-Logo-Horizontal.svg"
+                  height={150}
+                  width={200}
+                  className="img-fluid logo"
+                  alt={t('title')}
+                />
+                <h1 className="primary mb-1">{t('h1')}</h1>
+                <div className="mb-4">
+                  <p>{t('mb4')}</p>
+                </div>
+              </div>
+              <div className="my-2">
+                <stripe-pricing-table
+                  pricing-table-id={pricingTableId}
+                  publishable-key={process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY}
+                  client-reference-id={clientId}
+                ></stripe-pricing-table>
+                {/* <form method="POST" action="/api/register/pay">
+                  <input type="hidden" name="clientId" value={data.clientId} />
+                  <button type="submit" className="btn btn-lg btn-1">
+                    {t('form.button')}
+                  </button>
+                </form> */}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+export async function getServerSideProps(
+  context: GetServerSidePropsContext<ServerProps>
+) {
+  const t = await createTranslator(context.req, 'pages/pay/[clientId]');
+  const { clientId } = context.params as ServerProps;
+
+  try {
+    using models = createModelFactory();
+    await models.connect();
+    const client = await models.getClientById(clientId);
+    if (!client) {
+      return {
+        props: {
+          error: {
+            statusCode: 404,
+            message: t('errors.clientNotFound'),
+          },
+        },
+      };
+    }
+    const stripe = new Stripe(process.env.STRIPE_API_KEY as string, {
+      apiVersion: '2023-10-16',
+    });
+    const subscriptionId = await client.getStripeSubscriptionId();
+    if (!subscriptionId) {
+      return {
+        props: {
+          messages: await importMessages(context.locale),
+          clientId,
+          pricingTableId: process.env.STRIPE_PRODUCT_BASIC_PRICING_TABLE,
+        },
+      };
+    }
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    if (subscription.status === 'active') {
+      return {
+        props: {
+          error: {
+            statusCode: 400,
+            message: t('errors.subscriptionActive'),
+          },
+        },
+      };
+    }
+  } catch (error: any) {
+    console.error(error);
+    return {
+      props: {
+        error: {
+          statusCode: 500,
+          message:
+            process.env.NODE_ENV === 'development'
+              ? error.stack ?? error.message
+              : error.message,
+        },
+      },
+    };
+  }
+}
+
+export default Pay;

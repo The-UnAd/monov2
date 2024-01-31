@@ -1,0 +1,120 @@
+@import './variables';
+
+// Media Queries
+@mixin large-devices {
+  @media (max-width: #{$large-devices-width}) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (max-width: #{$tablet-width}) {
+    @content;
+  }
+}
+
+@mixin phone {
+  @media (max-width: #{$phone-width}) {
+    @content;
+  }
+}
+
+@mixin s-phone {
+  @media (max-width: #{$s-phone-width}) {
+    @content;
+  }
+}
+
+// Fonts
+@mixin font($font, $weight: normal) {
+  font-family: $font;
+  font-weight: $weight;
+}
+
+// Transitions
+@mixin transitions() {
+  -webkit-transition: $tran-time;
+  -moz-transition: $tran-time; 
+  -o-transition: $tran-time; 
+  transition: $tran-time;
+}
+@mixin customTransitions($time) {
+  -webkit-transition: $time;
+  -moz-transition: $time; 
+  -o-transition: $time; 
+  transition: $time;
+}
+
+// Buttons
+@mixin btn-theme($bgcolor, $fcolor, $h-bgcolor, $h-fcolor) {
+  background-color: $bgcolor;
+  color: $fcolor;
+  margin: $mp-10 auto !important;
+  // @include shadow($bgcolor,$opa-shadow-3);
+  &:hover, &:active{
+    background-color: $h-bgcolor;
+    color: $h-fcolor;
+    cursor: pointer;
+    @include shadow($h-bgcolor,$opa-shadow-3);
+  }
+  &:focus, &.focus{
+      @include shadow($bgcolor,$opa-shadow-0);
+  }
+}
+@mixin btn-theme-2($bgcolor, $fcolor, $h-bgcolor, $h-fcolor, $bcolor, $bsize) {
+  border: $bsize solid $bcolor;
+  background-color: $bgcolor;
+  color: $fcolor;
+  margin: $mp-10 auto !important;
+  // @include shadow($bgcolor,$opa-shadow-3);
+  &:hover, &:active{
+    border: $bsize solid $h-bgcolor;
+    background-color: $h-bgcolor;
+    color: $h-fcolor;
+    cursor: pointer;
+    @include shadow($h-bgcolor,$opa-shadow-3);
+  }
+  &:focus, &.focus{
+      @include shadow($bgcolor,$opa-shadow-0);
+  }
+}
+
+// Selector theme
+@mixin selector-theme($bgcolor, $fcolor, $h-bgcolor, $h-fcolor) {
+  background-color: $bgcolor;
+  color: $fcolor;
+  margin: 0 auto $f-m;
+  // @include shadow($bgcolor,$opa-shadow-3);
+  // The hover was removed because of issue on IOS
+  &:active{
+    background-color: $h-bgcolor;
+    color: $h-fcolor;
+    cursor: pointer;
+    // @include shadow($h-bgcolor,$opa-shadow-3);
+  }
+  
+  &:focus, &.focus{
+      @include shadow($bgcolor,$opa-shadow-0);
+  }
+}
+
+// Links
+@mixin links-theme($color, $h-color) {
+  color: $color;
+  @include transitions();
+  &:hover, &:active{
+    color: $h-color !important;
+    text-decoration: none;
+  }
+}
+
+
+
+// Shadows
+@mixin shadow($color, $opacity) {
+  -webkit-box-shadow: 0px 0px 40px 0px rgba($color,$opacity) !important;;
+  -moz-box-shadow: 0px 0px 40px 0px rgba($color,$opacity) !important;;
+  box-shadow: 0px 0px 40px 0px rgba($color,$opacity) !important;;
+}
+
+

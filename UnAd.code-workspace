@@ -1,0 +1,64 @@
+{
+  "folders": [
+    {
+      "path": ".",
+      "name": "root"
+    },
+    {
+      "path": "terraform",
+      "name": "terraform"
+    },
+    {
+      "name": "dotnet",
+      "path": "dotnet"
+    },
+    {
+      "name": "lib",
+      "path": "lib"
+    },
+    {
+      "name": "web",
+      "path": "web"
+    },
+    {
+      "name": "mkdocs",
+      "path": "mkdocs"
+    },
+    {
+      "name": ".github",
+      "path": ".github"
+    },
+    {
+      "name": ".devcontainer",
+      "path": ".devcontainer"
+    },
+    {
+      "name": ".vscode",
+      "path": ".vscode"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "lib": true,
+      "terraform": true,
+      "app": true,
+      "mkdocs": true,
+      ".github": true,
+      ".vscode": true,
+      "dotnet": true,
+      "dotenv": true,
+      "web": true,
+      ".devcontainer": true
+    },
+    "[terraform]": {
+      "editor.defaultFormatter": "hashicorp.terraform"
+    },
+    "cSpell.words": [
+      "Jwks",
+      "UnAd",
+      "QLID",
+      "Retriable"
+    ],
+    "dotnet.defaultSolution": "dotnet/UserApi.sln"
+  }
+}

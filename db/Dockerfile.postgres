@@ -1,0 +1,6 @@
+FROM postgres:15 as postgres
+COPY ./userdb.sql /scripts/userdb.sql
+COPY ./init-db.sh /docker-entrypoint-initdb.d/
+
+
+

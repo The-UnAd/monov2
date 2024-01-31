@@ -1,0 +1,63 @@
+version: "3.9"
+
+networks:
+  UnAd:
+    external: false
+
+services:
+  redis:
+    networks:
+      - UnAd
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    # command: redis-server --save 20 1 --loglevel warning --logfile /data/redis.log
+    volumes:
+      - redis:/data/redis
+    # healthcheck:
+    #   test: redis-cli ping || exit 1
+    #   interval: 300s
+    #   timeout: 10s
+    #   retries: 3
+
+  postgres:
+    networks:
+      - UnAd
+    build:
+      context: ./db
+      dockerfile: ./Dockerfile.postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/data/postgres
+    env_file:
+      - ./db/.env.docker
+
+  graph-monitor:
+    networks:
+      - UnAd
+    restart: always
+    build:
+      context: ./dotnet/GraphMonitor/GraphMonitor
+    ports:
+      - "5145:5145"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5145
+    env_file:
+      - ./dotnet/.env.docker
+    # healthcheck:
+    #   test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    depends_on:
+      - redis
+
+volumes:
+  redis:
+    external: false
+  postgres:
+    external: false

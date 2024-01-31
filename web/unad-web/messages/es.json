@@ -1,0 +1,297 @@
+{
+  "Components/OtpForm": {
+    "errors": {
+      "invalidOtp": "Código OTP inválido"
+    },
+    "instructions": "Por favor, ingrese el código de un solo uso enviado a su número de teléfono por mensaje de texto.",
+    "inputs": {
+      "otp": {
+        "label": "Contraseña de un Solo Uso",
+        "placeholder": "000000"
+      }
+    },
+    "buttons": {
+      "submit": {
+        "unpressed": "Enviar",
+        "loading": "Enviando..."
+      }
+    }
+  },
+  "Components/SubscribeForm": {
+    "errors": {
+      "phone": "Número de teléfono inválido",
+      "terms": "Please agree to the terms and conditions"
+    },
+    "inputs": {
+      "phone": {
+        "label": "Número de Teléfono",
+        "placeholder": "Ingrese su número de teléfono"
+      }
+    },
+    "buttons": {
+      "submit": {
+        "unpressed": "Enviar",
+        "loading": "Enviando..."
+      }
+    }
+  },
+  "Components/RegisterForm": {
+    "inputs": {
+      "name": "Nombre del Negocio",
+      "phone": "Número de Teléfono"
+    },
+    "terms": {
+      "disclaimer": "Acepto los <link>términos y condiciones</link> de Unad."
+    },
+    "privacy": {
+      "disclaimer": "Al registrarse, confirma que ha leído y acepta la <link>política de privacidad</link> de Unad."
+    },
+    "errors": {
+      "name": "Por favor, ingrese un nombre de negocio válido",
+      "phone": "Por favor, ingrese un número de teléfono válido",
+      "terms": "Por favor, acepte los términos y condiciones"
+    },
+    "buttons": {
+      "submit": {
+        "unpressed": "Enviar",
+        "loading": "Enviando..."
+      }
+    }
+  },
+  "pages/about": {
+    "title": "UnAd - Marketing Simplificado",
+    "tagline": "Marketing Simplificado",
+    "header": {
+      "h1": "¡Hola! Como dueño de un pequeño negocio, entiendo lo importante que es simplificar sus operaciones. Me gustaría presentarle nuestro nuevo servicio de marketing por SMS, diseñado especialmente para negocios como el suyo.",
+      "mb0": {
+        "p1": "Imagínese esto: en solo 5 minutos, puede registrarse de forma gratuita. Solo necesita proporcionar el nombre de su negocio y su número de teléfono. Después de completar el proceso de registro, recibirá un enlace único. Sus clientes pueden usar este enlace para suscribirse a sus mensajes de marketing por SMS en solo 30 segundos.",
+        "p2": "Lo mejor es que como dueño de un pequeño negocio, solo necesita hacer una cosa: cuando desee enviar un mensaje a sus suscriptores, simplemente nos envía un mensaje de texto a nuestro número. Confirma el mensaje ¡y listo! Nos encargamos de enviar ese mensaje a todos los clientes que se hayan suscrito.",
+        "p3": "Estamos seguros de que le encantará la simplicidad y efectividad de nuestro servicio. ¿Le gustaría probarlo gratis? ¡Regístrese ahora y descubra cómo podemos ayudar a que su negocio crezca con facilidad!"
+      }
+    },
+    "register": {
+      "btn": "Registrar Su Negocio"
+    },
+    "footer": {
+      "p": "Haga crecer su negocio fácilmente con actualizaciones de texto, promociones y ofertas para todos los clientes a la vez."
+    }
+  },
+  "pages/account/[clientId]": {
+    "title": "Cuenta - {name}",
+    "header": {
+      "h1": "Su Cuenta"
+    },
+    "links": {
+      "subscribe": {
+        "text": "Su enlace de suscripción:",
+        "button": "Copiar Enlace",
+        "copied": "Copiado",
+        "description": "Envíe este enlace a sus clientes para que se suscriban a su negocio."
+      },
+      "portal": {
+        "text": "Administre su suscripción:"
+      },
+      "qr": {
+        "description": "Comparta este código QR con sus clientes para que se suscriban a su negocio."
+      }
+    },
+    "subscribers": "Actualmente tiene {subscribers} suscriptores.",
+    "announcementCount": "Ha enviado {announcementCount} anuncios.",
+    "errors": {
+      "noPermission": "No tiene permiso para ver esta página."
+    },
+    "footer": {
+      "p": "Haga crecer su negocio fácilmente con actualizaciones de texto, promociones y ofertas para todos los clientes a la vez."
+    }
+  },
+  "pages/account/index": {
+    "title": "UnAd",
+    "subscribers": "Tiene {subscribers} suscriptores",
+    "announcementCount": "Ha enviado {announcementCount} anuncios",
+    "header": {
+      "h1": "Bienvenido a su cuenta de UnAd",
+      "p": "Aquí puede gestionar sus suscriptores y enviar anuncios a sus clientes."
+    },
+    "footer": {
+      "p": "Haga crecer su negocio fácilmente con actualizaciones de texto, promociones y ofertas para todos los clientes a la vez."
+    }
+  },
+  "pages/api/jwt": {
+    "errors": {
+      "invalidToken": "Token inválido"
+    }
+  },
+  "pages/api/login": {
+    "errors": {
+      "invalidOtp": "Código OTP inválido",
+      "invalidClient": "Negocio no encontrado",
+      "invalidPhoneNumber": "Número de teléfono inválido"
+    }
+  },
+  "pages/api/otp": {
+    "sms": {
+      "otp": "UnAd: Su código es: {otp}"
+    }
+  },
+  "pages/api/register/[phone]": {
+    "errors": {
+      "phoneNumberRegistered": "Número de teléfono ya registrado",
+      "invalidPhoneNumber": "Número de teléfono inválido",
+      "clientNameTaken": "Nombre de cliente ya existe"
+    },
+    "otpMessage": "UnAd: {otp} es su código de seguridad. No comparta este código con nadie."
+  },
+  "pages/api/register/confirm": {
+    "errors": {
+      "phoneNumberRegistered": "Número de teléfono ya registrado",
+      "invalidPhoneNumber": "Número de teléfono no válido",
+      "clientNameTaken": "Nombre de cliente ya existente",
+      "name": "Por favor, ingrese un nombre de negocio válido",
+      "phone": "Por favor, ingrese un número de teléfono válido",
+      "terms": "Por favor, acepte los términos y condiciones"
+    },
+    "otpMessage": "UnAd: {otp} es su código de seguridad. No comparta este código con nadie."
+  },
+  "pages/api/register/pay": {},
+  "pages/api/register/validate": {
+    "sms": {
+      "welcome": "¡Bienvenido a UnAd! Ha registrado con éxito su número de teléfono.\n\nVuelva a su navegador o continúe aquí para completar su registro:\n{payUrl}"
+    },
+    "errors": {
+      "otpExpired": "Su contraseña de un solo uso ha expirado.",
+      "invalidOtp": "Su contraseña de un solo uso no es válida."
+    }
+  },
+  "pages/api/subscribe": {
+    "errors": {
+      "invalidClient": "Negocio no encontrado"
+    },
+    "sms": {
+      "welcome": "¡Bienvenido a UnAd!",
+      "newSub": "¡Acabas de obtener un nuevo suscriptor! ¡Eso hace {subCount} hasta ahora!"
+    }
+  },
+  "pages/api/validate": {
+    "errors": {
+      "invalidOtp": "OTP no válido",
+      "invalidClient": "Negocio no encontrado"
+    }
+  },
+  "pages/index": {
+    "title": "UnAd - Marketing Simplificado",
+    "tagline": "Marketing Simplificado",
+    "header": {
+      "h1": "¡Únete a una comunidad de más de {clientCount} negocios y {subCount} suscriptores hoy!",
+      "mb0": "UnAd es la forma más fácil de conectarse con sus clientes a través del marketing por SMS. Diga adiós a las herramientas de marketing complicadas que requieren horas de entrenamiento, y hola a la plataforma fácil de usar de UnAd. ¡Comienza hoy y observa cómo crece tu negocio!"
+    },
+    "register": {
+      "btn": "Registrar Su Negocio"
+    },
+    "links": {
+      "learnMore": "<link>Más información</link>"
+    },
+    "footer": {
+      "p": "¡Haga crecer su negocio fácilmente con actualizaciones de texto, promociones y ofertas para todos los clientes a la vez!"
+    }
+  },
+  "pages/pay/[clientId]": {
+    "title": "UnAd - Pago",
+    "h1": "Pago",
+    "mb4": "¡Solo un último paso y habrás terminado!",
+    "errors": {
+      "clientNotFound": "Cliente no encontrado",
+      "customerNotFound": "Cliente no encontrado",
+      "subscriptionActive": "Suscripción ya activa"
+    }
+  },
+  "pages/pay/canceled": {
+    "h3": "Pago Cancelado",
+    "p": "Vuelva a su teléfono para completar el proceso de registro."
+  },
+  "pages/pay/success": {
+    "h1": "¡Felicidades!",
+    "h3": "¡Su cuenta de UnAd está ahora activada!",
+    "p": "Le hemos enviado un enlace personalizado y un código QR por mensaje de texto para construir fácilmente su lista de clientes. Simplemente compártelo con sus clientes y podrán registrarse en su negocio fácilmente.",
+    "mb2": {
+      "h3": "Recuerde, ahora con UnAd puede:",
+      "list": {
+        "0": "Enviar mensajes de texto SMS a sus clientes con facilidad.",
+        "1": "Enviar promociones y actualizaciones al instante.",
+        "2": "Llegar a sus clientes de manera rápida y efectiva.",
+        "3": "Mantener a sus clientes comprometidos y volviendo por más."
+      }
+    },
+    "links": {
+      "subscribe": {
+        "text": "Su enlace de suscripción:",
+        "button": "Copiar Enlace",
+        "copied": "¡Copiado!",
+        "description": "Envíe este enlace a sus clientes para que se suscriban a su negocio."
+      },
+      "account": {
+        "text": "Su enlace de cuenta:"
+      },
+      "portal": {
+        "text": "Administre su suscripción:"
+      }
+    },
+    "errors": {
+      "sessionNotFound": "Sesión no encontrada",
+      "clientNotFound": "Cliente no encontrado",
+      "customerNotFound": "Cliente no encontrado",
+      "subscriptionActive": "Suscripción ya activa",
+      "subscriptionNotFound": "Suscripción no encontrada"
+    }
+  },
+  "pages/register": {
+    "title": "UnAd - Marketing Simplificado",
+    "header": {
+      "h1": "Nueva cuenta de negocio",
+      "mb0": "Regístrese en menos de 5 minutos.",
+      "p": "Regístrese, confirme y obtenga su enlace personalizado para facilitar las inscripciones de clientes."
+    },
+    "error": {
+      "backButton": "Atrás"
+    },
+    "footer": {
+      "p": "¡Haga crecer su negocio fácilmente con actualizaciones de texto, promociones y ofertas para todos los clientes a la vez!"
+    }
+  },
+  "pages/share/[clientId]": {
+    "title": "UnAd - Marketing Simplificado",
+    "tagline": "Marketing Simplificado",
+    "page": {
+      "title": "¡Hola! Como propietario de un pequeño negocio, entiendo lo importante que es para usted simplificar sus operaciones. Me gustaría presentarle nuestro nuevo servicio de marketing por SMS, diseñado especialmente para negocios como el suyo."
+    },
+    "footer": {
+      "p": "¡Haga crecer su negocio fácilmente con actualizaciones de texto, promociones y ofertas para todos los clientes a la vez!"
+    }
+  },
+  "pages/announcement/[guid]": {
+    "page": {
+      "title": "UnAd - Marketing Simplificado"
+    },
+    "template": "{name} tiene un nuevo anuncio!<br/><br/>{text}<br/><br/>¡Asegúrate de decirles que lo escuchaste de nosotros!",
+    "footer": {
+      "p": "¡Haga crecer su negocio fácilmente con actualizaciones de texto, promociones y ofertas para todos los clientes a la vez!"
+    }
+  },
+  "pages/subscribe/[clientId]": {
+    "page": {
+      "title": "Suscríbase a {name} con UnAd",
+      "description": "Reciba mensajes de texto cuando {name} tenga nuevas ofertas."
+    },
+    "header": {
+      "title": "Suscríbase a {name}",
+      "p1": "Solo confirme su número de teléfono.",
+      "p2": "Solo toma dos pasos para empezar a recibir actualizaciones."
+    },
+    "footer": {
+      "p": "Obtenga todas las mejores ofertas de {name} en un solo lugar."
+    },
+    "success": {
+      "title": "¡Está suscrito!",
+      "subtitle": "Ahora recibirá anuncios de {name}."
+    }
+  }
+}

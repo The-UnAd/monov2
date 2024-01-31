@@ -1,0 +1,130 @@
+// Colors:
+$primary: #00C0F1; // Light Blue
+$secondary: #003AFF; // Dark Blue
+$tertiary: #27C4AA; // Green
+$quaternary: #E23BFF; // Purple
+$primary-rgba: rgba(0, 192, 241, 1); // Light Blue
+$secondary-rgba: rgba(0, 58, 255, 1); // Dark Blue
+$tertiary-rgba: rgba(39, 196, 170, 1); // Green
+$quaternary-rgba: rgba(226, 59, 255, 1); // Purple
+$tertiary-65: #27C4AAA6;
+$secondary-2: rgba(0, 58, 255, 1); // Dark Blue
+$secondary-3: #003AFF;
+$primary-rgba-05: rgba(0, 192, 241, 0.05); // Light Blue
+
+$grey:#BCBCBC;
+$l-grey: #F9F9F9;
+$d-grey: #080808;
+$d-grey-2: #404040;
+$white: #FFFFFF;
+$white-rgba-05: rgba(255,255,255,0.05);
+$white-rgba-35: rgba(255,255,255,0.35);
+$white-rgba-2: rgba(255,255,255,0.02);
+$black: #000000;
+$d-grey-rgba: rgba(17, 17, 17, 1);
+$transparent: rgba(0,0,0,0);
+
+
+
+//Social Media Colors:
+$facebook: #4267B2;
+$linkedin: #0072b1;
+$instagram: #E1306C;
+$twitter: #1DA1F2;
+
+
+
+// Fonts:
+
+// Define font weights as variables
+$regular: 400;
+$medium: 500;
+$bold: 700;
+
+// Define primary and secondary font variables
+$primary-font: 'Montserrat', sans-serif;
+$secondary-font: 'Poppins', sans-serif;
+
+/* Fonts: Montserrat and Poppins */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Poppins:wght@400;500;700&display=swap');
+
+
+
+// Fonts - Sizes
+$fs-xl-1: 40px;
+$fs-xl-2: 34px;
+$fs-xl-100: 100px;
+
+$fs-lg-1: 30px;
+$fs-lg-2: 28px;
+$fs-lg-3: 24px;
+$fs-lg-4: 20px;
+$fs-lg-5: 18px;
+
+$fs-md-1: 24px;
+$fs-md-2: 22px;
+$fs-md-3: 20px;
+$fs-md-4: 18px;
+$fs-md-5: 16px;
+
+$fs-sm-1: 22px;
+$fs-sm-2: 20px;
+$fs-sm-3: 18px;
+$fs-sm-4: 16px;
+$fs-sm-5: 14px;
+$fs-sm-6: 12px;
+$fs-sm-7: 11px;
+
+// Fonts line-height
+$f-lh-1: 1em;
+$f-lh-2: 1.2em;
+$f-lh-3: 1.4em;
+
+// Font Margin
+$f-m: 10px !important;
+
+// Margin / Padding
+$mp-5: 5px;
+$mp-10: 10px;
+$mp-20: 20px;
+$mp-30: 30px;
+$mp-40: 40px;
+$mp-50: 50px;
+$mp-60: 60px;
+$mp-70: 70px;
+$mp-80: 80px;
+
+// borders
+$br: 25px;
+$br-2: 5px;
+$br-3: 8px;
+$br-btn: 50px;
+
+//Paddings
+$pd-1: 24px 20px;
+$pd-2:10px;
+$pd-3:40px;
+
+
+// Break Points
+$large-devices-width: 1199.98px;
+$tablet-width: 991.98px;
+$phone-width: 767.98px;
+$s-phone-width: 467.98px;
+
+
+
+// Transition Time
+$tran-time: .4s ease-in-out;
+
+// Opacity Shadow
+$opa-shadow-0: 0.08;
+$opa-shadow-1: 0.15;
+$opa-shadow-2: 0.30;
+$opa-shadow-3: 0.45;
+$opa-shadow-4: 0.6;
+
+
+//Carousel Indicators
+$ci-size: 10px;
+$ci-size-2: 18px;

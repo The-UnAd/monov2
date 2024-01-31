@@ -1,0 +1,344 @@
+{
+  "Components/OtpForm": {
+    "errors": {
+      "invalidOtp": "Invalid OTP"
+    },
+    "instructions": "Please enter the one-time code sent to your phone number via text message.",
+    "inputs": {
+      "otp": {
+        "label": "One-Time Password",
+        "placeholder": "000000"
+      }
+    },
+    "buttons": {
+      "submit": {
+        "unpressed": "Register",
+        "loading": "Getting Ready..."
+      }
+    }
+  },
+  "Components/PhoneNumberForm": {
+    "errors": {
+      "invalidPhoneNumber": "Invalid phone number",
+      "terms": "Please agree to the terms and conditions"
+    },
+    "inputs": {
+      "phone": {
+        "label": "Phone Number",
+        "placeholder": "Enter your phone number"
+      }
+    },
+    "buttons": {
+      "submit": {
+        "unpressed": "Log In",
+        "loading": "Please Wait..."
+      }
+    }
+  },
+  "Components/SubscribeForm": {
+    "errors": {
+      "phone": "Invalid phone number",
+      "terms": "Please agree to the terms and conditions"
+    },
+    "inputs": {
+      "phone": {
+        "label": "Phone Number",
+        "placeholder": "Enter your phone number"
+      }
+    },
+    "terms": {
+      "disclaimer": "I agree to the Unad <link>terms and conditions</link>."
+    },
+    "privacy": {
+      "disclaimer": "By subscribing, you are confirming that you have read, and agree to the Unad <link>privacy policy</link>."
+    },
+    "buttons": {
+      "submit": {
+        "unpressed": "Subscribe",
+        "loading": "Getting Ready..."
+      }
+    }
+  },
+  "Components/RegisterForm": {
+    "inputs": {
+      "name": "Business Name",
+      "phone": "Phone Number"
+    },
+    "terms": {
+      "disclaimer": "I agree to the Unad <link>terms and conditions</link>."
+    },
+    "privacy": {
+      "disclaimer": "By registering, you are confirming that you have read, and agree to the Unad <link>privacy policy</link>."
+    },
+    "errors": {
+      "name": "Please enter a valid business name",
+      "phone": "Please enter a valid phone number",
+      "terms": "Please agree to the terms and conditions"
+    },
+    "buttons": {
+      "submit": {
+        "unpressed": "Register",
+        "loading": "Please Wait..."
+      }
+    }
+  },
+  "pages/about": {
+    "title": "UnAd - Marketing Made Simple",
+    "tagline": "Marketing Made Simple",
+    "header": {
+      "h1": "Everyone hates ads.  UnAd is different.",
+      "mb0": {
+        "p1": "Every day, we at UnAd help bring untold value to customers by connecting them with the businesses they love.  We do this by providing a simple, easy to use platform that allows businesses to send text messages to their customers.",
+        "p2": "The best thing is that as a customer, which business you get messages from is completely up to you.  You can subscribe to as many businesses as you want, and you can unsubscribe at any time.  We will never send you a message from a business you haven't subscribed to.",
+        "p3": "Even better, it's completely free! So what are you waiting for?  Sign up today and start getting the best deals from your favorite businesses!"
+      }
+    },
+    "sign-up": {
+      "btn": "Try it out for free!"
+    },
+    "footer": {
+      "p": "Get all the best deals from your favorite businesses in one place."
+    }
+  },
+  "pages/account/[clientId]": {
+    "title": "Account - {name}",
+    "header": {
+      "h1": "Your Account"
+    },
+    "links": {
+      "subscribe": {
+        "text": "Your subscribe link:",
+        "button": "Copy Link",
+        "copied": "Copied!",
+        "description": "Send this link to your customers to subscribe to your business."
+      },
+      "portal": {
+        "text": "Manage your subscription:"
+      },
+      "qr": {
+        "description": "Share this QR code with your customers to subscribe to your business."
+      }
+    },
+    "subscribers": "You currently have {subscribers} subscribers.",
+    "announcementCount": "You have sent {announcementCount} announcements.",
+    "errors": {
+      "noPermission": "You do not have permission to view this page."
+    },
+    "footer": {
+      "p": "Grow your business easily with text updates, promos & offerings to all customers at once!"
+    }
+  },
+  "pages/account/index": {
+    "title": "UnAd",
+    "subscribers": "You have {subscribers} subscribers",
+    "announcementCount": "You have sent {announcementCount} announcements",
+    "header": {
+      "h1": "Welcome to your UnAd account",
+      "p": "Here you can manage your subscribers and send announcements to your customers."
+    },
+    "links": {
+      "register": "Don't have an account? <link>Register here</link>."
+    },
+    "footer": {
+      "p": "Grow your business easily with text updates, promos & offerings to all customers at once!"
+    }
+  },
+  "pages/api/jwt": {
+    "errors": {
+      "invalidToken": "Invalid token"
+    }
+  },
+  "pages/api/login": {
+    "errors": {
+      "invalidOtp": "Invalid OTP",
+      "invalidClient": "Business not found",
+      "invalidPhoneNumber": "Invalid phone number"
+    }
+  },
+  "pages/api/otp": {
+    "sms": {
+      "otp": "UnAd: Your code is: {otp}"
+    }
+  },
+  "pages/api/register/[phone]": {
+    "errors": {
+      "phoneNumberRegistered": "Phone number already registered",
+      "invalidPhoneNumber": "Invalid phone number",
+      "clientNameTaken": "Client name already exists"
+    },
+    "otpMessage": "UnAd: {otp} is your security code.  Do not share this code with anyone."
+  },
+  "pages/api/register/confirm": {
+    "errors": {
+      "phoneNumberRegistered": "Phone number already registered",
+      "invalidPhoneNumber": "Invalid phone number",
+      "clientNameTaken": "Client name already exists",
+      "name": "Please enter a valid business name",
+      "phone": "Please enter a valid phone number",
+      "terms": "Please agree to the terms and conditions"
+    },
+    "otpMessage": "UnAd: {otp} is your security code.  Do not share this code with anyone."
+  },
+  "pages/api/register/pay": {},
+  "pages/api/register/validate": {
+    "sms": {
+      "welcome": "Welcome to UnAd! You have successfully registered your phone number.\n\nReturn to your browser, or continue here to complete your registration:\n{payUrl}"
+    },
+    "errors": {
+      "otpExpired": "Your one time password has expired.",
+      "invalidOtp": "Your one time password is invalid."
+    }
+  },
+  "pages/api/subscribe": {
+    "errors": {
+      "invalidClient": "Business not found"
+    },
+    "sms": {
+      "welcome": "You will now receive announcements from {name} every time they send one out. You can unsubscribe at any time by replying to any message with the word 'STOP' or 'UNSUBSCRIBE'.",
+      "newSub": "You just got a new subscriber!  That makes {subCount} so far!"
+    }
+  },
+  "pages/api/validate": {
+    "errors": {
+      "invalidOtp": "Invalid OTP",
+      "invalidClient": "Business not found"
+    }
+  },
+  "pages/index": {
+    "title": "UnAd - Register Your Business",
+    "tagline": "Marketing Made Simple",
+    "header": {
+      "h1": "Join a community of over {clientCount} businesses and {subCount} subscribers today!",
+      "mb0": "UnAd is the easiest way to connect with your customers through SMS marketing. Say goodbye to complicated marketing tools that require hours of training, and hello to UnAd's user-friendly platform. Get started today and watch your business grow! "
+    },
+    "register": {
+      "btn": "Register Your Business"
+    },
+    "links": {
+      "learnMore": "<link>Learn more</link>"
+    },
+    "footer": {
+      "p": "Grow your business easily with text updates, promos & offerings to all customers at once!"
+    }
+  },
+  "pages/pay/[clientId]": {
+    "title": "UnAd - Payment",
+    "h1": "Payment",
+    "mb4": "Just one last step and you're done!",
+    "errors": {
+      "clientNotFound": "Client not found",
+      "customerNotFound": "Customer not found",
+      "subscriptionActive": "Subscription already active"
+    }
+  },
+  "pages/pay/canceled": {
+    "h3": "Payment Canceled",
+    "p": "Refer back to your phone to complete the registration process."
+  },
+  "pages/pay/success": {
+    "h1": "Congratulations!",
+    "h3": "Your UnAd account is now activated!",
+    "p": "We've texted you a personalized link and QR code to easily build your customer list. Simply share it with your customers and they can sign up for your business easily.",
+    "mb2": {
+      "h3": "Remember, now with UnAd you can:",
+      "list": {
+        "0": "Send SMS text messages to your customers with ease.",
+        "1": "Send promotions and updates instantly.",
+        "2": "Reach your customers quickly and effectively.",
+        "3": "Keep your customers engaged and coming back for more."
+      }
+    },
+    "links": {
+      "subscribe": {
+        "text": "Your subscribe link:",
+        "button": "Copy Link",
+        "copied": "Copied!",
+        "description": "Send this link to your customers to subscribe to your business."
+      },
+      "account": {
+        "text": "Your account link:"
+      },
+      "portal": {
+        "text": "Manage your subscription:"
+      }
+    },
+    "errors": {
+      "sessionNotFound": "Session not found",
+      "clientNotFound": "Client not found",
+      "customerNotFound": "Customer not found",
+      "subscriptionActive": "Subscription already active",
+      "subscriptionNotFound": "Subscription not found"
+    }
+  },
+  "pages/register": {
+    "title": "UnAd - Marketing Made Simple",
+    "header": {
+      "h1": "New business account",
+      "mb0": "Sign up in less than 5 minutes.",
+      "p": "Register, Confirm, and get your custom link for easy customer sign-ups."
+    },
+    "links": {
+      "account": "Already have an account? <link>Log in here</link>."
+    },
+    "error": {
+      "backButton": "Back"
+    },
+    "footer": {
+      "p": "Grow your business easily with text updates, promos & offerings to all customers at once!"
+    }
+  },
+  "pages/share/[clientId]": {
+    "page": {
+      "title": "UnAd - Marketing Made Simple"
+    },
+    "title": "Share this link with your customers",
+    "footer": {
+      "p": "Grow your business easily with text updates, promos & offerings to all customers at once!"
+    }
+  },
+  "pages/announcement/[guid]": {
+    "page": {
+      "title": "UnAd - Marketing Made Simple"
+    },
+    "template": "{name} has a new announcement!<br/><br/>{text}<br/><br/>Make sure to let them know you heard it from us!",
+    "footer": {
+      "p": "Grow your business easily with text updates, promos & offerings to all customers at once!"
+    }
+  },
+  "pages/subscribe/[clientId]": {
+    "page": {
+      "title": "Subscribe to {name} with UnAd",
+      "description": "Receive text messages when {name} has new deals."
+    },
+    "header": {
+      "title": "Subscribe to {name}",
+      "p1": "You've been invited you to subscribe to receive text messages about their business.",
+      "p2": "It only takes two steps to start getting updates."
+    },
+    "footer": {
+      "p": "Get all the best deals from {name} in one place."
+    },
+    "success": {
+      "title": "You're subscribed!",
+      "subtitle": "You will now receive announcements from {name}."
+    },
+    "links": {
+      "learnMore": "<link>Learn more</link>"
+    }
+  },
+  "pages/subscribe/success/[code]": {
+    "page": {
+      "title": "You've successfully subscribed to {name}!",
+      "description": "You've successfully subscribed to {name}!"
+    },
+    "h1": "You've successfully subscribed to {name}!",
+    "p": "You will now receive announcements from {name} every time they send one out.  You can unsubscribe at any time by replying to any message with the word 'STOP' or 'UNSUBSCRIBE'.",
+    "mb2": {
+      "h3": "Remember, keep an eye out for messages so you don't miss out on any deals!",
+      "list": {
+        "0": "Special offers and promotions",
+        "1": "Updates on location and hours"
+      }
+    }
+  }
+}
