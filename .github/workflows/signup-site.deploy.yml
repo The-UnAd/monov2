@@ -10,8 +10,8 @@ permissions:
 env:
   ECR_REPOSITORY: unad/signup-site
   ECS_CLUSTER: unad-cluster
-  ECS_SERVICE: user-api
-  CONTEXT_PATH: dotnet
+  ECS_SERVICE: signup-site
+  CONTEXT_PATH: web/unad-web
   
 jobs:
   build:
@@ -39,7 +39,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ${{ env.CONTEXT_PATH }}
-          file: ${{ env.CONTEXT_PATH }}/UserApi.Dockerfile
+          file: ${{ env.CONTEXT_PATH }}/Dockerfile
           push: true
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
@@ -67,11 +67,4 @@ jobs:
 
       - name: Wait for deployment to stabilize
         run: aws ecs wait services-stable --services $ECS_SERVICE --cluster $ECS_CLUSTER
-
-      - name: Save URL of deployed service
-        id: save-url
-        run: |
-          echo "${{ secrets.GRAPH_MONITOR_HEADERS }}" > headers
-          URL="http://${{ env.ECS_SERVICE }}.unad.local/graphql"
-          curl -f -X POST -H @headers -d "$URL" ${{ vars.GRAPH_MONITOR_URL }}/graph/UserApi
       
