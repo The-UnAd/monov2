@@ -44,8 +44,6 @@ jobs:
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
 
       - name: Get ECS task definition
         run: aws ecs describe-task-definition --task $ECS_SERVICE --query 'taskDefinition' > task.json
