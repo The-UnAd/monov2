@@ -13,7 +13,7 @@ RUN npm run build
 
 FROM base as final
 WORKDIR /app
-COPY --from=build /src/dist/ .
+COPY --from=build /src/ .
 
 CMD ["npm", "start"]
 
