@@ -250,6 +250,9 @@
       "mb0": "Regístrese en menos de 5 minutos.",
       "p": "Regístrese, confirme y obtenga su enlace personalizado para facilitar las inscripciones de clientes."
     },
+    "links": {
+      "account": "¿Ya tienes una cuenta? <link>Inicia sesión aquí</link>."
+    },
     "error": {
       "backButton": "Atrás"
     },
