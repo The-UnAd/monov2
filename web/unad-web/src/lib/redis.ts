@@ -19,6 +19,11 @@ export type RedisClientType = ReturnType<
 
 export type RedisTransactionType = ReturnType<_RedisClientType['multi']>;
 
+
+/**
+ * Creates a model factory for Redis.
+ * @returns A new instance of ModelFactory.
+ */
 export function createModelFactory() {
   const client =
     process.env.NODE_ENV !== 'production'
@@ -41,6 +46,10 @@ export function createModelFactory() {
   return new ModelFactory(client as RedisClientType);
 }
 
+/**
+ * Represents the interface for a model factory.
+ * This interface provides methods for creating clients, subscribers, sessions, and managing OTP secrets.
+ */
 export interface ModelFactoryInterface extends Disposable {
   createClient(name: string, phone: string): Client;
   createSubscriber(phone: string): Subscriber;
@@ -74,8 +83,9 @@ export type TransactionalModelFactoryInterface = ModelFactoryInterface &
         it sets the transaction on all the models that have been created.
 */
 
+
 /**
- * Factory class for the base model classes and utility functions.
+ * Represents a ModelFactory that provides methods for interacting with Redis and creating model instances.
  */
 class ModelFactory implements TransactionalModelFactoryInterface {
   public static keys = {
