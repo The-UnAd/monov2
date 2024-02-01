@@ -9,6 +9,14 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3"
     }
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "3.0.2"
+    }
+    tls = {
+      source = "hashicorp/tls"
+      version = "4.0.5"
+    }
   }
 }
 

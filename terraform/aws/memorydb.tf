@@ -83,32 +83,11 @@ output "redis_port" {
 }
 
 output "redis_password" {
+  sensitive = true
   value = random_password.redis_password.result
 }
 
-resource "aws_ssm_parameter" "redis_password" {
-  name  = "/redis/password"
-  type  = "SecureString"
-  value = random_password.redis_password.result
+output "connection_string" {
+  sensitive = true
+  value ="${join(",", [for node in local.redis_nodes : "${node.address}:${node.port}"])},ssl=true,abortConnect=false,user=${aws_memorydb_user.unad_redis_user.user_name},password=${random_password.redis_password.result}"
 }
-
-resource "aws_ssm_parameter" "redis_username" {
-  name  = "/redis/username"
-  type  = "String"
-  value = aws_memorydb_user.unad_redis_user.user_name
-}
-
-resource "aws_ssm_parameter" "redis_hosts" {
-  name  = "/redis/hosts"
-  type  = "String"
-  value = join(",", [for node in local.redis_nodes : "${node.address}:${node.port}"])
-}
-
-resource "aws_ssm_parameter" "redis_connection_string" {
-  name  = "/redis/connection_string"
-  type  = "SecureString"
-  value = "${join(",", [for node in local.redis_nodes : "${node.address}:${node.port}"])},ssl=true,abortConnect=false,user=${aws_memorydb_user.unad_redis_user.user_name},password=${random_password.redis_password.result}"
-}
-
-
-

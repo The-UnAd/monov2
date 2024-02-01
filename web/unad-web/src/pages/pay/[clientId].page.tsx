@@ -49,12 +49,6 @@ function Pay({ clientId, pricingTableId }: PageData) {
                   publishable-key={process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY}
                   client-reference-id={clientId}
                 ></stripe-pricing-table>
-                {/* <form method="POST" action="/api/register/pay">
-                  <input type="hidden" name="clientId" value={data.clientId} />
-                  <button type="submit" className="btn btn-lg btn-1">
-                    {t('form.button')}
-                  </button>
-                </form> */}
               </div>
             </div>
           </div>

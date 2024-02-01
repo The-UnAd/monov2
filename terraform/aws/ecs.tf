@@ -140,13 +140,12 @@ resource "aws_security_group_rule" "ecs_egress_msk" {
   security_group_id = aws_security_group.ecs_private.id
 }
 
-resource "aws_acm_certificate" "wildcard" {
-  domain_name       = "*.${var.dns_zone}"
-  validation_method = "DNS"
+data "aws_secretsmanager_secret" "twilio_secrets" {
+  name = "/unad/global/twilio"
+}
 
-  lifecycle {
-    create_before_destroy = true
-  }
+data "aws_secretsmanager_secret" "stripe_secrets" {
+  name = "/unad/global/stripe"
 }
 
 module "signup-site" {
@@ -165,15 +164,60 @@ module "signup-site" {
   health_check_path          = "/health"
   task_cpu                   = 256
   task_memory                = 512
-  ssl_certificate_arn        = aws_acm_certificate.wildcard.arn
+  ssl_certificate_arn        = aws_acm_certificate_validation.wildcard.certificate_arn
   container_secrets = [{
     name      = "REDIS_KEY"
     valueFrom = "${aws_ssm_parameter.redis_password.arn}"
+    }, {
+    name      = "TWILIO_ACCOUNT_SID"
+    valueFrom = "${data.aws_ssm_parameter.twilio_account_sid.arn}"
+    }, {
+    name      = "TWILIO_AUTH_TOKEN"
+    valueFrom = "${data.aws_ssm_parameter.twilio_auth_token.arn}"
+    }, {
+    name      = "STRIPE_API_KEY"
+    valueFrom = "${data.aws_ssm_parameter.stripe_api_key.arn}"
+    }, {
+    name      = "NEXT_PUBLIC_STRIPE_PUBLIC_KEY"
+    valueFrom = "${data.aws_ssm_parameter.stripe_publishable_key.arn}"
+    }, {
+    name      = "JWT_PRIVATE_KEY"
+    valueFrom = "${aws_ssm_parameter.jwt_private_key.arn}"
     }
   ]
   container_environment = [{
-    name  = "NODE_ENV"
-    value = "production"
+    name  = "NEXT_PUBLIC_JWT_PUBLIC_KEY"
+    value = "${tls_private_key.jwt_key.public_key_openssh}"
+    }, {
+    name  = "TWILIO_MESSAGE_SERVICE_SID"
+    value = "MG286e5e74c953d5720fbc002c41a2bdd6"
+    }, {
+    name  = "NEXT_PUBLIC_SESSION_LENGTH"
+    value = "86400"
+    }, {
+    name  = "SESSION_LENGTH"
+    value = "86400"
+    }, {
+    name  = "OTP_WINDOW"
+    value = "10"
+    }, {
+    name  = "OTP_STEP"
+    value = "1000"
+    }, {
+    name  = "SHARE_HOST"
+    value = "https://${aws_route53_record.signup-site.name}"
+    }, {
+    name  = "SUBSCRIBE_HOST"
+    value = "https://${aws_route53_record.signup-site.name}/subscribe"
+    }, {
+    name  = "SITE_HOST"
+    value = "https://${aws_route53_record.signup-site.name}"
+    }, {
+    name  = "STRIPE_PORTAL_HOST"
+    value = "https://pay.theunad.com/p/login/test_9AQ8Ag7pwgGg0c84gg"
+    }, {
+    name  = "STRIPE_PRODUCT_BASIC_PRICING_TABLE"
+    value = "prctbl_1N76h5E8A2efFCQS9I8E5lvT"
     }, {
     name  = "PORT"
     value = "80"
@@ -184,6 +228,20 @@ module "signup-site" {
     name  = "REDIS_CLUSTER_NODES"
     value = "${join(",", [for node in local.redis_nodes : "${node.address}:${node.port}"])}"
   }]
+}
+
+resource "aws_route53_record" "signup-site" {
+  allow_overwrite = true
+  name            = "signup.${aws_route53_zone.main.name}"
+  records         = [module.signup-site.load_balancer_dns_name]
+  ttl             = 60
+  type            = "CNAME"
+  zone_id         = aws_route53_zone.main.zone_id
+}
+
+output "signup_site_dns" {
+  value = module.signup-site.load_balancer_dns_name
+
 }
 
 # module "graphql-gateway" {
@@ -303,15 +361,6 @@ module "signup-site" {
 #     name  = "ApiKeyAuthenticationOptions:ApiKey"
 #     value = "${random_password.graph_montitor_api_key.result}"
 #   }]
-# }
-
-# resource "random_password" "graph_montitor_api_key" {
-#   length  = 32
-#   special = false
-# }
-
-# output "graph_montitor_api_key" {
-#   value = random_password.graph_montitor_api_key.result
 # }
 
 

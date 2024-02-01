@@ -11,7 +11,7 @@ services:
     restart: always
     build:
       context: ./web/unad-web
-      dockerfile: ./Dockerfile.dev
+      dockerfile: ./Dockerfile.staging
     ports:
       - "3000:3000"
     environment:

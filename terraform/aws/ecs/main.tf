@@ -1,7 +1,7 @@
 data "aws_region" "current" {}
 
 resource "aws_ecr_repository" "this" {
-  name         = "UnAd/${var.project_name}"
+  name         = "unad/${var.project_name}"
   force_delete = true
 }
 
@@ -151,7 +151,7 @@ resource "aws_lb" "this_lb" {
   tags = {
     Name = "${var.project_name}-lb"
   }
-  enable_deletion_protection = false
+  enable_deletion_protection = false # TODO: turn on for production
 }
 
 resource "aws_lb_listener" "this_listener" {

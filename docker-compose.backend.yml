@@ -41,6 +41,7 @@ services:
     restart: always
     build:
       context: ./dotnet/GraphMonitor/GraphMonitor
+      dockerfile: Dockerfile.local
     ports:
       - "5145:5145"
     environment:

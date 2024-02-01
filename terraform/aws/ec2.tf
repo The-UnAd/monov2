@@ -9,7 +9,7 @@ data "aws_ami" "ubuntu" {
 }
 
 data "aws_secretsmanager_secret" "jumpbox_ssh_keys" {
-  name = "/unad/ec2/jumpbox/ssh-keys"
+  name = "/unad/ec2/jumpbox/ssh-keypair"
 }
 
 data "aws_secretsmanager_secret_version" "jumpbox_ssh_keys" {
@@ -29,7 +29,7 @@ resource "aws_instance" "jumpbox" {
 
   connection {
     type        = "ssh"
-    user        = "ec2-user"
+    user        = "jumpbox"
     private_key = jsondecode(data.aws_secretsmanager_secret_version.jumpbox_ssh_keys.secret_string)["private_key"]
     host        = self.public_ip
   }
