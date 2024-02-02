@@ -19,7 +19,6 @@ export type RedisClientType = ReturnType<
 
 export type RedisTransactionType = ReturnType<_RedisClientType['multi']>;
 
-
 /**
  * Creates a model factory for Redis.
  * @returns A new instance of ModelFactory.
@@ -34,7 +33,7 @@ export function createModelFactory() {
           rootNodes: process.env.REDIS_CLUSTER_NODES!.split(',').map((n) => ({
             url: `rediss://${n.split(':')[0]}:${n.split(':')[1]}`,
           })),
-          useReplicas: true,
+          useReplicas: false,
           defaults: {
             socket: {
               tls: true,
