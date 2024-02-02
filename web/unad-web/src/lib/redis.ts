@@ -26,7 +26,7 @@ export type RedisTransactionType = ReturnType<_RedisClientType['multi']>;
  */
 export function createModelFactory() {
   const client =
-    process.env.NODE_ENV !== 'production'
+    process.env.REDIS_CLUSTER_NODES === undefined
       ? createClient({
           url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
         })
