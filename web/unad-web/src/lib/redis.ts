@@ -110,13 +110,17 @@ class ModelFactory implements TransactionalModelFactoryInterface {
 
   public healthCheck(): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      this.redisClient.ping().then((res) => {
-        if (res === 'PONG') {
-          resolve(true);
-        } else {
-          reject(new Error('Failed to ping redis'));
-        }
-      });
+      if (typeof this.redisClient.ping === 'function') {
+        this.redisClient.ping().then((res) => {
+          if (res === 'PONG') {
+            resolve(true);
+          } else {
+            reject(new Error('Failed to ping redis'));
+          }
+        });
+      } else {
+        resolve(true); // TODO: how do I verify the health of a connection to a cluster?
+      }
     });
   }
 
