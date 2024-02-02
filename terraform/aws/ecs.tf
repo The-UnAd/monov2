@@ -152,6 +152,7 @@ module "signup-site" {
   source                     = "./ecs"
   region                     = data.aws_region.current.name
   project_name               = "signup-site"
+  container_port             = 3000
   task_role_arn              = aws_iam_role.ecs_task_execution_role.arn
   execution_role_arn         = aws_iam_role.ecs_task_execution_role.arn
   public_subnet_ids          = aws_subnet.public_subnet.*.id
@@ -220,7 +221,7 @@ module "signup-site" {
     value = "prctbl_1N76h5E8A2efFCQS9I8E5lvT"
     }, {
     name  = "PORT"
-    value = "80"
+    value = "3000"
     }, {
     name  = "REDIS_USER"
     value = "${aws_memorydb_user.unad_redis_user.user_name}"

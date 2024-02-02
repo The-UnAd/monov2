@@ -87,7 +87,7 @@ output "redis_password" {
   value = random_password.redis_password.result
 }
 
-output "connection_string" {
+output "redis_connection_string" {
   sensitive = true
   value ="${join(",", [for node in local.redis_nodes : "${node.address}:${node.port}"])},ssl=true,abortConnect=false,user=${aws_memorydb_user.unad_redis_user.user_name},password=${random_password.redis_password.result}"
 }

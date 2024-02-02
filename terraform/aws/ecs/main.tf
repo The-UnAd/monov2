@@ -26,13 +26,13 @@ resource "aws_ecs_task_definition" "this_task" {
       image = "${aws_ecr_repository.this.repository_url}:latest"
       portMappings = [
         {
-          containerPort = 80
+          containerPort = "${var.container_port}"
           protocol      = "tcp"
           name          = "${var.project_name}"
         }
       ]
       healthCheck = {
-        command     = ["CMD-SHELL", "timeout 5s bash -c ':> /dev/tcp/127.0.0.1/80' || exit 1"]
+        command     = ["CMD-SHELL", "timeout 5s bash -c ':> /dev/tcp/127.0.0.1/${var.container_port}' || exit 1"]
         interval    = 30
         timeout     = 5
         startPeriod = 30
@@ -80,7 +80,7 @@ resource "aws_ecs_service" "this" {
     content {
       target_group_arn = aws_lb_target_group.this_target_group[0].arn
       container_name   = var.project_name
-      container_port   = 80
+      container_port   = var.container_port
     }
   }
 
@@ -176,7 +176,7 @@ resource "aws_lb_listener" "this_listener" {
 resource "aws_lb_target_group" "this_target_group" {
   count       = length(var.public_subnet_ids) > 0 ? 1 : 0
   name        = var.project_name
-  port        = 80
+  port        = var.container_port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
   target_type = "ip"
@@ -185,7 +185,7 @@ resource "aws_lb_target_group" "this_target_group" {
     for_each = var.health_check_path != null ? [1] : []
     content {
       path = var.health_check_path
-      port = 80
+      port = var.container_port
     }
   }
 }
@@ -207,7 +207,18 @@ resource "aws_security_group_rule" "this_egress_http" {
   protocol          = "tcp"
   cidr_blocks       = [var.vpc_cidr]
   security_group_id = aws_security_group.this[count.index].id
-  description       = "Allow HTTP traffic to the container"
+  description       = "Allow inbound TLS traffic"
+}
+
+resource "aws_security_group_rule" "this_egress_tls" {
+  count             = length(var.public_subnet_ids) > 0 ? 1 : 0
+  type              = "egress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = [var.vpc_cidr]
+  security_group_id = aws_security_group.this[count.index].id
+  description       = "Allow outbound TLS traffic"
 }
 
 resource "aws_security_group_rule" "this_ingress_tls" {

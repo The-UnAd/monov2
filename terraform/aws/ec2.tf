@@ -14,11 +14,11 @@ data "aws_secretsmanager_secret" "jumpbox_ssh_keys" {
 
 data "aws_secretsmanager_secret_version" "jumpbox_ssh_keys" {
   secret_id = data.aws_secretsmanager_secret.jumpbox_ssh_keys.id
-}
+} 
 
 resource "aws_key_pair" "jumpbox" {
   key_name   = "jumpbox"
-  public_key = jsondecode(data.aws_secretsmanager_secret_version.jumpbox_ssh_keys.secret_string)["public_key"]
+  public_key = file(pathexpand("~/.ssh/jumpbox_ed25519.pub"))
 }
 
 resource "aws_instance" "jumpbox" {
@@ -26,17 +26,11 @@ resource "aws_instance" "jumpbox" {
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.jumpbox.key_name
   vpc_security_group_ids = [aws_security_group.jumpbox.id]
-
-  connection {
-    type        = "ssh"
-    user        = "jumpbox"
-    private_key = jsondecode(data.aws_secretsmanager_secret_version.jumpbox_ssh_keys.secret_string)["private_key"]
-    host        = self.public_ip
-  }
-
   subnet_id                   = aws_subnet.public_subnet[0].id
   associate_public_ip_address = true
-
+  metadata_options {
+    http_tokens = "required"
+  }
   tags = {
     Name = "jumpbox"
   }
@@ -117,6 +111,10 @@ resource "aws_security_group_rule" "jumpbox_egress_dns_udp" {
   protocol          = "udp"
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.jumpbox.id
+}
+
+output "jumpbox_user_data" {
+  value = aws_instance.jumpbox.user_data
 }
 
 output "jumpbox_host" {

@@ -1,6 +1,9 @@
 variable "project_name" {
   type = string
 }
+variable "container_port" {
+  type = number
+}
 variable "execution_role_arn" {
   type = string
 }
