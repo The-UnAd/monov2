@@ -71,7 +71,7 @@ resource "aws_ecs_service" "this" {
 
   network_configuration {
     subnets          = var.private_subnet_ids
-    security_groups  = var.service_security_group_ids
+    security_groups  = concat(var.service_security_group_ids, [aws_security_group.tasks[0].id])
     assign_public_ip = false
   }
 
@@ -146,7 +146,7 @@ resource "aws_lb" "this_lb" {
   name               = "${var.project_name}-lb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.this[count.index].id]
+  security_groups    = [aws_security_group.lb[0].id]
   subnets            = var.public_subnet_ids
   tags = {
     Name = "${var.project_name}-lb"
@@ -165,7 +165,7 @@ resource "aws_lb_listener" "this_listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this_target_group[count.index].arn
   }
-  
+
   certificate_arn = var.ssl_certificate_arn
 
   lifecycle {
@@ -189,59 +189,55 @@ resource "aws_lb_target_group" "this_target_group" {
     }
   }
 }
-resource "aws_security_group" "this" {
+
+resource "aws_security_group" "lb" {
   count  = length(var.public_subnet_ids) > 0 ? 1 : 0
-  name   = "${var.project_name}-lb"
+  name   = "${var.project_name}-lb-sg"
   vpc_id = var.vpc_id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [var.vpc_cidr]
+  }
 
   tags = {
     Name = "${var.project_name}-lb"
   }
 }
 
-resource "aws_security_group_rule" "this_egress_http" {
-  count             = length(var.public_subnet_ids) > 0 ? 1 : 0
-  type              = "egress"
-  from_port         = 80
-  to_port           = 80
-  protocol          = "tcp"
-  cidr_blocks       = [var.vpc_cidr]
-  security_group_id = aws_security_group.this[count.index].id
-  description       = "Allow inbound TLS traffic"
+resource "aws_security_group" "tasks" {
+  count  = length(var.public_subnet_ids) > 0 ? 1 : 0
+  name   = "${var.project_name}-ecs-sg"
+  vpc_id = var.vpc_id
+
+  ingress {
+    from_port       = var.container_port
+    to_port         = var.container_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.lb[0].id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  tags = {
+    Name = "${var.project_name}-lb"
+  }
 }
 
-resource "aws_security_group_rule" "this_egress_tls" {
-  count             = length(var.public_subnet_ids) > 0 ? 1 : 0
-  type              = "egress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = [var.vpc_cidr]
-  security_group_id = aws_security_group.this[count.index].id
-  description       = "Allow outbound TLS traffic"
-}
-
-resource "aws_security_group_rule" "this_ingress_tls" {
-  count             = length(var.public_subnet_ids) > 0 ? 1 : 0
-  type              = "ingress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = aws_security_group.this[count.index].id
-  description       = "Allow TLS inbound traffic"
-}
-
-resource "aws_security_group_rule" "this_ingress_http" {
-  count             = length(var.public_subnet_ids) > 0 ? 1 : 0
-  type              = "ingress"
-  from_port         = 80
-  to_port           = 80
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = aws_security_group.this[count.index].id
-  description       = "Allow HTTP inbound traffic"
-}
 
 output "load_balancer_dns_name" {
   value = join("", aws_lb.this_lb.*.dns_name)
