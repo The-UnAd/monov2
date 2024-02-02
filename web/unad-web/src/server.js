@@ -9,7 +9,9 @@ const port = process.env.PORT || 3000;
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
+console.log('Preparing server...');
 app.prepare().then(() => {
+  console.log('Starting server...');
   createServer(async (req, res) => {
     try {
       // Be sure to pass `true` as the second argument to `url.parse`.
@@ -28,5 +30,9 @@ app.prepare().then(() => {
     })
     .listen(port, () => {
       console.log(`> Ready on http://${hostname}:${port}`);
+    })
+    .on('error', (err) => {
+      console.error(err);
+      process.exit(1);
     });
 });
