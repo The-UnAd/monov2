@@ -2,14 +2,12 @@ import type { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import { useTranslations } from 'next-intl';
 
 import { importMessages } from '@/lib/i18n';
 
 function About({ locale, subLink }: { locale: string; subLink: string }) {
   const t = useTranslations('pages/about');
-  const router = useRouter();
 
   return (
     <>

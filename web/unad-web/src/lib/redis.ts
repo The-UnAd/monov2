@@ -62,6 +62,7 @@ export interface ModelFactoryInterface extends Disposable {
   getClientByPhone(phoneNumber: string): Promise<Client | null>;
   getClientById(id: string): Promise<Client | null>;
   getClientByClientId(clientId: string): Promise<Client | null>;
+  healthCheck(): Promise<boolean>;
 }
 
 export type TransactionalModelFactoryInterface = ModelFactoryInterface &
@@ -82,7 +83,6 @@ export type TransactionalModelFactoryInterface = ModelFactoryInterface &
         and then when you call .beginTransaction() on the factory,
         it sets the transaction on all the models that have been created.
 */
-
 
 /**
  * Represents a ModelFactory that provides methods for interacting with Redis and creating model instances.
@@ -107,6 +107,18 @@ class ModelFactory implements TransactionalModelFactoryInterface {
   private transaction?: RedisTransactionType;
 
   constructor(private readonly redisClient: RedisClientType) {}
+
+  public healthCheck(): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      this.redisClient.ping().then((res) => {
+        if (res === 'PONG') {
+          resolve(true);
+        } else {
+          reject(new Error('Failed to ping redis'));
+        }
+      });
+    });
+  }
 
   public beginTransaction(): void {
     this.transaction = this.redisClient.multi();

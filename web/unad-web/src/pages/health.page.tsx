@@ -1,6 +1,6 @@
-import Head from 'next/head';
+import { createModelFactory } from '@/lib/redis';
 
-function Health() {
+function Health({ health }: { health: boolean }) {
   return (
     <section className="app">
       <div className="container-app h100 d-flex align-items-center">
@@ -12,13 +12,23 @@ function Health() {
                 textTransform: 'initial',
               }}
             >
-              Healthy
+              {health ? 'Healthy' : 'Unhealthy'}
             </h1>
           </div>
         </div>
       </div>
     </section>
   );
+}
+
+export async function getServerSideProps() {
+  const redis = createModelFactory();
+  const health = await redis.healthCheck();
+  return {
+    props: {
+      health,
+    },
+  };
 }
 
 export default Health;
