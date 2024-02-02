@@ -32,10 +32,10 @@ resource "aws_ecs_task_definition" "this_task" {
         }
       ]
       healthCheck = {
-        command     = ["CMD-SHELL", "timeout 5s bash -c ':> /dev/tcp/127.0.0.1/${var.container_port}' || exit 1"]
+        command     = ["CMD-SHELL", "echo -e 'GET ${var.health_check_path} HTTP/1.1\r\nHost: localhost\r\n\r\n' | nc localhost ${var.container_port} || exit 1"]
         interval    = 30
         timeout     = 5
-        startPeriod = 30
+        startPeriod = 5
         retries     = 3
       }
       # TODO: Add depends_on for other services

@@ -22,7 +22,8 @@ function Health({ health }: { health: boolean }) {
 }
 
 export async function getServerSideProps() {
-  const redis = createModelFactory();
+  using redis = createModelFactory();
+  await redis.connect();
   const health = await redis.healthCheck();
   return {
     props: {
