@@ -24,25 +24,33 @@ export type RedisTransactionType = ReturnType<_RedisClientType['multi']>;
  * @returns A new instance of ModelFactory.
  */
 export function createModelFactory() {
-  const client =
-    process.env.REDIS_CLUSTER_NODES === undefined
-      ? createClient({
-          url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-        })
-      : createCluster({
-          rootNodes: process.env.REDIS_CLUSTER_NODES!.split(',').map((n) => ({
-            url: `rediss://${n.split(':')[0]}:${n.split(':')[1]}`,
-          })),
-          useReplicas: false,
-          defaults: {
-            socket: {
-              tls: true,
-            },
-            username: process.env.REDIS_USER,
-            password: process.env.REDIS_KEY,
-          },
-        });
-  return new ModelFactory(client as RedisClientType);
+  if (process.env.REDIS_CLUSTER_NODES === undefined) {
+    const client = createClient({
+      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+    });
+
+    return new ModelFactory(client as RedisClientType);
+  }
+  const rootNodes = process.env.REDIS_CLUSTER_NODES!.split(',').map((n) => ({
+    url: `redis${process.env.REDIS_USE_TLS === 'true' ? 's' : ''}://${
+      n.split(':')[0]
+    }:${n.split(':')[1]}`,
+  }));
+  console.log('rootNodes', rootNodes);
+  const cluster = createCluster({
+    rootNodes,
+    useReplicas: true, // TODO: Look into whether this make sense for our use case
+    defaults: {
+      socket: {
+        tls: process.env.REDIS_USE_TLS === 'true' ? true : undefined,
+      },
+      username: process.env.REDIS_USER,
+      password: process.env.REDIS_KEY,
+    },
+  });
+
+  console.log('created client');
+  return new ModelFactory(cluster as unknown as RedisClientType);
 }
 
 /**
@@ -151,7 +159,10 @@ class ModelFactory implements TransactionalModelFactoryInterface {
       this.redisClient.on('error', (error) => {
         reject(error);
       });
-      this.redisClient.connect();
+      this.redisClient.connect().then(() => {
+        console.log('connected');
+        resolve();
+      });
     });
   }
 

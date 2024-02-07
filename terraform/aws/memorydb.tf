@@ -20,7 +20,7 @@ resource "aws_memorydb_user" "unad_redis_user" {
 }
 
 resource "aws_memorydb_acl" "redis_acl" {
-  name       = "livt-redis-acl"
+  name       = "unad-redis-acl"
   user_names = [aws_memorydb_user.unad_redis_user.user_name]
 }
 

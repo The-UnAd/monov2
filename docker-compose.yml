@@ -11,64 +11,58 @@ services:
     restart: always
     build:
       context: ./web/unad-web
-      dockerfile: ./Dockerfile
     ports:
       - "3000:3000"
     environment:
       - PORT=3000
       - NODE_ENV=development
-      - HOST=localhost
+      - HOST=0.0.0.0
     env_file:
       - ./web/unad-web/.env.docker
-    healthcheck:
-      test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/3000' || exit 1
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
-  graphql-gateway:
-    networks:
-      - UnAd
-    restart: always
-    build:
-      context: ./dotnet
-      dockerfile: ./GraphQLGateway.Dockerfile
-      args:
-        - GRAPH_MONITOR_URL=http://host.docker.internal:5145
-      secrets:
-        - graphmonitorheaders
-    ports:
-      - "5100:5100"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:5100
-    env_file:
-      - ./dotnet/.env.docker
-    healthcheck:
-      test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/5100' || exit 1
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # graphql-gateway:
+  #   networks:
+  #     - UnAd
+  #   restart: always
+  #   build:
+  #     context: ./dotnet
+  #     dockerfile: ./GraphQLGateway.Dockerfile
+  #     args:
+  #       - GRAPH_MONITOR_URL=http://host.docker.internal:5145
+  #     secrets:
+  #       - graphmonitorheaders
+  #   ports:
+  #     - "5100:5100"
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - ASPNETCORE_URLS=http://+:5100
+  #   env_file:
+  #     - ./dotnet/.env.docker
+  #   healthcheck:
+  #     test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/5100' || exit 1
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
-  user-api:
-    networks:
-      - UnAd
-    restart: always
-    build:
-      context: ./dotnet
-      dockerfile: ./UserApi.Dockerfile
-    ports:
-      - "5300:5300"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:5300
-    env_file:
-      - ./dotnet/.env.docker
-    healthcheck:
-      test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/5300' || exit 1
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # user-api:
+  #   networks:
+  #     - UnAd
+  #   restart: always
+  #   build:
+  #     context: ./dotnet
+  #     dockerfile: ./UserApi.Dockerfile
+  #   ports:
+  #     - "5300:5300"
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - ASPNETCORE_URLS=http://+:5300
+  #   env_file:
+  #     - ./dotnet/.env.docker
+  #   healthcheck:
+  #     test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/5300' || exit 1
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
 secrets:
   graphmonitorheaders:

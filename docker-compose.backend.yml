@@ -5,60 +5,133 @@ networks:
     external: false
 
 services:
-  redis:
-    networks:
-      - UnAd
+  redis-node-1:
     image: redis:7-alpine
-    restart: always
     ports:
-      - "6379:6379"
-    # command: redis-server --save 20 1 --loglevel warning --logfile /data/redis.log
-    volumes:
-      - redis:/data/redis
-    # healthcheck:
-    #   test: redis-cli ping || exit 1
-    #   interval: 300s
-    #   timeout: 10s
-    #   retries: 3
-
-  postgres:
+      - 7000:7000
     networks:
       - UnAd
-    build:
-      context: ./db
-      dockerfile: ./Dockerfile.postgres
-    restart: always
-    ports:
-      - "5432:5432"
+    hostname: redis-node-1
     volumes:
-      - postgres:/data/postgres
-    env_file:
-      - ./db/.env.docker
-
-  graph-monitor:
+      - ./redis/7000:/redis
+    command: redis-server /redis/redis.conf
+  redis-node-2:
+    image: redis:7-alpine
+    ports:
+      - 7001:7001
     networks:
       - UnAd
-    restart: always
-    build:
-      context: ./dotnet/GraphMonitor/GraphMonitor
-      dockerfile: Dockerfile.local
+    hostname: redis-node-2
+    volumes:
+      - ./redis/7001:/redis
+    command: redis-server /redis/redis.conf
+
+  redis-node-3:
+    image: redis:7-alpine
     ports:
-      - "5145:5145"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:5145
-    env_file:
-      - ./dotnet/.env.docker
-    # healthcheck:
-    #   test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1
-    #   interval: 30s
-    #   timeout: 10s
-    #   retries: 3
+      - 7002:7002
+    networks:
+      - UnAd
+    hostname: redis-node-3
+    volumes:
+      - ./redis/7002:/redis
+    command: redis-server /redis/redis.conf
+
+  redis-node-4:
+    image: redis:7-alpine
+    ports:
+      - 7003:7003
+    networks:
+      - UnAd
+    hostname: redis-node-4
+    volumes:
+      - ./redis/7003:/redis
+    command: redis-server /redis/redis.conf
+
+  redis-node-5:
+    image: redis:7-alpine
+    ports:
+      - 7004:7004
+    networks:
+      - UnAd
+    hostname: redis-node-5
+    volumes:
+      - ./redis/7004:/redis
+    command: redis-server /redis/redis.conf
+  
+  redis-node-6:
+    image: redis:7-alpine
+    ports:
+      - 7005:7005
+    networks:
+      - UnAd
+    hostname: redis-node-6
+    volumes:
+      - ./redis/7005:/redis
+    command: redis-server /redis/redis.conf
+  
+  redis-cluster-creator:
+    image: redis:7-alpine
+    ports:
+      - 6999:6999
+    networks:
+      - UnAd
+    command: redis-cli -p 7000 --cluster create redis-node-1:7000 redis-node-2:7001 redis-node-3:7002 redis-node-4:7003 redis-node-5:7004 redis-node-6:7005 --cluster-replicas 1 --cluster-yes
     depends_on:
-      - redis
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+      - redis-node-4
+      - redis-node-5
+      - redis-node-6
+  
+  redis-insight:
+    image: redislabs/redisinsight
+    ports:
+      - 8001:8001
+    networks:
+      - UnAd
+    volumes:
+      - ./redisinsight:/db
+    depends_on:
+      - redis-cluster-creator
 
-volumes:
-  redis:
-    external: false
-  postgres:
-    external: false
+  # postgres:
+  #   networks:
+  #     - UnAd
+  #   build:
+  #     context: ./db
+  #     dockerfile: ./Dockerfile.postgres
+  #   restart: always
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres:/data/postgres
+  #   env_file:
+  #     - ./db/.env.docker
+
+  # graph-monitor:
+  #   networks:
+  #     - UnAd
+  #   restart: always
+  #   build:
+  #     context: ./dotnet/GraphMonitor/GraphMonitor
+  #     dockerfile: Dockerfile.local
+  #   ports:
+  #     - "5145:5145"
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - ASPNETCORE_URLS=http://+:5145
+  #   env_file:
+  #     - ./dotnet/.env.docker
+  #   # healthcheck:
+  #   #   test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1
+  #   #   interval: 30s
+  #   #   timeout: 10s
+  #   #   retries: 3
+  #   depends_on:
+  #     - redis
+
+# volumes:
+#   postgres:
+#     external: false

@@ -43,5 +43,6 @@ terraform.rc
 # LocalStack stuff
 volume/
 
+redisinsight/
 
 

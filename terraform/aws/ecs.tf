@@ -226,6 +226,9 @@ module "signup-site" {
     name  = "REDIS_USER"
     value = "${aws_memorydb_user.unad_redis_user.user_name}"
     }, {
+    name  = "REDIS_USE_TLS",
+    value = "true"
+    }, {
     name  = "REDIS_CLUSTER_NODES"
     value = "${join(",", [for node in local.redis_nodes : "${node.address}:${node.port}"])}"
   }]

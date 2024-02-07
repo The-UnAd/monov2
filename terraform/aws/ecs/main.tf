@@ -32,7 +32,7 @@ resource "aws_ecs_task_definition" "this_task" {
         }
       ]
       healthCheck = {
-        command     = ["CMD-SHELL", "echo -e 'GET ${var.health_check_path} HTTP/1.1\r\nHost: localhost\r\n\r\n' | nc localhost ${var.container_port} || exit 1"]
+        command     = ["CMD-SHELL", "wget http://localhost:${var.container_port}${var.health_check_path}"]
         interval    = 30
         timeout     = 5
         startPeriod = 5
