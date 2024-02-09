@@ -1,8 +1,7 @@
-namespace UserApi.Tests.Integration; 
+namespace UserApi.Tests.Integration;
 
 [CollectionDefinition(nameof(BasicTests))]
-public class SharedTestCollection : ICollectionFixture<ApiFactory>
-{
+public class SharedTestCollection : ICollectionFixture<ApiFactory> {
 
 }
 

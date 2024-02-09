@@ -1,13 +1,5 @@
 using System.Data.Common;
-using System.Security.Claims;
-using DotNet.Testcontainers.Builders;
-using HotChocolate.AspNetCore;
-using HotChocolate.Execution.Configuration;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -25,13 +17,13 @@ public class ApiFactory
 
     protected override void ConfigureWebHost(IWebHostBuilder builder) {
         builder.ConfigureTestServices(services => {
-            services.Remove(services.SingleOrDefault(d => 
+            services.Remove(services.SingleOrDefault(d =>
                 d.ServiceType == typeof(DbContextOptions<UserDbContext>))!);
-            services.Remove(services.SingleOrDefault(d => 
+            services.Remove(services.SingleOrDefault(d =>
                 d.ServiceType == typeof(DbConnection))!);
             services.AddPooledDbContextFactory<UserDbContext>(o
                 => o.UseNpgsql(_postgresContainer.GetConnectionString()));
-            
+
             services.AddSingleton<IConnectionMultiplexer>(sp =>
                 ConnectionMultiplexer.Connect(_redisContainer.GetConnectionString()));
 
@@ -54,7 +46,7 @@ public class ApiFactory
             .AsTask();
         await base.DisposeAsync();
     }
-    
+
     public async Task<QueryResult> ExecuteRequestAsync(Action<IQueryRequestBuilder> configRequest,
         CancellationToken cancellationToken = default) {
         await using var scope = Services.CreateAsyncScope();

@@ -5,6 +5,26 @@ resource "aws_ecr_repository" "this" {
   force_delete = true
 }
 
+resource "aws_ecr_lifecycle_policy" "lasttwoimages" {
+  repository = aws_ecr_repository.this.name
+  policy     = jsonencode({
+    "rules" : [
+      {
+        "rulePriority" : 1,
+        "description" : "Keep only the last 2 images",
+        "selection" : {
+          "tagStatus" : "any",
+          "countType" : "imageCountMoreThan",
+          "countNumber" : 2
+        },
+        "action" : {
+          "type" : "expire"
+        }
+      }
+    ]
+  })
+}
+
 resource "aws_cloudwatch_log_group" "this_log_group" {
   name = "/ecs/${var.project_name}"
 
@@ -31,13 +51,13 @@ resource "aws_ecs_task_definition" "this_task" {
           name          = "${var.project_name}"
         }
       ]
-      healthCheck = {
-        command     = ["CMD-SHELL", "wget http://localhost:${var.container_port}${var.health_check_path}"]
-        interval    = 30
-        timeout     = 5
-        startPeriod = 5
-        retries     = 3
-      }
+      # healthCheck = {
+      #   command     = ["CMD-SHELL", "wget http://localhost:${var.container_port}${var.health_check_path}"]
+      #   interval    = 30
+      #   timeout     = 5
+      #   startPeriod = 5
+      #   retries     = 3
+      # }
       # TODO: Add depends_on for other services
       logConfiguration = {
         logDriver = "awslogs"
@@ -237,7 +257,6 @@ resource "aws_security_group" "tasks" {
     Name = "${var.project_name}-lb"
   }
 }
-
 
 output "load_balancer_dns_name" {
   value = join("", aws_lb.this_lb.*.dns_name)

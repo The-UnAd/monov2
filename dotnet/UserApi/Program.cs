@@ -1,12 +1,9 @@
 using HotChocolate.AspNetCore.Serialization;
 using HotChocolate.Execution.Serialization;
-//using UnAd.Auth.Web;
 using UnAd.Data.Users;
-//using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
-//using Microsoft.IdentityModel.Logging;
 using StackExchange.Redis;
 using UserApi;
 
@@ -17,11 +14,8 @@ builder.Logging.AddConsole(b => b.FormatterName = ConsoleFormatterNames.Systemd)
     .AddDebug();
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddSingleton(typeof(ILogger), c => {
-    var logger = c.GetRequiredService<ILoggerFactory>()
-        .CreateLogger("UserApi");
-    return logger;
-});
+builder.Services.AddSingleton(typeof(ILogger), c => c.GetRequiredService<ILoggerFactory>()
+        .CreateLogger("UserApi"));
 
 builder.Services.AddTransient<IConnectionMultiplexer>(c =>
     ConnectionMultiplexer.Connect(c.GetRequiredService<IConfiguration>()["REDIS_URL"]!));
@@ -33,10 +27,6 @@ builder.Services.AddExceptionHandler(o => o.ExceptionHandler = context => {
     logger?.LogError(new EventId(), exception, "Unhandled exception: {Message}", exception?.Message);
     return Task.CompletedTask;
 });
-
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//    .AddCognitoJwtBearer($"https://{builder.Configuration["COGNITO_ENDPOINT"]}", !builder.Environment.IsDevelopment());
-//builder.Services.AddAuthorization();
 
 builder.Services.AddPooledDbContextFactory<UserDbContext>(o
     => o.UseNpgsql($"{builder.Configuration["DB_CONNECTIONSTRING"]};Database=userdb;"));
@@ -51,8 +41,7 @@ builder.Services
     .AddGraphQLServer()
     .AddAuthorization()
     .AddQueryType<Query>()
-    .AddTypeExtension<RoleTypeExtensions>()
-    .AddTypeExtension<UserTypeExtensions>()
+    .AddTypeExtension<ClientTypeExtensions>()
     .AddGlobalObjectIdentification()
     .AddProjections()
     .RegisterDbContext<UserDbContext>(DbContextKind.Pooled)

@@ -1,4 +1,6 @@
 
+# TODO: we don't want any of this in production
+
 data "aws_ami" "ubuntu" {
   most_recent = true
 
@@ -14,18 +16,18 @@ data "aws_secretsmanager_secret" "jumpbox_ssh_keys" {
 
 data "aws_secretsmanager_secret_version" "jumpbox_ssh_keys" {
   secret_id = data.aws_secretsmanager_secret.jumpbox_ssh_keys.id
-} 
+}
 
 resource "aws_key_pair" "jumpbox" {
   key_name   = "jumpbox"
-  public_key = file(pathexpand("~/.ssh/jumpbox_ed25519.pub"))
+  public_key = file(pathexpand("~/.ssh/jumpbox_ed25519.pub")) # TODO: this should come from secrets manager
 }
 
 resource "aws_instance" "jumpbox" {
-  ami                    = data.aws_ami.ubuntu.id
-  instance_type          = "t2.micro"
-  key_name               = aws_key_pair.jumpbox.key_name
-  vpc_security_group_ids = [aws_security_group.jumpbox.id]
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = "t2.micro"
+  key_name                    = aws_key_pair.jumpbox.key_name
+  vpc_security_group_ids      = [aws_security_group.jumpbox.id]
   subnet_id                   = aws_subnet.public_subnet[0].id
   associate_public_ip_address = true
   metadata_options {
@@ -77,19 +79,19 @@ resource "aws_security_group_rule" "jumpbox_egress_msk" {
   security_group_id = aws_security_group.jumpbox.id
 }
 
-# resource "aws_security_group_rule" "jumpbox_egress_postgres" {
-#   type              = "egress"
-#   from_port         = aws_rds_cluster.aurora.port
-#   to_port           = aws_rds_cluster.aurora.port
-#   protocol          = "tcp"
-#   cidr_blocks       = [var.vpc_cidr]
-#   security_group_id = aws_security_group.jumpbox.id
-# }
+resource "aws_security_group_rule" "jumpbox_egress_postgres" {
+  type              = "egress"
+  from_port         = aws_rds_cluster.aurora.port
+  to_port           = aws_rds_cluster.aurora.port
+  protocol          = "tcp"
+  cidr_blocks       = [var.vpc_cidr]
+  security_group_id = aws_security_group.jumpbox.id
+}
 
 resource "aws_security_group_rule" "jumpbox_egress_redis" {
   type              = "egress"
-  from_port         = aws_memorydb_cluster.unad.port
-  to_port           = aws_memorydb_cluster.unad.port
+  from_port         = aws_elasticache_cluster.unad.port
+  to_port           = aws_elasticache_cluster.unad.port
   protocol          = "tcp"
   cidr_blocks       = [var.vpc_cidr]
   security_group_id = aws_security_group.jumpbox.id

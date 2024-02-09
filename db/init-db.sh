@@ -21,8 +21,5 @@ if [ -n "$POSTGRES_MULTIPLE_DATABASES" ]; then
 	echo "Multiple databases created"
 fi
 
-psql -U $POSTGRES_USER -d $POSTGRES_USER_DB -a -f /scripts/userdb.sql \
-     -v TEST_USER_USERNAME="'$TEST_USER_USERNAME'" -v TEST_USER_ID="'$TEST_USER_ID'" -v COGNITO_POOL_ID="'$COGNITO_POOL_ID'"
-
 
 

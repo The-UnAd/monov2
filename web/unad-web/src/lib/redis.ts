@@ -26,17 +26,15 @@ export type RedisTransactionType = ReturnType<_RedisClientType['multi']>;
 export function createModelFactory() {
   if (process.env.REDIS_CLUSTER_NODES === undefined) {
     const client = createClient({
-      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+      url: process.env.REDIS_URL,
     });
 
     return new ModelFactory(client as RedisClientType);
   }
   const rootNodes = process.env.REDIS_CLUSTER_NODES!.split(',').map((n) => ({
-    url: `redis${process.env.REDIS_USE_TLS === 'true' ? 's' : ''}://${
-      n.split(':')[0]
-    }:${n.split(':')[1]}`,
+    url: `redis${process.env.REDIS_USE_TLS === 'true' ? 's' : ''}://${n}`,
   }));
-  console.log('rootNodes', rootNodes);
+  // console.log('rootNodes', rootNodes);
   const cluster = createCluster({
     rootNodes,
     useReplicas: true, // TODO: Look into whether this make sense for our use case
@@ -49,7 +47,6 @@ export function createModelFactory() {
     },
   });
 
-  console.log('created client');
   return new ModelFactory(cluster as unknown as RedisClientType);
 }
 
@@ -141,11 +138,10 @@ class ModelFactory implements TransactionalModelFactoryInterface {
     await this.transaction.exec();
   }
   public rollbackTransaction(): void {
-    if (!this.transaction) {
-      throw new Error('No transaction in progress');
+    if (this.transaction) {
+      this.transaction.discard();
+      this.transaction = undefined;
     }
-    this.transaction.discard();
-    this.transaction = undefined;
   }
   /**
    * open the connection to redis
@@ -153,16 +149,23 @@ class ModelFactory implements TransactionalModelFactoryInterface {
   public async connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.redisClient.on('ready', () => {
-        resolve();
+        console.log('ready');
+        if (typeof this.redisClient.ping === 'function') {
+          resolve();
+        }
       });
 
       this.redisClient.on('error', (error) => {
         reject(error);
       });
-      this.redisClient.connect().then(() => {
-        console.log('connected');
-        resolve();
-      });
+      if (typeof this.redisClient.ping === 'function') {
+        this.redisClient.connect().then(() => {
+          console.log('connected');
+          resolve();
+        });
+      } else {
+        this.redisClient.connect();
+      }
     });
   }
 

@@ -1,0 +1,31 @@
+{
+  "extends": "./tsconfig.json",
+  "ts-node": {
+    "require": [
+      "tsconfig-paths/register",
+      "dotenv/config"
+    ],
+    "compilerOptions": {
+      "target": "es2015",
+      "lib": [
+        "esnext"
+      ],
+      "module": "CommonJS",
+      "moduleResolution": "node",
+      "paths": {
+        "@/*": [
+          "./src/*"
+        ],
+        "@t/*": [
+          "./__test__/*"
+        ]
+      },
+      "baseUrl": "./",
+      "types": [
+        "node",
+        "jest",
+        "@testing-library/jest-dom"
+      ]
+    }
+  }
+}

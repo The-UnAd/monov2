@@ -2,9 +2,9 @@ import { withIntl } from '@t/util';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import fetchMock from 'jest-fetch-mock';
+import mockRouter from 'next-router-mock';
 
 import Subscribe from './[clientId].page';
-import mockRouter from 'next-router-mock';
 
 jest.mock('next/router', () => jest.requireActual('next-router-mock'));
 

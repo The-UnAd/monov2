@@ -1,11 +1,11 @@
+import { Users } from '@unad/models';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import Stripe from 'stripe';
 
+import { AppDataSource, getAppDataSource } from '@/lib/db';
 import { createTranslator, DefaultLocale, getRequestLocale } from '@/lib/i18n';
 import mixpanel from '@/lib/mixpanel';
 import { validateToken } from '@/lib/otp';
 import { createModelFactory } from '@/lib/redis';
-import * as twilio from '@/lib/twilio';
 
 type ValidateResponse = {
   clientId: string;
@@ -30,8 +30,9 @@ export default async function handler(
   const { phone, otp, name } = req.body;
 
   using models = createModelFactory();
+  const source = await getAppDataSource();
   try {
-    models.connect();
+    await models.connect();
     const secret = await models.getOtpSecret(phone);
     if (!secret) {
       throw new Error(t('errors.otpExpired'));
@@ -41,16 +42,16 @@ export default async function handler(
     if (!success) {
       throw new Error(t('errors.invalidOtp'));
     }
-    await models.deleteOtpSecret(phone);
-
-    models.beginTransaction();
-    const client = models.createClient(name, phone);
-    client.save();
 
     const locale = getRequestLocale(req) ?? DefaultLocale;
-    client.setLocale(locale);
-    await models.commitTransaction();
 
+    const client = new Users.Client();
+    client.phoneNumber = phone;
+    client.name = name;
+    client.locale = locale;
+    await source.manager.save(client);
+
+    await models.deleteOtpSecret(phone);
     mixpanel.people.set(phone, {
       $phone: phone,
       $name: name,

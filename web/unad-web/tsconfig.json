@@ -26,21 +26,6 @@
       }
     ]
   },
-  "ts-node": {
-    "require": ["tsconfig-paths/register"],
-    "compilerOptions": {
-      "target": "es2015",
-      "lib": ["esnext"],
-      "module": "CommonJS",
-      "moduleResolution": "node",
-      "paths": {
-        "@/*": ["./src/*"],
-        "@t/*": ["./__test__/*"]
-      },
-      "baseUrl": "./",
-      "types": ["node", "jest", "@testing-library/jest-dom"]
-    }
-  },
   "include": [
     "jsx.d.ts",
     "./jest-setup.ts",

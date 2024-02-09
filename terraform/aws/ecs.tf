@@ -1,6 +1,6 @@
 ####################
 # ECS
-# This module specifies all the required resources to run a containerized application on ECS.
+# This file specifies all the required resources to run a containerized application on ECS.
 # It creates a cluster, a task definition, a service, and a load balancer.
 # It also creates a CloudWatch log group and a CloudWatch log stream for the service.
 # It optionally creates a service discovery namespace and a service discovery service.
@@ -85,8 +85,8 @@ resource "aws_security_group" "ecs_private" {
 
 resource "aws_security_group_rule" "ecs_egress_redis" {
   type              = "egress"
-  from_port         = aws_memorydb_cluster.unad.port
-  to_port           = aws_memorydb_cluster.unad.port
+  from_port         = aws_elasticache_cluster.unad.port
+  to_port           = aws_elasticache_cluster.unad.port
   protocol          = "tcp"
   cidr_blocks       = [var.vpc_cidr]
   security_group_id = aws_security_group.ecs_private.id
@@ -122,32 +122,6 @@ resource "aws_security_group_rule" "ecs_ingress_http" {
   security_group_id = aws_security_group.ecs_private.id
 }
 
-# resource "aws_security_group_rule" "ecs_egress_rds" {
-#   type              = "egress"
-#   from_port         = aws_rds_cluster.aurora.port
-#   to_port           = aws_rds_cluster.aurora.port
-#   protocol          = "tcp"
-#   cidr_blocks       = [var.vpc_cidr]
-#   security_group_id = aws_security_group.ecs_private.id
-# }
-
-resource "aws_security_group_rule" "ecs_egress_msk" {
-  type              = "egress"
-  from_port         = 9092
-  to_port           = 9098
-  protocol          = "tcp"
-  cidr_blocks       = [var.vpc_cidr]
-  security_group_id = aws_security_group.ecs_private.id
-}
-
-data "aws_secretsmanager_secret" "twilio_secrets" {
-  name = "/unad/global/twilio"
-}
-
-data "aws_secretsmanager_secret" "stripe_secrets" {
-  name = "/unad/global/stripe"
-}
-
 module "signup-site" {
   source                     = "./ecs"
   region                     = data.aws_region.current.name
@@ -167,9 +141,6 @@ module "signup-site" {
   task_memory                = 512
   ssl_certificate_arn        = aws_acm_certificate_validation.wildcard.certificate_arn
   container_secrets = [{
-    name      = "REDIS_KEY"
-    valueFrom = "${aws_ssm_parameter.redis_password.arn}"
-    }, {
     name      = "TWILIO_ACCOUNT_SID"
     valueFrom = "${data.aws_ssm_parameter.twilio_account_sid.arn}"
     }, {
@@ -184,7 +155,19 @@ module "signup-site" {
     }, {
     name      = "JWT_PRIVATE_KEY"
     valueFrom = "${aws_ssm_parameter.jwt_private_key.arn}"
-    }
+    }, {
+    name      = "DB_PASSWORD"
+    valueFrom = "${aws_ssm_parameter.rds_cluster_password.arn}"
+    }, {
+    name      = "DB_USER"
+    valueFrom = "${aws_ssm_parameter.rds_cluster_user.arn}"
+    }, {
+    name      = "DB_PORT"
+    valueFrom = "${aws_ssm_parameter.rds_cluster_db_port.arn}"
+    }, {
+    name      = "DB_HOST"
+    valueFrom = "${aws_ssm_parameter.rds_cluster_endpoint.arn}"
+    },
   ]
   container_environment = [{
     name  = "NEXT_PUBLIC_JWT_PUBLIC_KEY"
@@ -215,22 +198,16 @@ module "signup-site" {
     value = "https://${aws_route53_record.signup-site.name}"
     }, {
     name  = "STRIPE_PORTAL_HOST"
-    value = "https://pay.theunad.com/p/login/test_9AQ8Ag7pwgGg0c84gg"
+    value = "https://pay.theunad.com/p/login/test_9AQ8Ag7pwgGg0c84gg" # TODO: put in config somewhere
     }, {
     name  = "STRIPE_PRODUCT_BASIC_PRICING_TABLE"
-    value = "prctbl_1N76h5E8A2efFCQS9I8E5lvT"
+    value = "prctbl_1N76h5E8A2efFCQS9I8E5lvT" # TODO: put in config somewhere
     }, {
     name  = "PORT"
     value = "3000"
     }, {
-    name  = "REDIS_USER"
-    value = "${aws_memorydb_user.unad_redis_user.user_name}"
-    }, {
-    name  = "REDIS_USE_TLS",
-    value = "true"
-    }, {
-    name  = "REDIS_CLUSTER_NODES"
-    value = "${join(",", [for node in local.redis_nodes : "${node.address}:${node.port}"])}"
+    name  = "DB_NAME"
+    value = "userdb"
   }]
 }
 

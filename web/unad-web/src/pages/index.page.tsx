@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { importMessages } from '@/lib/i18n';
-import { createModelFactory } from '@/lib/redis';
 
 function Index() {
   const t = useTranslations('pages/index');
@@ -24,10 +23,7 @@ function Index() {
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="UnAd" />
         <meta property="og:site_name" content="UnAd" />
-        <meta
-          property="og:image"
-          content="https://theunad.com/logo-wide.svg"
-        />
+        <meta property="og:image" content="https://theunad.com/logo-wide.svg" />
         <meta property="og:url" content="https://unad.tech" />
         <meta name="description" content={t('title')} />
       </Head>
@@ -76,16 +72,9 @@ export async function getServerSideProps({
   locale,
 }: GetServerSidePropsContext) {
   try {
-    using models = createModelFactory();
-    await models.connect();
-    const subCount = await models.getTotalSubscribers();
-    const clientCount = await models.getTotalClients();
     return {
       props: {
         messages: await importMessages(locale),
-        subCount: subCount > 5 ? Math.round(subCount / 10) : subCount,
-        clientCount:
-          clientCount > 5 ? Math.round(clientCount / 10) : clientCount,
       },
     };
   } catch (error: any) {

@@ -168,17 +168,6 @@
     },
     "otpMessage": "UnAd: {otp} is your security code.  Do not share this code with anyone."
   },
-  "pages/api/register/confirm": {
-    "errors": {
-      "phoneNumberRegistered": "Phone number already registered",
-      "invalidPhoneNumber": "Invalid phone number",
-      "clientNameTaken": "Client name already exists",
-      "name": "Please enter a valid business name",
-      "phone": "Please enter a valid phone number",
-      "terms": "Please agree to the terms and conditions"
-    },
-    "otpMessage": "UnAd: {otp} is your security code.  Do not share this code with anyone."
-  },
   "pages/api/register/pay": {},
   "pages/api/register/validate": {
     "sms": {

@@ -141,17 +141,6 @@
     },
     "otpMessage": "UnAd: {otp} es su código de seguridad. No comparta este código con nadie."
   },
-  "pages/api/register/confirm": {
-    "errors": {
-      "phoneNumberRegistered": "Número de teléfono ya registrado",
-      "invalidPhoneNumber": "Número de teléfono no válido",
-      "clientNameTaken": "Nombre de cliente ya existente",
-      "name": "Por favor, ingrese un nombre de negocio válido",
-      "phone": "Por favor, ingrese un número de teléfono válido",
-      "terms": "Por favor, acepte los términos y condiciones"
-    },
-    "otpMessage": "UnAd: {otp} es su código de seguridad. No comparta este código con nadie."
-  },
   "pages/api/register/pay": {},
   "pages/api/register/validate": {
     "sms": {

@@ -1,0 +1,50 @@
+name: Build and Deploy user-api to ECS
+
+on:
+  workflow_dispatch:
+
+env:
+  CONTEXT_PATH: dotnet
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '8.0'
+      
+      - name: Install dependencies
+        run: dotnet restore dotnet/UnAd.Data.Migrator.sln
+      
+      - name: Restore tools
+        run: dotnet tool restore
+        working-directory: dotnet/tools
+
+      - name: Generate Bundle
+        run: |
+          dotnet ef migrations bundle \
+          --project ./UnAd.Data/UnAd.Data.csproj \
+          --startup-project ./tools/UnAd.Data.Migrator/UnAd.Data.Migrator.csproj \
+          --self-contained -r linux-x64
+          chmod +x efbundle
+        working-directory: dotnet
+    
+      - name: Setup SSH and Tunnel
+        run: |
+          # Setup SSH key stored in GitHub Secrets
+          mkdir -p ~/.ssh
+          echo "${{ secrets.JUMPBOX_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          # Setup SSH tunnel
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no -L 5433:${{ env.DB_HOST }}:5432 ubuntu@${{ env.JUMPBOX_HOST }} -N & echo $! > ssh_tunnel.pid
+          dotnet/efbundle --connection "Host=localhost;Port=5433;Database=userdb;Username=unad;Password=${{ env.DB_PASS }}"
+          kill -9 $(cat ssh_tunnel.pid)
+
+      

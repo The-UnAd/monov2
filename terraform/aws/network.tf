@@ -22,12 +22,6 @@ resource "aws_vpc_endpoint" "ssm" {
   subnet_ids        = aws_subnet.private_subnet.*.id
 }
 
-data "aws_availability_zones" "available" {}
-
-locals {
-  availability_zones = data.aws_availability_zones.available.names
-}
-
 resource "aws_eip" "nat_eip" {
   count = length(local.availability_zones)
 

@@ -5,110 +5,46 @@ networks:
     external: false
 
 services:
-  redis-node-1:
-    image: redis:7-alpine
-    ports:
-      - 7000:7000
-    networks:
-      - UnAd
-    hostname: redis-node-1
-    volumes:
-      - ./redis/7000:/redis
-    command: redis-server /redis/redis.conf
-  redis-node-2:
-    image: redis:7-alpine
-    ports:
-      - 7001:7001
-    networks:
-      - UnAd
-    hostname: redis-node-2
-    volumes:
-      - ./redis/7001:/redis
-    command: redis-server /redis/redis.conf
 
-  redis-node-3:
+  redis:
     image: redis:7-alpine
     ports:
-      - 7002:7002
+      - 6379:6379
     networks:
       - UnAd
-    hostname: redis-node-3
-    volumes:
-      - ./redis/7002:/redis
-    command: redis-server /redis/redis.conf
 
-  redis-node-4:
-    image: redis:7-alpine
-    ports:
-      - 7003:7003
+  migrator:
+    build:
+      context: ./dotnet/
+      dockerfile: Migrator.Dockerfile
     networks:
       - UnAd
-    hostname: redis-node-4
-    volumes:
-      - ./redis/7003:/redis
-    command: redis-server /redis/redis.conf
-
-  redis-node-5:
-    image: redis:7-alpine
-    ports:
-      - 7004:7004
-    networks:
-      - UnAd
-    hostname: redis-node-5
-    volumes:
-      - ./redis/7004:/redis
-    command: redis-server /redis/redis.conf
-  
-  redis-node-6:
-    image: redis:7-alpine
-    ports:
-      - 7005:7005
-    networks:
-      - UnAd
-    hostname: redis-node-6
-    volumes:
-      - ./redis/7005:/redis
-    command: redis-server /redis/redis.conf
-  
-  redis-cluster-creator:
-    image: redis:7-alpine
-    ports:
-      - 6999:6999
-    networks:
-      - UnAd
-    command: redis-cli -p 7000 --cluster create redis-node-1:7000 redis-node-2:7001 redis-node-3:7002 redis-node-4:7003 redis-node-5:7004 redis-node-6:7005 --cluster-replicas 1 --cluster-yes
+    env_file:
+      - ./dotnet/.env.docker
     depends_on:
-      - redis-node-1
-      - redis-node-2
-      - redis-node-3
-      - redis-node-4
-      - redis-node-5
-      - redis-node-6
-  
-  redis-insight:
-    image: redislabs/redisinsight
-    ports:
-      - 8001:8001
+      - postgres
+      
+  postgres:
     networks:
       - UnAd
-    volumes:
-      - ./redisinsight:/db
-    depends_on:
-      - redis-cluster-creator
+    build:
+      context: ./db
+      dockerfile: ./Dockerfile.postgres
+    ports:
+      - "5432:5432"
+    # volumes:
+    #   - postgres:/data/postgres
+    env_file:
+      - ./db/.env.docker
 
-  # postgres:
-  #   networks:
-  #     - UnAd
-  #   build:
-  #     context: ./db
-  #     dockerfile: ./Dockerfile.postgres
-  #   restart: always
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - postgres:/data/postgres
-  #   env_file:
-  #     - ./db/.env.docker
+  pgadmin:
+    networks:
+      - UnAd
+    image: dpage/pgadmin4
+    ports:
+      - "5431:5431"
+    env_file:
+      - ./db/.env.docker
 
   # graph-monitor:
   #   networks:
@@ -124,11 +60,11 @@ services:
   #     - ASPNETCORE_URLS=http://+:5145
   #   env_file:
   #     - ./dotnet/.env.docker
-  #   # healthcheck:
-  #   #   test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1
-  #   #   interval: 30s
-  #   #   timeout: 10s
-  #   #   retries: 3
+  #   healthcheck:
+  #     test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/5145' || exit 1
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
   #   depends_on:
   #     - redis
 

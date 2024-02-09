@@ -1,3 +1,4 @@
+import { Users } from '@unad/models';
 import Head from 'next/head';
 import Image from 'next/image';
 import Script from 'next/script';
@@ -6,8 +7,8 @@ import { useTranslations } from 'next-intl';
 import type { ParsedUrlQuery } from 'querystring';
 import Stripe from 'stripe';
 
+import { getAppDataSource } from '@/lib/db';
 import { createTranslator, importMessages } from '@/lib/i18n';
-import { createModelFactory } from '@/lib/redis';
 
 interface PageData {
   clientId: string;
@@ -65,9 +66,9 @@ export async function getServerSideProps(
   const { clientId } = context.params as ServerProps;
 
   try {
-    using models = createModelFactory();
-    await models.connect();
-    const client = await models.getClientById(clientId);
+    const source = await getAppDataSource();
+    const clientRepo = source.getRepository(Users.Client);
+    const client = await clientRepo.findOneBy({ id: clientId });
     if (!client) {
       return {
         props: {
@@ -81,8 +82,8 @@ export async function getServerSideProps(
     const stripe = new Stripe(process.env.STRIPE_API_KEY as string, {
       apiVersion: '2023-10-16',
     });
-    const subscriptionId = await client.getStripeSubscriptionId();
-    if (!subscriptionId) {
+    if (!client.subscriptionId) {
+      // this is the happy path: client created, but no subscription
       return {
         props: {
           messages: await importMessages(context.locale),
@@ -91,7 +92,9 @@ export async function getServerSideProps(
         },
       };
     }
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const subscription = await stripe.subscriptions.retrieve(
+      client.subscriptionId
+    );
     if (subscription.status === 'active') {
       return {
         props: {

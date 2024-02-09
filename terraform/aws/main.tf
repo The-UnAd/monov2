@@ -32,3 +32,10 @@ resource "aws_ssm_parameter" "region" {
   value = var.region
 }
 
+data "aws_availability_zones" "available" {}
+
+locals {
+  availability_zones = data.aws_availability_zones.available.names
+  region = var.region
+  vpc_cidr = var.vpc_cidr
+}

@@ -1,119 +1,126 @@
 
-# resource "random_password" "rds_password" {
-#   length  = 32
-#   special = false
-# }
+resource "random_password" "rds_password" {
+  length  = 32
+  special = false
+}
 
-# resource "aws_rds_cluster" "aurora" {
-#   cluster_identifier      = "unad-aurora"
-#   availability_zones      = data.aws_availability_zones.available.names
-#   database_name           = "unad"
-#   master_username         = "unad"
-#   master_password         = random_password.rds_password.result
-#   backup_retention_period = 7
-#   deletion_protection     = false # TODO: set to false for all but prod
-#   engine                  = "aurora-postgresql"
-#   engine_version          = "15"
-#   skip_final_snapshot     = true
+locals {
+  rds_user = "unad"
+}
 
-#   db_subnet_group_name   = aws_db_subnet_group.db_private_subnet_group.name
-#   vpc_security_group_ids = [aws_security_group.rds.id]
+resource "aws_rds_cluster" "aurora" {
+  cluster_identifier      = "unad-aurora"
+  availability_zones      = local.availability_zones
+  master_username         = local.rds_user
+  master_password         = random_password.rds_password.result
+  backup_retention_period = 7
+  deletion_protection     = false # TODO: set to false for all but prod
+  engine                  = "aurora-postgresql"
+  engine_mode             = "serverless"
+  skip_final_snapshot     = true
+  apply_immediately       = true
+  storage_encrypted       = true
 
-#   tags = {
-#     Name = "unad-postgres"
-#   }
-#   lifecycle {
-#     prevent_destroy = false # TODO: set to false for all but prod
-#   }
-# }
+  db_subnet_group_name   = aws_db_subnet_group.db_private_subnet_group.name
+  vpc_security_group_ids = [aws_security_group.rds.id]
+
+  scaling_configuration {
+    auto_pause               = true
+    min_capacity             = 2
+    max_capacity             = 16
+    seconds_until_auto_pause = 300
+    timeout_action           = "ForceApplyCapacityChange"
+  }
+
+  tags = {
+    Name = "unad-postgres"
+  }
+  lifecycle {
+    prevent_destroy = false # TODO: set to false for all but prod
+  }
+}
 
 # resource "aws_rds_cluster_instance" "cluster_instances" {
 #   count               = 1
 #   identifier          = "unad-aurora-${count.index}"
 #   cluster_identifier  = aws_rds_cluster.aurora.id
-#   instance_class      = "db.t2.small"
+#   instance_class      = "db.serverless"
 #   engine              = aws_rds_cluster.aurora.engine
 #   engine_version      = aws_rds_cluster.aurora.engine_version
 #   publicly_accessible = false
 # }
 
-# resource "aws_security_group" "rds" {
-#   name   = "rds-public"
-#   vpc_id = aws_vpc.vpc.id
+resource "aws_security_group" "rds" {
+  name   = "rds-public"
+  vpc_id = aws_vpc.vpc.id
 
-#   tags = {
-#     Name = "rds-public"
-#   }
-# }
+  tags = {
+    Name = "rds-public"
+  }
+}
 
-# resource "aws_security_group_rule" "rds_ingress" {
-#   type              = "ingress"
-#   from_port         = aws_rds_cluster.aurora.port
-#   to_port           = aws_rds_cluster.aurora.port
-#   protocol          = "tcp"
-#   cidr_blocks       = [var.vpc_cidr]
-#   security_group_id = aws_security_group.rds.id
-# }
+resource "aws_security_group_rule" "rds_ingress" {
+  type              = "ingress"
+  from_port         = aws_rds_cluster.aurora.port
+  to_port           = aws_rds_cluster.aurora.port
+  protocol          = "tcp"
+  cidr_blocks       = [var.vpc_cidr]
+  security_group_id = aws_security_group.rds.id
+}
 
-# resource "aws_security_group_rule" "rds_egress" {
-#   type              = "egress"
-#   from_port         = aws_rds_cluster.aurora.port
-#   to_port           = aws_rds_cluster.aurora.port
-#   protocol          = "tcp"
-#   cidr_blocks       = [var.vpc_cidr]
-#   security_group_id = aws_security_group.rds.id
-# }
+resource "aws_db_subnet_group" "db_private_subnet_group" {
+  subnet_ids = aws_subnet.private_subnet.*.id
+  tags = {
+    Name = "db-private-subnet-group"
+  }
+}
 
-# resource "aws_db_subnet_group" "db_private_subnet_group" {
-#   subnet_ids = aws_subnet.private_subnet.*.id
-#   tags = {
-#     Name = "db-private-subnet-group"
-#   }
-# }
+output "rds_cluster_endpoint" {
+  value = aws_rds_cluster.aurora.endpoint
+}
 
-# output "rds_cluster_endpoint" {
-#   value = aws_rds_cluster.aurora.endpoint
-# }
 
-# output "rds_cluster_password" {
-#   value = random_password.rds_password.result
-# }
+output "rds_cluster_port" {
+  value = aws_rds_cluster.aurora.port
+}
 
-# resource "aws_ssm_parameter" "rds_cluster_password" {
-#   name  = "/rds/password"
-#   type  = "SecureString"
-#   value = random_password.rds_password.result
-# }
+output "rds_cluster_password" {
+  value = random_password.rds_password.result
+}
 
-# resource "aws_ssm_parameter" "rds_cluster_endpoint" {
-#   name  = "/rds/endpoint"
-#   type  = "String"
-#   value = aws_rds_cluster.aurora.endpoint
-# }
+output "rds_cluster_db_connection_string" {
+  value = "User ID=${local.rds_user};Password=${random_password.rds_password.result};Host=${aws_rds_cluster.aurora.endpoint};Port=${aws_rds_cluster.aurora.port}"
+}
 
-# resource "aws_ssm_parameter" "rds_cluster_user" {
-#   name  = "/rds/user"
-#   type  = "String"
-#   value = "unad"
-# }
+resource "aws_ssm_parameter" "rds_cluster_password" {
+  name  = "/rds/password"
+  type  = "SecureString"
+  value = random_password.rds_password.result
+}
 
-# resource "aws_ssm_parameter" "rds_cluster_db_name" {
-#   name  = "/rds/db_name"
-#   type  = "String"
-#   value = "unad"
-# }
+resource "aws_ssm_parameter" "rds_cluster_endpoint" {
+  name  = "/rds/endpoint"
+  type  = "String"
+  value = aws_rds_cluster.aurora.endpoint
+}
 
-# resource "aws_ssm_parameter" "rds_cluster_db_port" {
-#   name  = "/rds/db_port"
-#   type  = "String"
-#   value = aws_rds_cluster.aurora.port
-# }
+resource "aws_ssm_parameter" "rds_cluster_user" {
+  name  = "/rds/user"
+  type  = "String"
+  value = local.rds_user
+}
 
-# resource "aws_ssm_parameter" "rds_cluster_db_connection_string" {
-#   name  = "/rds/rds_cluster_db_connection_string"
-#   type  = "String"
-#   value = "User ID=${"unad"};Password=${random_password.rds_password.result};Host=${aws_rds_cluster.aurora.endpoint};Port=${aws_rds_cluster.aurora.port}"
-# }
+resource "aws_ssm_parameter" "rds_cluster_db_port" {
+  name  = "/rds/db_port"
+  type  = "String"
+  value = aws_rds_cluster.aurora.port
+}
+
+resource "aws_ssm_parameter" "rds_cluster_db_connection_string" {
+  name  = "/rds/rds_cluster_db_connection_string"
+  type  = "String"
+  value = "User ID=${local.rds_user};Password=${random_password.rds_password.result};Host=${aws_rds_cluster.aurora.endpoint};Port=${aws_rds_cluster.aurora.port}"
+}
 
 
 

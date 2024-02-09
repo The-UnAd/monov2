@@ -1,5 +1,7 @@
+import { Users } from '@unad/models';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { getAppDataSource } from '@/lib/db';
 import { createTranslator } from '@/lib/i18n';
 import { generateSecret, generateToken } from '@/lib/otp';
 import { createModelFactory } from '@/lib/redis';
@@ -26,22 +28,19 @@ export default async function handler(
   const { phone, name } = req.body;
 
   try {
-    using models = createModelFactory();
+    const source = await getAppDataSource();
     if (!validatePhone(phone as string)) {
       throw new Error(t('errors.invalidPhoneNumber'));
     }
-
-    models.connect();
-    const existingClient = await models.getClientByPhone(phone);
+    const clientRepo = source.getRepository(Users.Client);
+    const existingClient = await clientRepo.findOneBy({ phoneNumber: phone });
     if (existingClient) {
       throw new Error(t('errors.phoneNumberRegistered'));
     }
-    const namedClient = await models.getClientById(name);
-    if (namedClient) {
-      throw new Error(t('errors.clientNameTaken'));
-    }
 
     const secret = generateSecret();
+    using models = createModelFactory();
+    await models.connect();
     await models.setOtpSecret(phone, secret);
     const otp = generateToken(secret);
 
