@@ -26,7 +26,7 @@ resource "github_actions_environment_secret" "jumpbox_ssh_key" {
   plaintext_value = var.jumpbox_ssh_key
 }
 
-resource "github_actions_environment_variable" "db_name" {
+resource "github_actions_environment_variable" "db_host" {
   repository    = data.github_repository.monov2.full_name
   environment   = data.github_repository_environment.development.name
   variable_name = "DB_HOST"

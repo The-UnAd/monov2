@@ -29,7 +29,7 @@ builder.Services.AddExceptionHandler(o => o.ExceptionHandler = context => {
 });
 
 builder.Services.AddPooledDbContextFactory<UserDbContext>(o
-    => o.UseNpgsql($"{builder.Configuration["DB_CONNECTIONSTRING"]};Database=userdb;"));
+    => o.UseNpgsql($"{builder.Configuration["DB_CONNECTIONSTRING"]};Database=unad;"));
 
 builder.Services.AddHttpResponseFormatter(new HttpResponseFormatterOptions {
     Json = new JsonResultFormatterOptions {

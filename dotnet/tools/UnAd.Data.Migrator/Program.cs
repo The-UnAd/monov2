@@ -14,8 +14,8 @@ public class Program {
         .ConfigureAppConfiguration(c => c.AddEnvironmentVariables())
         .ConfigureServices((context, services) => {
                 services.AddDbContext<Users.UserDbContext>(o
-                => o.UseNpgsql($"{context.Configuration["DB_CONNECTIONSTRING"]};Database=userdb"));
-            });
+                => o.UseNpgsql($"{context.Configuration["DB_CONNECTIONSTRING"]};Database=unad"));
+        });
 }
 
 

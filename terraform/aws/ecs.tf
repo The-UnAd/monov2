@@ -210,7 +210,7 @@ module "signup-site" {
     value = "3000"
     }, {
     name  = "DB_NAME"
-    value = "userdb"
+    value = "unad"
   }]
 }
 
