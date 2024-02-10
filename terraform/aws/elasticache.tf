@@ -37,7 +37,7 @@ resource "random_password" "redis_password" {
 resource "aws_ssm_parameter" "redis_hosts" {
   name  = "/redis/hosts"
   type  = "String"
-  value = join(",", [for endpoint in aws_elasticache_cluster.unad.cache_nodes : "${endpoint.address}:${aws_elasticache_cluster.unad.port}"])
+  value = join(",", [for endpoint in aws_elasticache_cluster.unad.cache_nodes : "redis://${endpoint.address}:${aws_elasticache_cluster.unad.port}"])
 }
 
 resource "aws_ssm_parameter" "redis_connection_string" {

@@ -10,7 +10,8 @@ services:
       - UnAd
     restart: always
     build:
-      context: ./web/unad-web
+      context: ./
+      dockerfile: ./web/unad-web/Dockerfile
     ports:
       - "3000:3000"
     environment:
@@ -64,6 +65,6 @@ services:
   #     timeout: 10s
   #     retries: 3
 
-secrets:
-  graphmonitorheaders:
-    file: ./dotnet/GraphMonitor/headers
+# secrets:
+#   graphmonitorheaders:
+#     file: ./dotnet/GraphMonitor/headers

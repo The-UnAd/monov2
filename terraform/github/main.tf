@@ -26,13 +26,19 @@ resource "github_actions_environment_secret" "jumpbox_ssh_key" {
   plaintext_value = var.jumpbox_ssh_key
 }
 
+resource "github_actions_environment_variable" "db_name" {
+  repository    = data.github_repository.monov2.full_name
+  environment   = data.github_repository_environment.development.name
+  variable_name = "DB_HOST"
+  value         = var.db_host
+}
 
-variable "aurora_host" {
+variable "db_host" {
   type     = string
   nullable = false
 }
 
-variable "aurora_port" {
+variable "db_port" {
   type     = number
   nullable = false
 }

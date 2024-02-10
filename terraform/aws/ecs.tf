@@ -136,7 +136,7 @@ module "signup-site" {
   service_security_group_ids = [aws_security_group.ecs_private.id]
   desired_count              = 1
   cluster_arn                = aws_ecs_cluster.cluster.arn
-  health_check_path          = "/health"
+  # health_check_path          = "/health"
   task_cpu                   = 256
   task_memory                = 512
   ssl_certificate_arn        = aws_acm_certificate_validation.wildcard.certificate_arn
@@ -156,7 +156,7 @@ module "signup-site" {
     name      = "JWT_PRIVATE_KEY"
     valueFrom = "${aws_ssm_parameter.jwt_private_key.arn}"
     }, {
-    name      = "DB_PASSWORD"
+    name      = "DB_PASS"
     valueFrom = "${aws_ssm_parameter.rds_cluster_password.arn}"
     }, {
     name      = "DB_USER"
@@ -167,7 +167,10 @@ module "signup-site" {
     }, {
     name      = "DB_HOST"
     valueFrom = "${aws_ssm_parameter.rds_cluster_endpoint.arn}"
-    },
+    }, {
+    name      = "REDIS_URL"
+    valueFrom = "${aws_ssm_parameter.redis_hosts.arn}"
+    }
   ]
   container_environment = [{
     name  = "NEXT_PUBLIC_JWT_PUBLIC_KEY"

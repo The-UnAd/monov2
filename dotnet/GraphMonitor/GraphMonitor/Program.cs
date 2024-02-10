@@ -17,6 +17,8 @@ builder.Services.AddHealthChecks();
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     ConnectionMultiplexer.Connect(sp.GetRequiredService<IConfiguration>()["REDIS_URL"]!));
 
+builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
+
 var app = builder.Build();
 
 app.MapHealthChecks("/health");

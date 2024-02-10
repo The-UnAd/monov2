@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "ts-node --project tsconfig.dev.json src/server",
+    "dev": "node src/server.js",
     "test": "jest",
     "test:cypress": "cypress run",
     "cypress": "cypress open",

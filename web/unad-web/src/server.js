@@ -6,7 +6,7 @@ import { AppDataSource } from './lib/db';
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = process.env.HOST || 'localhost';
-const port = parseInt(process.env.PORT!);
+const port = parseInt(process.env.PORT);
 // when using middleware `hostname` and `port` must be provided below
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
@@ -36,7 +36,7 @@ app.prepare().then(() => {
       try {
         // Be sure to pass `true` as the second argument to `url.parse`.
         // This tells it to parse the query portion of the URL.
-        const parsedUrl = parse(req.url!, true);
+        const parsedUrl = parse(req.url, true);
         await handle(req, res, parsedUrl);
       } catch (err) {
         console.error('Error occurred handling', req.url, err);
