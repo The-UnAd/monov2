@@ -14,7 +14,7 @@ terraform {
 
     workspaces {
       project = "monov2"
-      name = "local"
+      name    = "local"
     }
   }
 
@@ -39,9 +39,18 @@ provider "aws" {
 }
 
 module "aws" {
-  source = "./aws"
-  region = var.AWS_REGION
+  source   = "./aws"
+  region   = var.AWS_REGION
   dns_zone = var.DNS_ZONE
+}
+
+module "github" {
+  source       = "./github"
+  db_host      = module.aws.rds_cluster_endpoint
+  db_port      = module.aws.rds_cluster_port
+  db_pass      = module.aws.rds_cluster_password
+  jumpbox_host = module.aws.jumpbox_host
+  token        = var.GITHUB_TOKEN
 }
 
 

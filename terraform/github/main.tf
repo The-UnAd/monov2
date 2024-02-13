@@ -8,34 +8,61 @@ terraform {
 }
 
 # Configure the GitHub Provider
-provider "github" {}
-
-data "github_repository" "monov2" {
-  full_name = "The-UnAd/monov2"
-}
-
-data "github_repository_environment" "development" {
-  repository  = data.github_repository.repo.name
-  environment = "development"
-}
-
-resource "github_actions_environment_secret" "jumpbox_ssh_key" {
-  repository      = data.github_repository.monov2.full_name
-  environment     = data.github_repository_environment.development.name
-  secret_name     = "JUMPBOX_SSH_KEY"
-  plaintext_value = var.jumpbox_ssh_key
+provider "github" {
+  token = var.token
+  owner = "The-UnAd"
 }
 
 resource "github_actions_environment_variable" "db_host" {
-  repository    = data.github_repository.monov2.full_name
-  environment   = data.github_repository_environment.development.name
+  repository    = "monov2"
+  environment   = "development"
   variable_name = "DB_HOST"
   value         = var.db_host
+}
+
+resource "github_actions_environment_variable" "jumpbox_host" {
+  repository      = "monov2"
+  environment     = "development"
+  variable_name     = "JUMPBOX_HOST"
+  value = var.jumpbox_host
+}
+
+resource "github_actions_environment_variable" "db_port" {
+  repository      = "monov2"
+  environment     = "development"
+  variable_name     = "DB_PORT"
+  value = var.db_port
+}
+
+resource "github_actions_environment_secret" "db_pass" {
+  repository      = "monov2"
+  environment     = "development"
+  secret_name     = "DB_PASS"
+  plaintext_value = var.db_pass
+}
+
+resource "github_actions_environment_secret" "jumpbox_ssh_key" {
+  repository      = "monov2"
+  environment     = "development"
+  secret_name     = "DB_PASS"
+  plaintext_value = var.db_pass
+}
+
+variable "token" {
+  type      = string
+  sensitive = true
+  nullable  = false
 }
 
 variable "db_host" {
   type     = string
   nullable = false
+}
+
+variable "db_pass" {
+  type      = string
+  sensitive = true
+  nullable  = false
 }
 
 variable "db_port" {
@@ -46,10 +73,4 @@ variable "db_port" {
 variable "jumpbox_host" {
   type     = string
   nullable = false
-}
-
-variable "jumpbox_ssh_key" {
-  type      = string
-  nullable  = false
-  sensitive = true
 }
