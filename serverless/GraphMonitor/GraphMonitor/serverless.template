@@ -12,14 +12,14 @@
         ]
       },
       "Properties": {
-        "Runtime": "dotnet6",
+        "Runtime": "dotnet8",
         "CodeUri": ".",
         "MemorySize": 256,
         "Timeout": 30,
         "Policies": [
           "AWSLambdaBasicExecutionRole"
         ],
-        "PackageType": "Zip",
+        "PackageType": "Image",
         "Handler": "GraphMonitor::GraphMonitor.StoreUrlFunction_StoreUrl_Generated::StoreUrl",
         "Events": {
           "RootPost": {
@@ -41,14 +41,14 @@
         ]
       },
       "Properties": {
-        "Runtime": "dotnet6",
+        "Runtime": "dotnet8",
         "CodeUri": ".",
         "MemorySize": 256,
         "Timeout": 30,
         "Policies": [
           "AWSLambdaBasicExecutionRole"
         ],
-        "PackageType": "Zip",
+        "PackageType": "Image",
         "Handler": "GraphMonitor::GraphMonitor.GetUrlFunction_GetUrl_Generated::GetUrl",
         "Events": {
           "RootGet": {
