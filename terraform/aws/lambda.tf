@@ -1,27 +1,7 @@
-resource "aws_ecr_repository" "lambda_ecr_repo" {
+resource "aws_ecr_repository" "graph_monitor_ecr_repo" {
   name         = "unad/graph-monitor"
   force_delete = true
 }
-
-# resource "aws_ecr_lifecycle_policy" "lasttwoimages" {
-#   repository = aws_ecr_repository.lambda_ecr_repo.name
-#   policy     = jsonencode({
-#     "rules" : [
-#       {
-#         "rulePriority" : 1,
-#         "description" : "Keep only the last 2 images",
-#         "selection" : {
-#           "tagStatus" : "any",
-#           "countType" : "imageCountMoreThan",
-#           "countNumber" : 2
-#         },
-#         "action" : {
-#           "type" : "expire"
-#         }
-#       }
-#     ]
-#   })
-# }
 
 resource "random_password" "graph_montitor_api_key" {
   length  = 32
@@ -32,43 +12,60 @@ output "graph_montitor_api_key" {
   value = random_password.graph_montitor_api_key.result
 }
 
-# module "lambda_function" {
-#   source = "terraform-aws-modules/lambda/aws"
+resource "aws_iam_role" "lambda_execution_role" {
+  name = "lambda_execution_role"
 
-#   function_name  = "graph-monitor"
-#   create_package = false
-#   runtime        = "dotnet8"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+    }]
+  })
+}
 
-#   image_uri    = module.docker_image.image_uri
-#   package_type = "Image"
-#   environment_variables = {
-#     "ASPNETCORE_ENVIRONMENT" = "Production"
-#     "ASPNETCORE_URLS" = "http://+:80"
-#     "ApiKeyAuthenticationOptions:ApiKey": "${random_password.graph_montitor_api_key.result}",
-#     "REDIS_URL": "${aws_ssm_parameter.redis_connection_string.value}"
-#   } # TODO: figure out how to get the redis connection string from the SSM parameter store
-# }
+resource "aws_lambda_function" "graph_monitor" {
+  function_name = "graph-monitor"
+  package_type  = "Image"
+  image_uri     = "${aws_ecr_repository.graph_monitor_ecr_repo.repository_url}:latest"
+  role          = aws_iam_role.lambda_execution_role.arn
+  timeout       = 60
 
-# #{
-# #     name  = "ASPNETCORE_ENVIRONMENT"
-# #     value = "Production"
-# #     }, {
-# #     name  = "ASPNETCORE_URLS"
-# #     value = "http://+:80"
-# #     }, {
-# #     name  = "ApiKeyAuthenticationOptions:ApiKey"
-# #     value = "${random_password.graph_montitor_api_key.result}"
-# #   }
+  image_config {
+    entry_point = [
+      "GraphMonitor::GraphMonitor.StoreUrlFunction_StoreUrl_Generated::StoreUrl",
+      "GraphMonitor::GraphMonitor.GetUrlFunction_GetUrl_Generated::GetUrl"
+    ]
+  }
+}
 
-# module "docker_image" {
-#   source = "terraform-aws-modules/lambda/aws//modules/docker-build"
+# Optionally, create an API Gateway to trigger the Lambda
+resource "aws_apigatewayv2_api" "graph_monitor_api" {
+  name          = "graph-monitor-http-api"
+  protocol_type = "HTTP"
+}
 
-#   create_ecr_repo = false
-#   ecr_repo        = "unad/graph-monitor"
+resource "aws_apigatewayv2_integration" "lambda_integration" {
+  api_id           = aws_apigatewayv2_api.graph_monitor_api.id
+  integration_type = "AWS_PROXY"
+  integration_uri  = aws_lambda_function.graph_monitor.arn
+}
 
-#   use_image_tag = true
-#   image_tag     = "latest" # TODO: use git commit hash or something
+resource "aws_apigatewayv2_route" "default_route" {
+  api_id    = aws_apigatewayv2_api.graph_monitor_api.id
+  route_key = "ANY /{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+}
 
-#   source_path = "../../dotnet/GraphMonitor/GraphMonitor"  
-# }
+resource "aws_apigatewayv2_stage" "default_stage" {
+  api_id      = aws_apigatewayv2_api.graph_monitor_api.id
+  name        = "$default"
+  auto_deploy = true
+}
 
+output "http_api_url" {
+  value = aws_apigatewayv2_api.graph_monitor_api.api_endpoint
+}
