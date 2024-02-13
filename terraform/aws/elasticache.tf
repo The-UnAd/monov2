@@ -29,11 +29,6 @@ resource "aws_elasticache_cluster" "unad" {
   engine_version               = "7.1"
 }
 
-resource "random_password" "redis_password" {
-  length  = 24
-  special = false
-}
-
 resource "aws_ssm_parameter" "redis_hosts" {
   name  = "/redis/hosts"
   type  = "String"
