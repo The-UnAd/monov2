@@ -5,6 +5,10 @@
     "hotchocolate.fusion.commandline": {
       "version": "13.8.1",
       "commands": ["fusion"]
+    },
+    "dotnet-ef": {
+      "version": "8.0.1",
+      "commands": ["dotnet-ef"]
     }
   }
 }
