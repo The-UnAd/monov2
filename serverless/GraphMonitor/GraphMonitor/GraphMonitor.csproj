@@ -19,6 +19,12 @@
         <InternalsVisibleTo Include="GraphMonitor.Tests.Unit" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="serverless.template">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
 
 
