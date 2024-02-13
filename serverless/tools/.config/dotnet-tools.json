@@ -2,8 +2,8 @@
   "version": 1,
   "isRoot": true,
   "tools": {
-    "amazon.lambda.tools": {
-      "version": "5.9.0",
+    "Amazon.Lambda.TestTool-8.0": {
+      "version": "0.15.1",
       "commands": ["lambda"]
     }
   }
