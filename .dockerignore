@@ -22,3 +22,8 @@
 LICENSE
 README.md
 secrets.*.txt
+
+.env*
+.flaskenv*
+!.env.project
+!.env.vault
