@@ -22,13 +22,10 @@ jobs:
       
       - name: Install dependencies
         run: dotnet restore dotnet/UnAd.Data.Migrator.sln
-      
-      - name: Restore tools
-        run: dotnet tool restore
-        working-directory: dotnet/tools
 
       - name: Generate Bundle
         run: |
+          dotnet tool restore
           dotnet ef migrations bundle \
           --project ./UnAd.Data/UnAd.Data.csproj \
           --startup-project ./tools/UnAd.Data.Migrator/UnAd.Data.Migrator.csproj \
