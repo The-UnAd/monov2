@@ -40,9 +40,9 @@ jobs:
           echo "${{ secrets.JUMPBOX_SSH_PRIVATE_KEY }}" > ~/.ssh/jumpbox_ed25519
           chmod 600 ~/.ssh/jumpbox_ed25519
           # Setup SSH tunnel
-          ssh -i ~/.ssh/jumpbox_ed25519 -o StrictHostKeyChecking=no -L 5050:${{ env.JUMPBOX_HOST }}:5432 ubuntu@${{ env.JUMPBOX_HOST }} -N & echo $! > ssh_tunnel.pid
+          ssh -i ~/.ssh/jumpbox_ed25519 -o StrictHostKeyChecking=no -L 5050:${{ vars.JUMPBOX_HOST }}:5432 ubuntu@${{ vars.JUMPBOX_HOST }} -N & echo $! > ssh_tunnel.pid
           # Exceute migrations
-          dotnet/efbundle --connection "Host=localhost;Port=5050;Database=unad;Username=unad;Password=${{ env.DB_PASS }}"
+          dotnet/efbundle --connection "Host=localhost;Port=5050;Database=unad;Username=unad;Password=${{ secrets.DB_PASS }}"
           # Kill SSH tunnel
           kill -9 $(cat ssh_tunnel.pid)
 
