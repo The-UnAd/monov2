@@ -170,6 +170,9 @@ module "signup-site" {
     }, {
     name      = "REDIS_URL"
     valueFrom = "${aws_ssm_parameter.redis_hosts.arn}"
+    }, {
+    name      = "MIXPANEL_TOKEN"
+    valueFrom = "${data.aws_ssm_parameter.mixpanel_token.arn}"
     }
   ]
   container_environment = [{

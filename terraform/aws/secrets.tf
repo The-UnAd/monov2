@@ -14,6 +14,10 @@ data "aws_ssm_parameter" "twilio_account_sid" {
   name  = "/twilio/account_sid"
 }
 
+data "aws_ssm_parameter" "mixpanel_token" {
+  name  = "/mixpanel/token"
+}
+
 data "aws_ssm_parameter" "twilio_auth_token" {
   name  = "/twilio/auth_token"
 }
