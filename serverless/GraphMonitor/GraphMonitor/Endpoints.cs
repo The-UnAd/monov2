@@ -12,13 +12,7 @@ public class Authorizer(IConfiguration config) {
     [LambdaFunction]
     public APIGatewayCustomAuthorizerResponse Authorize(APIGatewayCustomAuthorizerRequest request, ILambdaContext context) {
 
-        var apiKey = string.IsNullOrEmpty(request.AuthorizationToken) ? request.QueryStringParameters?["token"] : string.Empty;
-        if (string.IsNullOrEmpty(apiKey)) {
-            return new APIGatewayCustomAuthorizerResponse {
-                UsageIdentifierKey = "Unauthorized"
-            };
-        }
-        if (apiKey != config.GetValue<string>("API_KEY")) {
+        if (request.AuthorizationToken != config.GetValue<string>("API_KEY")) {
             return new APIGatewayCustomAuthorizerResponse {
                 UsageIdentifierKey = "Unauthorized"
             };
@@ -38,10 +32,6 @@ public class Authorizer(IConfiguration config) {
             }
         };
     }
-}
-
-public static class RequestExtensions {
-
 }
 
 public class StoreUrlFunction(IConnectionMultiplexer redis) {

@@ -112,8 +112,42 @@ resource "aws_security_group_rule" "lambda_egress_redis" {
 resource "random_id" "bucket_id" {
   byte_length = 8
 }
+
 resource "aws_s3_bucket" "lambda_bucket" {
   bucket = "unad-code-bucket-${random_id.bucket_id.hex}"
+}
+
+resource "aws_lambda_function" "graph_monitor_authorizer" {
+  function_name = "graph-monitor-authorizer"
+  package_type  = "Zip"
+  s3_bucket     = aws_s3_bucket.lambda_bucket.bucket
+  s3_key        = "GraphMonitor.zip"
+  runtime       = "provided.al2023"
+  handler       = "GraphMonitor::GraphMonitor.Authorizer_Authorize_Generated::Authorize"
+  role          = aws_iam_role.lambda_execution_role.arn
+  timeout       = 60
+  memory_size   = 256
+
+  vpc_config {
+    subnet_ids         = aws_subnet.private_subnet.*.id
+    security_group_ids = [aws_security_group.lambda_private.id]
+  }
+
+  environment {
+    variables = {
+      ASPNETCORE_ENVIRONMENT = "Production"
+      API_KEY                = random_password.graph_montitor_api_key.result
+    }
+  }
+
+  provisioner "local-exec" {
+    command = "${path.root}/scripts/deploy-graph-monitor-authorizer.ps1"
+    working_dir = "../../serverless/GraphMonitor/GraphMonitor"
+    interpreter = [ "pwsh" ]
+    when = create
+    on_failure = fail
+    quiet = false
+  }
 }
 
 resource "aws_lambda_function" "graph_monitor_post" {
@@ -137,6 +171,15 @@ resource "aws_lambda_function" "graph_monitor_post" {
       ASPNETCORE_ENVIRONMENT = "Production"
       REDIS_URL              = aws_ssm_parameter.redis_connection_string.value # TODO: if we need a password later, secure this
     }
+  }
+  
+  provisioner "local-exec" {
+    command = "${path.root}/scripts/deploy-graph-monitor-authorizer.ps1"
+    working_dir = "../../serverless/GraphMonitor/GraphMonitor"
+    interpreter = [ "pwsh" ]
+    when = create
+    on_failure = fail
+    quiet = false
   }
 }
 
@@ -162,6 +205,15 @@ resource "aws_lambda_function" "graph_monitor_get" {
       REDIS_URL              = aws_ssm_parameter.redis_connection_string.value # TODO: if we need a password later, secure this
     }
   }
+  
+  provisioner "local-exec" {
+    command = "${path.root}/scripts/deploy-graph-monitor-authorizer.ps1"
+    working_dir = "../../serverless/GraphMonitor/GraphMonitor"
+    interpreter = [ "pwsh" ]
+    when = create
+    on_failure = fail
+    quiet = false
+  }
 }
 
 # resource "aws_apigatewayv2_domain_name" "graph_monitor_domain" {
@@ -181,6 +233,16 @@ resource "aws_lambda_function" "graph_monitor_get" {
 resource "aws_apigatewayv2_api" "graph_monitor_api" {
   name          = "graph-monitor-http-api"
   protocol_type = "HTTP"
+}
+
+resource "aws_apigatewayv2_authorizer" "graph_monitor_authorizer" {
+  api_id                            = aws_apigatewayv2_api.graph_monitor_api.id
+  authorizer_type                   = "REQUEST"
+  authorizer_uri                    = aws_lambda_function.graph_monitor_authorizer.invoke_arn
+  authorizer_result_ttl_in_seconds  = 300
+  name                              = "api-key-authorizer"
+  authorizer_payload_format_version = "2.0"
+  identity_sources                  = ["$request.header.Authorization"]
 }
 
 resource "aws_apigatewayv2_integration" "lambda_integration_post" {
@@ -203,6 +265,7 @@ resource "aws_apigatewayv2_integration" "lambda_integration_get" {
   integration_method     = "POST"
   integration_uri        = aws_lambda_function.graph_monitor_get.invoke_arn
   payload_format_version = "2.0"
+
 }
 
 resource "aws_lambda_permission" "apigw_post" {
