@@ -1,10 +1,10 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphMonitor", "GraphMonitor\GraphMonitor.csproj", "{76953DF2-EFBB-4C35-B864-6FBFB8CD94F1}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34525.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphMonitor", "GraphMonitor\GraphMonitor.csproj", "{76953DF2-EFBB-4C35-B864-6FBFB8CD94F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphMonitor.Tests.Integration", "GraphMonitor.Tests.Integration\GraphMonitor.Tests.Integration.csproj", "{5D4FCE90-7AC0-4CA9-887A-C04BA6A7F3EA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphMonitor.Tests.Unit", "GraphMonitor.Tests.Unit\GraphMonitor.Tests.Unit.csproj", "{B620191D-9F3C-4FD2-9AE9-BF313DCCB3E7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Project2", "Project2\src\Project2\Project2.csproj", "{60C93E53-9E32-4856-9E65-E8232A349064}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -16,19 +16,15 @@ Global
 		{76953DF2-EFBB-4C35-B864-6FBFB8CD94F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76953DF2-EFBB-4C35-B864-6FBFB8CD94F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76953DF2-EFBB-4C35-B864-6FBFB8CD94F1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5D4FCE90-7AC0-4CA9-887A-C04BA6A7F3EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5D4FCE90-7AC0-4CA9-887A-C04BA6A7F3EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5D4FCE90-7AC0-4CA9-887A-C04BA6A7F3EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5D4FCE90-7AC0-4CA9-887A-C04BA6A7F3EA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B620191D-9F3C-4FD2-9AE9-BF313DCCB3E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B620191D-9F3C-4FD2-9AE9-BF313DCCB3E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B620191D-9F3C-4FD2-9AE9-BF313DCCB3E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B620191D-9F3C-4FD2-9AE9-BF313DCCB3E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60C93E53-9E32-4856-9E65-E8232A349064}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60C93E53-9E32-4856-9E65-E8232A349064}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60C93E53-9E32-4856-9E65-E8232A349064}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60C93E53-9E32-4856-9E65-E8232A349064}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {926FF324-73AF-4819-8AB6-558BCF426CC8}
 	EndGlobalSection
 EndGlobal
-
-
-
-
-
-

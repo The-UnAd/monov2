@@ -1,5 +1,4 @@
 ﻿using Amazon.Lambda.Annotations;
-using Microsoft.AspNetCore.Diagnostics;
 using StackExchange.Redis;
 
 [LambdaStartup]
