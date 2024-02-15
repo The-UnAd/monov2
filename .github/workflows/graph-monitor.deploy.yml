@@ -34,7 +34,7 @@ jobs:
       - name: Deploy PUT
         run: |
           dotnet lambda deploy-function graph-monitor-post \
-          --config-file ./serverless.template \
+          --config-file serverless.template \
           --function-runtime dotnet8 \
           --function-role lambda_execution_role \
           --function-memory-size 256 \
@@ -45,7 +45,7 @@ jobs:
       - name: Deploy GET
         run: |
           dotnet lambda deploy-function graph-monitor-get \
-          --config-file ./serverless.template \
+          --config-file serverless.template \
           --function-runtime dotnet8 \
           --function-role lambda_execution_role \
           --function-memory-size 256 \
