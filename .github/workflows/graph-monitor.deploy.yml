@@ -35,7 +35,7 @@ jobs:
       - name: Deploy
         run: |
           dotnet lambda deploy-function TestPut \
-          --config-file .\serverless.template \
+          --config-file serverless.template \
           --function-runtime provided.al2023 \
           --function-role lambda_execution_role \
           --function-memory-size 256 \
