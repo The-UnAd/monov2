@@ -35,9 +35,10 @@ resource "aws_ssm_parameter" "redis_hosts" {
   value = join(",", [for endpoint in aws_elasticache_cluster.unad.cache_nodes : "redis://${endpoint.address}:${aws_elasticache_cluster.unad.port}"])
 }
 
+# TODO: make sure we don't use .value directly if we add a password
 resource "aws_ssm_parameter" "redis_connection_string" {
   name  = "/redis/connection_string"
-  type  = "SecureString"
+  type  = "String"
   value = "${join(",", [for endpoint in aws_elasticache_cluster.unad.cache_nodes : "${endpoint.address}:${aws_elasticache_cluster.unad.port}"])},ssl=false,abortConnect=false"
 }
 
