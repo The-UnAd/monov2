@@ -6,7 +6,7 @@ on:
 env:
   ECR_REPOSITORY: unad/graph-monitor
   LAMBDA_FUNCTION: graph-monitor
-  PROJECT_PATH: serverless/GraphMonitor/Project2/src/Project2
+  PROJECT_PATH: serverless/GraphMonitor/GraphMonitor
   
 jobs:
   build:
@@ -30,15 +30,25 @@ jobs:
         
       - name: Install tools
         run: dotnet tool install -g Amazon.Lambda.Tools
-        working-directory: serverless
 
-      - name: Deploy
+      - name: Deploy PUT
         run: |
-          dotnet lambda deploy-function TestPut \
-          --config-file serverless.template \
-          --function-runtime provided.al2023 \
+          dotnet lambda deploy-function graph-monitor-post \
+          --config-file .\serverless.template \
+          --function-runtime dotnet8 \
           --function-role lambda_execution_role \
           --function-memory-size 256 \
-          --function-timeout 10 \
-          --function-handler PutFunctionHandler
+          --function-timeout 60 \
+          --function-handler GraphMonitor::GraphMonitor.StoreUrlFunction_StoreUrl_Generated::StoreUrl
+          working-directory: ${{ env.PROJECT_PATH }}
+
+      - name: Deploy GET
+        run: |
+          dotnet lambda deploy-function graph-monitor-get \
+          --config-file .\serverless.template \
+          --function-runtime dotnet8 \
+          --function-role lambda_execution_role \
+          --function-memory-size 256 \
+          --function-timeout 60 \
+          --function-handler GraphMonitor::GraphMonitor.GetUrlFunction_GetUrl_Generated::GetUrl
         working-directory: ${{ env.PROJECT_PATH }}
