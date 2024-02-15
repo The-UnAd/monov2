@@ -12,14 +12,14 @@
         ]
       },
       "Properties": {
-        "Runtime": "dotnet8",
+        "Runtime": "dotnet6",
         "CodeUri": ".",
         "MemorySize": 256,
         "Timeout": 30,
         "Policies": [
           "AWSLambdaBasicExecutionRole"
         ],
-        "PackageType": "Image",
+        "PackageType": "Zip",
         "Handler": "GraphMonitor::GraphMonitor.StoreUrlFunction_StoreUrl_Generated::StoreUrl",
         "Events": {
           "RootPost": {
@@ -41,14 +41,14 @@
         ]
       },
       "Properties": {
-        "Runtime": "dotnet8",
+        "Runtime": "dotnet6",
         "CodeUri": ".",
         "MemorySize": 256,
         "Timeout": 30,
         "Policies": [
           "AWSLambdaBasicExecutionRole"
         ],
-        "PackageType": "Image",
+        "PackageType": "Zip",
         "Handler": "GraphMonitor::GraphMonitor.GetUrlFunction_GetUrl_Generated::GetUrl",
         "Events": {
           "RootGet": {
@@ -59,6 +59,23 @@
             }
           }
         }
+      }
+    },
+    "GraphMonitorAuthorizerAuthorizeGenerated": {
+      "Type": "AWS::Serverless::Function",
+      "Metadata": {
+        "Tool": "Amazon.Lambda.Annotations"
+      },
+      "Properties": {
+        "Runtime": "dotnet6",
+        "CodeUri": ".",
+        "MemorySize": 256,
+        "Timeout": 30,
+        "Policies": [
+          "AWSLambdaBasicExecutionRole"
+        ],
+        "PackageType": "Zip",
+        "Handler": "GraphMonitor::GraphMonitor.Authorizer_Authorize_Generated::Authorize"
       }
     }
   }

@@ -17,7 +17,8 @@
       "workingDirectory": ".\\bin\\Debug\\net8.0",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "REDIS_URL": "localhost,abortConnect=true"
+        "REDIS_URL": "localhost,abortConnect=true",
+        "API_KEY":  "test"
       }
     }
   }

@@ -9,9 +9,6 @@ new Startup().ConfigureServices(builder.Services);
 
 var app = builder.Build();
 
-app.UseAuthentication();
-app.UseAuthorization();
-
 app.Run();
 
 public partial class Program { }

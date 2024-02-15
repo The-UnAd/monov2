@@ -1,20 +1,35 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: This template is partially managed by Amazon.Lambda.Annotations (v1.0.0.0).
 Resources:
+  GraphMonitorAuthorizerAuthorizeGenerated:
+    Type: AWS::Serverless::Function
+    Metadata:
+      Tool: Amazon.Lambda.Annotations
+      SyncedEvents:
+        - RootPost
+    Properties:
+      Runtime: dotnet8
+      ImageUri: 509727546448.dkr.ecr.us-east-2.amazonaws.com/unad/graph-monitor:latest
+      MemorySize: 256
+      Timeout: 30
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      PackageType: Image
+      Handler: GraphMonitor::GraphMonitor.Authorizer_Authorize_Generated::Authorize
   GraphMonitorStoreUrlFunctionStoreUrlGenerated:
     Type: AWS::Serverless::Function
     Metadata:
       Tool: Amazon.Lambda.Annotations
       SyncedEvents:
-      - RootPost
+        - RootPost
     Properties:
       Runtime: dotnet8
-      CodeUri: .
+      ImageUri: 509727546448.dkr.ecr.us-east-2.amazonaws.com/unad/graph-monitor:latest
       MemorySize: 256
       Timeout: 30
       Policies:
-      - AWSLambdaBasicExecutionRole
+        - AWSLambdaBasicExecutionRole
       PackageType: Image
       Handler: GraphMonitor::GraphMonitor.StoreUrlFunction_StoreUrl_Generated::StoreUrl
       Events:
@@ -23,19 +38,20 @@ Resources:
           Properties:
             Path: /{name}
             Method: POST
+
   GraphMonitorGetUrlFunctionGetUrlGenerated:
     Type: AWS::Serverless::Function
     Metadata:
       Tool: Amazon.Lambda.Annotations
       SyncedEvents:
-      - RootGet
+        - RootGet
     Properties:
       Runtime: dotnet8
-      CodeUri: .
+      ImageUri: 509727546448.dkr.ecr.us-east-2.amazonaws.com/unad/graph-monitor:latest
       MemorySize: 256
       Timeout: 30
       Policies:
-      - AWSLambdaBasicExecutionRole
+        - AWSLambdaBasicExecutionRole
       PackageType: Image
       Handler: GraphMonitor::GraphMonitor.GetUrlFunction_GetUrl_Generated::GetUrl
       Events:
