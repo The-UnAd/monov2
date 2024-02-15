@@ -40,7 +40,7 @@ jobs:
           --function-memory-size 256 \
           --function-timeout 60 \
           --function-handler GraphMonitor::GraphMonitor.StoreUrlFunction_StoreUrl_Generated::StoreUrl
-          working-directory: ${{ env.PROJECT_PATH }}
+        working-directory: ${{ env.PROJECT_PATH }}
 
       - name: Deploy GET
         run: |
