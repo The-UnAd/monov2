@@ -1,9 +1,9 @@
-resource "aws_route53_zone" "main" {
-  name         = var.dns_zone
+data "aws_route53_zone" "main" {
+  name = var.dns_zone
 }
 
 resource "aws_acm_certificate" "wildcard" {
-  domain_name       = "*.${aws_route53_zone.main.name}"
+  domain_name       = "*.${data.aws_route53_zone.main.name}"
   validation_method = "DNS"
 }
 
@@ -21,7 +21,7 @@ resource "aws_route53_record" "wildcard" {
   records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
-  zone_id         = aws_route53_zone.main.zone_id
+  zone_id         = data.aws_route53_zone.main.zone_id
 }
 
 resource "aws_acm_certificate_validation" "wildcard" {

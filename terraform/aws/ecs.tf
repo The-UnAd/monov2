@@ -219,11 +219,11 @@ module "signup-site" {
 
 resource "aws_route53_record" "signup-site" {
   allow_overwrite = true
-  name            = "signup.${aws_route53_zone.main.name}"
+  name            = "signup.${data.aws_route53_zone.main.name}"
   records         = [module.signup-site.load_balancer_dns_name]
   ttl             = 60
   type            = "CNAME"
-  zone_id         = aws_route53_zone.main.zone_id
+  zone_id         = data.aws_route53_zone.main.zone_id
 }
 
 output "signup_site_dns" {
