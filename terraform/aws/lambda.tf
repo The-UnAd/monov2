@@ -191,7 +191,7 @@ resource "aws_lambda_function" "graph_monitor_authorizer" {
 
   provisioner "local-exec" {
     command     = "deploy-graph-monitor-authorizer.ps1"
-    working_dir = "../../serverless/GraphMonitor/GraphMonitor"
+    working_dir = "../serverless/GraphMonitor/GraphMonitor"
     interpreter = ["pwsh"]
     when        = create
     on_failure  = fail
@@ -224,7 +224,7 @@ resource "aws_lambda_function" "graph_monitor_post" {
 
   provisioner "local-exec" {
     command     = "deploy-graph-monitor-authorizer.ps1"
-    working_dir = "../../serverless/GraphMonitor/GraphMonitor"
+    working_dir = "../serverless/GraphMonitor/GraphMonitor"
     interpreter = ["pwsh"]
     when        = create
     on_failure  = fail
@@ -257,7 +257,7 @@ resource "aws_lambda_function" "graph_monitor_get" {
 
   provisioner "local-exec" {
     command     = "deploy-graph-monitor-authorizer.ps1"
-    working_dir = "../../serverless/GraphMonitor/GraphMonitor"
+    working_dir = "../serverless/GraphMonitor/GraphMonitor"
     interpreter = ["pwsh"]
     when        = create
     on_failure  = fail
@@ -265,19 +265,32 @@ resource "aws_lambda_function" "graph_monitor_get" {
   }
 }
 
-# resource "aws_apigatewayv2_domain_name" "graph_monitor_domain" {
-#   domain_name      = "monitor.${var.dns_zone}"
-#   domain_name_configuration {
-#     certificate_arn = aws_acm_certificate.wildcard.arn
-#     endpoint_type   = "REGIONAL"
-#     security_policy = "TLS_1_2"
-#   }
-# }
-# resource "aws_apigatewayv2_api_mapping" "api_mapping" {
-#   api_id      = aws_apigatewayv2_api.graph_monitor_api.id
-#   domain_name = aws_apigatewayv2_domain_name.graph_monitor_domain.id
-#   stage       = "$default"
-# }
+resource "aws_apigatewayv2_domain_name" "graph_monitor_domain" {
+  domain_name = "monitor.${data.aws_route53_zone.main.name}"
+  domain_name_configuration {
+    certificate_arn = aws_acm_certificate.wildcard.arn
+    endpoint_type   = "REGIONAL"
+    security_policy = "TLS_1_2"
+  }
+}
+
+resource "aws_apigatewayv2_api_mapping" "api_mapping" {
+  api_id      = aws_apigatewayv2_api.graph_monitor_api.id
+  domain_name = aws_apigatewayv2_domain_name.graph_monitor_domain.id
+  stage       = aws_apigatewayv2_stage.default_stage.name
+}
+
+resource "aws_route53_record" "graph_monitor" {
+  name    = aws_apigatewayv2_domain_name.graph_monitor_domain.domain_name
+  type    = "A"
+  zone_id = data.aws_route53_zone.main.zone_id
+
+  alias {
+    name                   = aws_apigatewayv2_domain_name.graph_monitor_domain.domain_name_configuration[0].target_domain_name
+    zone_id                = aws_apigatewayv2_domain_name.graph_monitor_domain.domain_name_configuration[0].hosted_zone_id
+    evaluate_target_health = false
+  }
+}
 
 resource "aws_apigatewayv2_api" "graph_monitor_api" {
   name          = "graph-monitor-http-api"
@@ -365,7 +378,7 @@ resource "aws_apigatewayv2_stage" "default_stage" {
   auto_deploy = true
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.api_logs.arn
-    format          = "$context.identity.sourceIp - - [$context.requestTime] \"$context.httpMethod $context.routeKey $context.protocol\" $context.status $context.responseLength $context.requestId $context.error.message $context.authorizer.error"
+    format          = "$context.identity.sourceIp - - [$context.requestTime] \"$context.httpMethod $context.routeKey $context.protocol\" $context.status $context.responseLength $context.requestId $context.error.message $context.integration.error $context.integrationErrorMessage $context.authorizer.error $context.integration.integrationStatus"
   }
 }
 

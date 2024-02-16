@@ -4,8 +4,6 @@ on:
   workflow_dispatch:
 
 env:
-  ECR_REPOSITORY: unad/graph-monitor
-  LAMBDA_FUNCTION: graph-monitor
   PROJECT_PATH: serverless/GraphMonitor/GraphMonitor
   
 jobs:
