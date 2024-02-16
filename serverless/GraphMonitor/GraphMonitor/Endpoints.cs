@@ -10,26 +10,16 @@ namespace GraphMonitor;
 public class Authorizer(IConfiguration config) {
 
     [LambdaFunction]
-    public APIGatewayCustomAuthorizerResponse Authorize(APIGatewayCustomAuthorizerRequest request, ILambdaContext context) {
+    public APIGatewayCustomAuthorizerV2SimpleResponse Authorize(APIGatewayCustomAuthorizerV2Request request, ILambdaContext context) {
 
-        if (request.AuthorizationToken != config.GetValue<string>("API_KEY")) {
-            return new APIGatewayCustomAuthorizerResponse {
-                UsageIdentifierKey = "Unauthorized"
+        if (request.Headers["Authorization"] != config.GetValue<string>("API_KEY")) {
+            return new APIGatewayCustomAuthorizerV2SimpleResponse {
+                IsAuthorized = false,
             };
         }
 
-        return new APIGatewayCustomAuthorizerResponse {
-            PrincipalID = "user",
-            PolicyDocument = new APIGatewayCustomAuthorizerPolicy {
-                Version = "2012-10-17",
-                Statement = [
-                    new() {
-                        Action = ["execute-api:Invoke"],
-                        Effect = "Allow",
-                        Resource = ["*"]
-                    }
-                ]
-            }
+        return new APIGatewayCustomAuthorizerV2SimpleResponse {
+            IsAuthorized = true,
         };
     }
 }

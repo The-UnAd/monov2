@@ -3,15 +3,11 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "5.34.0"
+      version = "5.37.0"
     }
     random = {
       source  = "hashicorp/random"
       version = "~> 3"
-    }
-    docker = {
-      source  = "kreuzwerker/docker"
-      version = "3.0.2"
     }
     tls = {
       source = "hashicorp/tls"

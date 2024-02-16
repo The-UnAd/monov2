@@ -346,7 +346,7 @@ output "signup_site_dns" {
 #     value = "http://+:80"
 #     }, {
 #     name  = "ApiKeyAuthenticationOptions:ApiKey"
-#     value = "${random_password.graph_montitor_api_key.result}"
+#     value = "${random_password.graph_monitor_api_key.result}"
 #   }]
 # }
 

@@ -21,7 +21,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "5.34.0"
+      version = "5.37.0"
     }
     local = {
       source  = "hashicorp/local"
@@ -45,13 +45,14 @@ module "aws" {
 }
 
 module "github" {
-  source            = "./github"
-  db_host           = module.aws.rds_cluster_endpoint
-  db_port           = module.aws.rds_cluster_port
-  db_pass           = module.aws.rds_cluster_password
-  jumpbox_host      = module.aws.jumpbox_host
-  token             = var.GITHUB_TOKEN
-  graph_monitor_url = module.aws.graph_monitor_api_url
+  source                = "./github"
+  db_host               = module.aws.rds_cluster_endpoint
+  db_port               = module.aws.rds_cluster_port
+  db_pass               = module.aws.rds_cluster_password
+  jumpbox_host          = module.aws.jumpbox_host
+  token                 = var.GITHUB_TOKEN
+  graph_monitor_url     = module.aws.graph_monitor_api_url
+  graph_monitor_api_key = module.aws.graph_monitor_api_key
 }
 
 

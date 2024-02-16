@@ -3,17 +3,46 @@ resource "aws_ecr_repository" "graph_monitor_ecr_repo" {
   force_delete = true
 }
 
-resource "random_password" "graph_montitor_api_key" {
+resource "random_password" "graph_monitor_api_key" {
   length  = 32
   special = false
 }
 
-output "graph_montitor_api_key" {
-  value = random_password.graph_montitor_api_key.result
+output "graph_monitor_api_key" {
+  value = random_password.graph_monitor_api_key.result
+}
+
+data "aws_iam_policy_document" "lambda_invoke" {
+  statement {
+    actions   = ["lambda:InvokeFunction"]
+    resources = [aws_lambda_function.graph_monitor_authorizer.arn]
+  }
+}
+
+resource "aws_iam_policy" "lambda_invoke_policy" {
+  name        = "lambda_invoke_policy"
+  description = "Policy to allow lambda to invoke other lambda functions"
+  policy      = data.aws_iam_policy_document.lambda_invoke.json
 }
 
 resource "aws_iam_role" "lambda_execution_role" {
   name = "lambda_execution_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+    }]
+  })
+}
+
+
+resource "aws_iam_role" "api_role" {
+  name = "api_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -60,6 +89,26 @@ resource "aws_iam_role_policy" "lambda_ecr_access" {
       Resource = "*"
     }]
   })
+}
+
+resource "aws_iam_role_policy" "lambda_invoke_authorizer" {
+  name = "lambda_invoke_authorizer"
+  role = aws_iam_role.api_role.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow",
+      Action = [
+        "apigateway:InvokeAuthorizer"
+      ],
+      Resource = "*"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_execution_attach" {
+  role       = aws_iam_role.lambda_execution_role.name
+  policy_arn = aws_iam_policy.lambda_invoke_policy.arn
 }
 
 resource "aws_cloudwatch_log_group" "graph_monitor_log_group" {
@@ -136,17 +185,17 @@ resource "aws_lambda_function" "graph_monitor_authorizer" {
   environment {
     variables = {
       ASPNETCORE_ENVIRONMENT = "Production"
-      API_KEY                = random_password.graph_montitor_api_key.result
+      API_KEY                = random_password.graph_monitor_api_key.result
     }
   }
 
   provisioner "local-exec" {
-    command = "${path.root}/scripts/deploy-graph-monitor-authorizer.ps1"
+    command     = "deploy-graph-monitor-authorizer.ps1"
     working_dir = "../../serverless/GraphMonitor/GraphMonitor"
-    interpreter = [ "pwsh" ]
-    when = create
-    on_failure = fail
-    quiet = false
+    interpreter = ["pwsh"]
+    when        = create
+    on_failure  = fail
+    quiet       = false
   }
 }
 
@@ -172,14 +221,14 @@ resource "aws_lambda_function" "graph_monitor_post" {
       REDIS_URL              = aws_ssm_parameter.redis_connection_string.value # TODO: if we need a password later, secure this
     }
   }
-  
+
   provisioner "local-exec" {
-    command = "${path.root}/scripts/deploy-graph-monitor-authorizer.ps1"
+    command     = "deploy-graph-monitor-authorizer.ps1"
     working_dir = "../../serverless/GraphMonitor/GraphMonitor"
-    interpreter = [ "pwsh" ]
-    when = create
-    on_failure = fail
-    quiet = false
+    interpreter = ["pwsh"]
+    when        = create
+    on_failure  = fail
+    quiet       = false
   }
 }
 
@@ -205,14 +254,14 @@ resource "aws_lambda_function" "graph_monitor_get" {
       REDIS_URL              = aws_ssm_parameter.redis_connection_string.value # TODO: if we need a password later, secure this
     }
   }
-  
+
   provisioner "local-exec" {
-    command = "${path.root}/scripts/deploy-graph-monitor-authorizer.ps1"
+    command     = "deploy-graph-monitor-authorizer.ps1"
     working_dir = "../../serverless/GraphMonitor/GraphMonitor"
-    interpreter = [ "pwsh" ]
-    when = create
-    on_failure = fail
-    quiet = false
+    interpreter = ["pwsh"]
+    when        = create
+    on_failure  = fail
+    quiet       = false
   }
 }
 
@@ -242,7 +291,9 @@ resource "aws_apigatewayv2_authorizer" "graph_monitor_authorizer" {
   authorizer_result_ttl_in_seconds  = 300
   name                              = "api-key-authorizer"
   authorizer_payload_format_version = "2.0"
+  enable_simple_responses           = true
   identity_sources                  = ["$request.header.Authorization"]
+  authorizer_credentials_arn        = aws_iam_role.api_role.arn
 }
 
 resource "aws_apigatewayv2_integration" "lambda_integration_post" {
@@ -254,6 +305,7 @@ resource "aws_apigatewayv2_integration" "lambda_integration_post" {
   integration_method     = "POST"
   integration_uri        = aws_lambda_function.graph_monitor_post.invoke_arn
   payload_format_version = "2.0"
+  credentials_arn        = aws_iam_role.api_role.arn
 }
 
 resource "aws_apigatewayv2_integration" "lambda_integration_get" {
@@ -265,6 +317,7 @@ resource "aws_apigatewayv2_integration" "lambda_integration_get" {
   integration_method     = "POST"
   integration_uri        = aws_lambda_function.graph_monitor_get.invoke_arn
   payload_format_version = "2.0"
+  credentials_arn        = aws_iam_role.api_role.arn
 
 }
 
@@ -287,21 +340,33 @@ resource "aws_lambda_permission" "apigw_get" {
 }
 
 resource "aws_apigatewayv2_route" "post_route" {
-  api_id    = aws_apigatewayv2_api.graph_monitor_api.id
-  route_key = "POST /{proxy+}"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration_post.id}"
+  api_id             = aws_apigatewayv2_api.graph_monitor_api.id
+  route_key          = "POST /{proxy+}"
+  target             = "integrations/${aws_apigatewayv2_integration.lambda_integration_post.id}"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.graph_monitor_authorizer.id
 }
 
 resource "aws_apigatewayv2_route" "get_route" {
-  api_id    = aws_apigatewayv2_api.graph_monitor_api.id
-  route_key = "ANY /{proxy+}"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration_get.id}"
+  api_id             = aws_apigatewayv2_api.graph_monitor_api.id
+  route_key          = "ANY /{proxy+}"
+  target             = "integrations/${aws_apigatewayv2_integration.lambda_integration_get.id}"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.graph_monitor_authorizer.id
+}
+
+resource "aws_cloudwatch_log_group" "api_logs" {
+  name = "/aws/apigateway/graph-monitor-http-api"
 }
 
 resource "aws_apigatewayv2_stage" "default_stage" {
   api_id      = aws_apigatewayv2_api.graph_monitor_api.id
   name        = "$default"
   auto_deploy = true
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_logs.arn
+    format          = "$context.identity.sourceIp - - [$context.requestTime] \"$context.httpMethod $context.routeKey $context.protocol\" $context.status $context.responseLength $context.requestId $context.error.message $context.authorizer.error"
+  }
 }
 
 output "graph_monitor_api_url" {

@@ -34,6 +34,13 @@ resource "github_actions_environment_variable" "db_port" {
   value         = var.db_port
 }
 
+resource "github_actions_environment_variable" "graph_monitor_url" {
+  repository    = "monov2"
+  environment   = "development"
+  variable_name = "GRAPH_MONITOR_URL"
+  value         = var.graph_monitor_url
+}
+
 resource "github_actions_environment_secret" "db_pass" {
   repository      = "monov2"
   environment     = "development"
@@ -48,11 +55,11 @@ resource "github_actions_environment_secret" "jumpbox_ssh_key" {
   plaintext_value = var.db_pass
 }
 
-resource "github_actions_environment_variable" "graph_monitor_url" {
-  repository    = "monov2"
-  environment   = "development"
-  variable_name = "GRAPH_MONITOR_URL"
-  value         = var.graph_monitor_url
+resource "github_actions_environment_secret" "graph_monitor_headers" {
+  repository      = "monov2"
+  environment     = "development"
+  secret_name     = "GRAPH_MONITOR_HEADERS"
+  plaintext_value = "Authorization ${var.graph_monitor_api_key}"
 }
 
 variable "token" {
@@ -85,4 +92,10 @@ variable "jumpbox_host" {
 variable "graph_monitor_url" {
   type     = string
   nullable = false
+}
+
+variable "graph_monitor_api_key" {
+  type     = string
+  nullable = false
+  sensitive = true
 }
