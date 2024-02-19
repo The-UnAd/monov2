@@ -40,13 +40,3 @@ resource "local_sensitive_file" "env_rds" {
     DB_PORT="${module.aws.rds_cluster_port}"
   EOT
 }
-
-# resource "local_sensitive_file" "jumpbox_ssh_script" {
-#   filename = "../env/jumpbox_ssh_config"
-#   content  = <<-EOT
-#     Host unad-jumpbox 
-#       User ubuntu
-#       HostName ${module.aws.jumpbox_host}
-#       IdentityFile ${pathexpand("~/.ssh/jumpbox_ed25519")}
-#   EOT
-# }

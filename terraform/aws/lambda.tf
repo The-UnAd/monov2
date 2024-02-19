@@ -1,8 +1,3 @@
-resource "aws_ecr_repository" "graph_monitor_ecr_repo" {
-  name         = "unad/graph-monitor"
-  force_delete = true
-}
-
 resource "random_password" "graph_monitor_api_key" {
   length  = 32
   special = false
@@ -12,108 +7,25 @@ output "graph_monitor_api_key" {
   value = random_password.graph_monitor_api_key.result
 }
 
-data "aws_iam_policy_document" "lambda_invoke" {
+data "aws_iam_policy_document" "lambda_assume_role_policy" {
   statement {
-    actions   = ["lambda:InvokeFunction"]
-    resources = [aws_lambda_function.graph_monitor_authorizer.arn]
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
   }
 }
 
-resource "aws_iam_policy" "lambda_invoke_policy" {
-  name        = "lambda_invoke_policy"
-  description = "Policy to allow lambda to invoke other lambda functions"
-  policy      = data.aws_iam_policy_document.lambda_invoke.json
-}
-
-resource "aws_iam_role" "lambda_execution_role" {
-  name = "lambda_execution_role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Principal = {
-        Service = "lambda.amazonaws.com"
-      }
-    }]
-  })
-}
-
-
-resource "aws_iam_role" "api_role" {
-  name = "api_role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Principal = {
-        Service = "lambda.amazonaws.com"
-      }
-    }]
-  })
-}
-
-resource "aws_iam_role_policy" "lambda_vpc_access" {
-  name = "lambda_vpc_access"
-  role = aws_iam_role.lambda_execution_role.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow",
-      Action = [
-        "ec2:CreateNetworkInterface",
-        "ec2:DescribeNetworkInterfaces",
-        "ec2:DeleteNetworkInterface"
-      ],
-      Resource : "*"
-    }]
-  })
-}
-
-resource "aws_iam_role_policy" "lambda_ecr_access" {
-  name = "lambda_ecr_access"
-  role = aws_iam_role.lambda_execution_role.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow",
-      Action = [
-        "ecr:SetRepositoryPolicy",
-        "ecr:BatchCheckLayerAvailability",
-        "ecr:GetDownloadUrlForLayer",
-        "ecr:BatchGetImage"
-      ],
-      Resource = "*"
-    }]
-  })
-}
-
-resource "aws_iam_role_policy" "lambda_invoke_authorizer" {
-  name = "lambda_invoke_authorizer"
-  role = aws_iam_role.api_role.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow",
-      Action = [
-        "apigateway:InvokeAuthorizer"
-      ],
-      Resource = "*"
-    }]
-  })
+resource "aws_iam_role" "lambda_role" {
+  name               = "lambda_role"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role_policy.json
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_execution_attach" {
-  role       = aws_iam_role.lambda_execution_role.name
-  policy_arn = aws_iam_policy.lambda_invoke_policy.arn
-}
-
-resource "aws_cloudwatch_log_group" "graph_monitor_log_group" {
-  name              = "/aws/lambda/graph-monitor"
-  retention_in_days = 7
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 resource "aws_lambda_permission" "graph_monitor_get_log_permission" {
@@ -134,15 +46,9 @@ resource "aws_lambda_permission" "graph_monitor_post_log_permission" {
   source_arn = aws_lambda_function.graph_monitor_post.arn
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_logs" {
-  role       = aws_iam_role.lambda_execution_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
 resource "aws_security_group" "lambda_private" {
   name   = "lambda-private"
   vpc_id = aws_vpc.vpc.id
-
   tags = {
     Name = "lambda-private"
   }
@@ -166,6 +72,21 @@ resource "aws_s3_bucket" "lambda_bucket" {
   bucket = "unad-code-bucket-${random_id.bucket_id.hex}"
 }
 
+resource "aws_cloudwatch_log_group" "authorizer_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.graph_monitor_authorizer.function_name}"
+  retention_in_days = 14
+}
+
+resource "aws_cloudwatch_log_group" "get_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.graph_monitor_get.function_name}"
+  retention_in_days = 14
+}
+
+resource "aws_cloudwatch_log_group" "post_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.graph_monitor_post.function_name}"
+  retention_in_days = 14
+}
+
 resource "aws_lambda_function" "graph_monitor_authorizer" {
   function_name = "graph-monitor-authorizer"
   package_type  = "Zip"
@@ -173,7 +94,7 @@ resource "aws_lambda_function" "graph_monitor_authorizer" {
   s3_key        = "GraphMonitor.zip"
   runtime       = "provided.al2023"
   handler       = "GraphMonitor::GraphMonitor.Authorizer_Authorize_Generated::Authorize"
-  role          = aws_iam_role.lambda_execution_role.arn
+  role          = aws_iam_role.lambda_role.arn
   timeout       = 60
   memory_size   = 256
 
@@ -187,6 +108,10 @@ resource "aws_lambda_function" "graph_monitor_authorizer" {
       ASPNETCORE_ENVIRONMENT = "Production"
       API_KEY                = random_password.graph_monitor_api_key.result
     }
+  }
+
+  tracing_config {
+    mode = "Active"
   }
 
   provisioner "local-exec" {
@@ -206,7 +131,7 @@ resource "aws_lambda_function" "graph_monitor_post" {
   s3_key        = "GraphMonitor.zip"
   runtime       = "provided.al2023"
   handler       = "GraphMonitor::GraphMonitor.StoreUrlFunction_StoreUrl_Generated::StoreUrl"
-  role          = aws_iam_role.lambda_execution_role.arn
+  role          = aws_iam_role.lambda_role.arn
   timeout       = 60
   memory_size   = 256
 
@@ -239,7 +164,7 @@ resource "aws_lambda_function" "graph_monitor_get" {
   s3_key        = "GraphMonitor.zip"
   runtime       = "provided.al2023"
   handler       = "GraphMonitor::GraphMonitor.GetUrlFunction_GetUrl_Generated::GetUrl"
-  role          = aws_iam_role.lambda_execution_role.arn
+  role          = aws_iam_role.lambda_role.arn
   timeout       = 60
   memory_size   = 256
 
@@ -298,15 +223,13 @@ resource "aws_apigatewayv2_api" "graph_monitor_api" {
 }
 
 resource "aws_apigatewayv2_authorizer" "graph_monitor_authorizer" {
+  name                              = "api-key-authorizer"
   api_id                            = aws_apigatewayv2_api.graph_monitor_api.id
   authorizer_type                   = "REQUEST"
   authorizer_uri                    = aws_lambda_function.graph_monitor_authorizer.invoke_arn
-  authorizer_result_ttl_in_seconds  = 300
-  name                              = "api-key-authorizer"
+  authorizer_result_ttl_in_seconds  = 0
   authorizer_payload_format_version = "2.0"
   enable_simple_responses           = true
-  identity_sources                  = ["$request.header.Authorization"]
-  authorizer_credentials_arn        = aws_iam_role.api_role.arn
 }
 
 resource "aws_apigatewayv2_integration" "lambda_integration_post" {
@@ -318,7 +241,6 @@ resource "aws_apigatewayv2_integration" "lambda_integration_post" {
   integration_method     = "POST"
   integration_uri        = aws_lambda_function.graph_monitor_post.invoke_arn
   payload_format_version = "2.0"
-  credentials_arn        = aws_iam_role.api_role.arn
 }
 
 resource "aws_apigatewayv2_integration" "lambda_integration_get" {
@@ -330,7 +252,6 @@ resource "aws_apigatewayv2_integration" "lambda_integration_get" {
   integration_method     = "POST"
   integration_uri        = aws_lambda_function.graph_monitor_get.invoke_arn
   payload_format_version = "2.0"
-  credentials_arn        = aws_iam_role.api_role.arn
 
 }
 
@@ -338,6 +259,15 @@ resource "aws_lambda_permission" "apigw_post" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.graph_monitor_post.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_apigatewayv2_api.graph_monitor_api.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "execute" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.graph_monitor_authorizer.function_name
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "${aws_apigatewayv2_api.graph_monitor_api.execution_arn}/*/*"
@@ -369,7 +299,7 @@ resource "aws_apigatewayv2_route" "get_route" {
 }
 
 resource "aws_cloudwatch_log_group" "api_logs" {
-  name = "/aws/apigateway/graph-monitor-http-api"
+  name = "/aws/apigateway/${aws_apigatewayv2_api.graph_monitor_api.name}"
 }
 
 resource "aws_apigatewayv2_stage" "default_stage" {

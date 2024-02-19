@@ -48,18 +48,11 @@ resource "github_actions_environment_secret" "db_pass" {
   plaintext_value = var.db_pass
 }
 
-resource "github_actions_environment_secret" "jumpbox_ssh_key" {
-  repository      = "monov2"
-  environment     = "development"
-  secret_name     = "DB_PASS"
-  plaintext_value = var.db_pass
-}
-
 resource "github_actions_environment_secret" "graph_monitor_headers" {
   repository      = "monov2"
   environment     = "development"
   secret_name     = "GRAPH_MONITOR_HEADERS"
-  plaintext_value = "Authorization ${var.graph_monitor_api_key}"
+  plaintext_value = "X-Api-Key ${var.graph_monitor_api_key}"
 }
 
 variable "token" {
