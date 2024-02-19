@@ -12,10 +12,8 @@ public class Program {
     public static IHostBuilder CreateHostBuilder(string[] args)
         => Host.CreateDefaultBuilder(args)
         .ConfigureAppConfiguration(c => c.AddEnvironmentVariables())
-        .ConfigureServices((context, services) => {
-                services.AddDbContext<Users.UserDbContext>(o
-                => o.UseNpgsql($"{context.Configuration["DB_CONNECTIONSTRING"]};Database=unad"));
-        });
+        .ConfigureServices((context, services) => services.AddDbContext<Users.UserDbContext>(o
+                => o.UseNpgsql($"{context.Configuration["DB_CONNECTIONSTRING"]};Database=userdb")));
 }
 
 
