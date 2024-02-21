@@ -19,11 +19,7 @@ RUN dotnet ef migrations bundle \
 
 RUN chmod +x ./efbundle
 
-FROM build as exec
+FROM mcr.microsoft.com/dotnet/runtime:8.0 as exec
 WORKDIR /app
 COPY --from=build /src/efbundle efbundle
-# NOTE: make sure to set the environment variable DB_CONNECTIONSTRING to the connection string for the database
 ENTRYPOINT /app/efbundle --connection $DB_CONNECTIONSTRING
-
-
-

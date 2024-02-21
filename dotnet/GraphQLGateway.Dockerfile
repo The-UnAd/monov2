@@ -34,7 +34,7 @@ RUN dotnet run --project UserApi/UserApi.csproj -- schema export --output schema
 RUN dotnet fusion subgraph pack -w ./UserApi
 RUN dotnet fusion compose -p ./GraphQLGateway/GraphQLGateway/gateway -s ./UserApi
 
-FROM build AS publish
+FROM mcr.microsoft.com/dotnet/runtime:8.0 AS publish
 WORKDIR /src/GraphQLGateway/GraphQLGateway/
 RUN dotnet publish "GraphQLGateway.csproj" -c Release -o /src/publish /p:UseAppHost=false
 

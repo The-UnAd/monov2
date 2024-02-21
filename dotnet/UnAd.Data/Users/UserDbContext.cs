@@ -6,6 +6,10 @@ namespace UnAd.Data.Users;
 public partial class UserDbContext : DbContext {
     public UserDbContext(DbContextOptions<UserDbContext> options)
         : base(options) {
+
+        Console.WriteLine("UserDbContext created");
+        // write out the connection string used
+        Console.WriteLine(options.GetExtension<Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure.Internal.NpgsqlOptionsExtension>().ConnectionString);
     }
 
     public virtual DbSet<Client> Clients { get; set; }

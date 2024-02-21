@@ -169,5 +169,4 @@ subgraph-config.json
 # appsettings.json
 appsettings.*.json
 
-
-
+efbundle*

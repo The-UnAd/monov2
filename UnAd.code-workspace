@@ -13,10 +13,6 @@
       "path": "dotnet"
     },
     {
-      "name": "lib",
-      "path": "lib"
-    },
-    {
       "name": "web",
       "path": "web"
     },
@@ -29,12 +25,12 @@
       "path": ".github"
     },
     {
-      "name": ".devcontainer",
-      "path": ".devcontainer"
-    },
-    {
       "name": ".vscode",
       "path": ".vscode"
+    },
+    {
+      "name": "serverless",
+      "path": "serverless"
     }
   ],
   "settings": {

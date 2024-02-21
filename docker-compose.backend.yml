@@ -12,6 +12,30 @@ services:
       - 6379:6379
     networks:
       - UnAd
+      
+  postgres:
+    networks:
+      - UnAd
+    build:
+      context: ./db
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./db/.env.docker
+
+  db_script:
+    networks:
+      - UnAd
+    image: postgres:15
+    depends_on:
+      - postgres
+    volumes:
+      - ./db/wait-for-postgres.sh:/wait-for-postgres.sh
+    command: ["./wait-for-postgres.sh"]
+    env_file:
+      - ./db/.env.docker
+    environment:
+      - DB_HOST=postgres
 
   migrator:
     build:
@@ -20,31 +44,16 @@ services:
     networks:
       - UnAd
     env_file:
-      - ./dotnet/.env.docker
-    depends_on:
-      - postgres
-      
-  postgres:
-    networks:
-      - UnAd
-    build:
-      context: ./db
-      dockerfile: ./Dockerfile.postgres
-    ports:
-      - "5432:5432"
-    # volumes:
-    #   - postgres:/data/postgres
-    env_file:
       - ./db/.env.docker
 
-  pgadmin:
-    networks:
-      - UnAd
-    image: dpage/pgadmin4
-    ports:
-      - "5431:5431"
-    env_file:
-      - ./db/.env.docker
+  # pgadmin:
+  #   networks:
+  #     - UnAd
+  #   image: dpage/pgadmin4
+  #   ports:
+  #     - "5431:5431"
+  #   env_file:
+  #     - ./db/.env.docker
 
   # graph-monitor:
   #   networks:
