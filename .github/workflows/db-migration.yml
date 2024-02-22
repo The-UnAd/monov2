@@ -35,15 +35,12 @@ jobs:
     
       - name: Setup SSH Tunnel and Run Migrations
         run: |
-          # Setup SSH key stored in GitHub Secrets
           mkdir -p ~/.ssh
           echo "${{ secrets.JUMPBOX_SSH_PRIVATE_KEY }}" > ~/.ssh/jumpbox_ed25519
           chmod 600 ~/.ssh/jumpbox_ed25519
-          # Setup SSH tunnel
-          ssh -i ~/.ssh/jumpbox_ed25519 -o StrictHostKeyChecking=no -L 5050:${{ vars.DB_HOST }}:${{ vars.DB_PORT }} ubuntu@${{ vars.JUMPBOX_HOST }} -N & echo $! > ssh_tunnel.pid
-          # Exceute migrations
-          dotnet/efbundle --connection "Host=localhost;Port=5050;Username=unad;Password=${{ secrets.DB_PASS }};Timeout=60"
-          # Kill SSH tunnel
-          kill -9 $(lsof -t -i :5050)
 
-      
+          ssh -i ~/.ssh/jumpbox_ed25519 -o StrictHostKeyChecking=no -L 5050:${{ vars.DB_HOST }}:${{ vars.DB_PORT }} ubuntu@${{ vars.JUMPBOX_HOST }} -N & echo $! > ssh_tunnel.pid
+
+          ConnectionStrings__UserDb="Host=localhost;Port=5050;Username=unad;Password=${{ secrets.DB_PASS }};Timeout=60;Database=userdb;" dotnet/efbundle
+
+          kill -9 $(lsof -t -i :5050)
