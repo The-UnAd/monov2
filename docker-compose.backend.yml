@@ -23,26 +23,14 @@ services:
     env_file:
       - ./db/.env.docker
 
-  db_script:
-    networks:
-      - UnAd
-    image: postgres:15
-    depends_on:
-      - postgres
-    volumes:
-      - ./db/wait-for-postgres.sh:/wait-for-postgres.sh
-    command: ["./wait-for-postgres.sh"]
-    env_file:
-      - ./db/.env.docker
-    environment:
-      - DB_HOST=postgres
-
   migrator:
     build:
       context: ./dotnet/
       dockerfile: Migrator.Dockerfile
     networks:
       - UnAd
+    depends_on:
+      - postgres
     env_file:
       - ./db/.env.docker
 
