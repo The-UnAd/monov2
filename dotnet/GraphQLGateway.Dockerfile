@@ -27,14 +27,14 @@ RUN dotnet tool restore
 
 RUN dotnet fusion subgraph config set name "UserApi" -w ./UserApi -c ./UserApi/subgraph-config.json
 RUN --mount=type=secret,id=graphmonitorheaders,target=/run/secrets/headers \
-    URL=$(curl -sb -f -H @/run/secrets/headers ${GRAPH_MONITOR_URL}/graph/UserApi) && \
+    URL=$(curl -sb -f -H @/run/secrets/headers ${GRAPH_MONITOR_URL}/user-api) && \
     dotnet fusion subgraph config set http --url "$URL" -w ./UserApi -c ./UserApi/subgraph-config.json
 
 RUN dotnet run --project UserApi/UserApi.csproj -- schema export --output schema.graphql
 RUN dotnet fusion subgraph pack -w ./UserApi
 RUN dotnet fusion compose -p ./GraphQLGateway/GraphQLGateway/gateway -s ./UserApi
 
-FROM mcr.microsoft.com/dotnet/runtime:8.0 AS publish
+FROM build AS publish
 WORKDIR /src/GraphQLGateway/GraphQLGateway/
 RUN dotnet publish "GraphQLGateway.csproj" -c Release -o /src/publish /p:UseAppHost=false
 
