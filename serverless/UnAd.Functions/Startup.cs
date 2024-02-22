@@ -1,16 +1,19 @@
 ﻿using Amazon.Lambda.Annotations;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using Stripe;
 using System.Reflection;
 using System.Text;
 using UnAd.Functions;
+using UnAd.Data.Users;
 
 [LambdaStartup]
 public class Startup {
 
     public Startup() {
         Configuration = new ConfigurationBuilder().AddEnvironmentVariables()
+            .AddUserSecrets(typeof(Startup).Assembly, true)
             .Build();
     }
     public IConfiguration Configuration { get; }
@@ -50,5 +53,7 @@ public class Startup {
         services.AddTransient<IStripeVerifier, StripeVerifier>();
         services.AddTransient<MessageHelper>();
         services.AddSingleton<IMessageSender, MessageSender>();
+        services.AddPooledDbContextFactory<UserDbContext>((c, o)
+            => o.UseNpgsql(Configuration.GetConnectionString("UserDb")));
     }
 }

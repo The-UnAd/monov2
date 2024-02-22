@@ -5,48 +5,51 @@ using Amazon.Lambda.Core;
 using StackExchange.Redis;
 using Stripe;
 using System.Net;
-using System.Text;
 using System.Text.Json;
 using UnAd.Redis;
 
 namespace UnAd.Functions;
-public class StripeProductWebhook(IStripeClient stripeClient,
-                                       IConnectionMultiplexer redis,
-                                       ILogger<StripeProductWebhook> logger,
-                                       IConfiguration config) {
 
-    private readonly string _stripeEndpointSecret = config.GetStripeProductEndpointSecret();
+public class StripeProductWebhook(IConnectionMultiplexer redis, StripeVerifier stripeVerifier, IConfiguration config) {
+    private readonly string _stripeEndpointSecret = config.GetStripePaymentEndpointSecret();
 
     [LambdaFunction]
     [HttpApi(LambdaHttpMethod.Post, "/StripeProductWebhook")]
-    public async Task<APIGatewayProxyResponse> Run(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context) {
-        context.Logger.LogLine("Processing Stripe Product Webhook");
-        using var bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(request.Body));
-        using var streamReader = new StreamReader(bodyStream);
-        var json = await streamReader.ReadToEndAsync();
-
+    public APIGatewayHttpApiV2ProxyResponse Run(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context) {
+        context.Logger.LogLine("Processing StripeProductWebhook");
+        Event stripeEvent = default!;
+        if (request.Headers.TryGetValue("stripe-signature", out var sig) &&
+            !stripeVerifier.TryVerify(sig, _stripeEndpointSecret, request.Body, out stripeEvent)) {
+            return new APIGatewayHttpApiV2ProxyResponse {
+                StatusCode = (int)HttpStatusCode.BadRequest,
+                Body = JsonSerializer.Serialize(new {
+                    error = "Invalid Stripe signature"
+                }),
+                Headers = new Dictionary<string, string> {
+                    { "Content-Type", "application/json" }
+                }
+            };
+        }
+        context.Logger.LogLine($"Stripe Event Type: {stripeEvent?.Type}");
         try {
-            var stripeEvent = EventUtility.ConstructEvent(json,
-                request.Headers.FirstOrDefault(h => h.Key == "stripe-signature").Value, _stripeEndpointSecret);
-            logger.LogInformation("Stripe Event Type: {type}", stripeEvent.Type);
 
-            if (stripeEvent.Type == Events.ProductCreated) {
-                await HandleProductCreatedEvent(stripeEvent);
-            } else if (stripeEvent.Type == Events.ProductUpdated) {
-                await HandleProductUpdatedEvent(stripeEvent);
-            } else if (stripeEvent.Type == Events.ProductDeleted) {
-                await HandleProductDeletedEvent(stripeEvent);
+            if (stripeEvent?.Type == Events.ProductCreated) {
+                HandleProductCreatedEvent(stripeEvent, context.Logger);
+            } else if (stripeEvent?.Type == Events.ProductUpdated) {
+                HandleProductUpdatedEvent(stripeEvent, context.Logger);
+            } else if (stripeEvent?.Type == Events.ProductDeleted) {
+                HandleProductDeletedEvent(stripeEvent, context.Logger);
             } else {
-                logger.LogWarning("Unhandled event type: {type}", stripeEvent.Type);
+                context.Logger.LogLine($"Unhandled event type: { stripeEvent?.Type}");
             }
 
-            return new APIGatewayProxyResponse {
+            return new APIGatewayHttpApiV2ProxyResponse {
                 StatusCode = (int)HttpStatusCode.OK
             };
         } catch (StripeException e) {
-            logger.LogError("Stripe Exception: {e}", e);
+            context.Logger.LogError($"Stripe Exception: {e}");
 
-            return new APIGatewayProxyResponse {
+            return new APIGatewayHttpApiV2ProxyResponse {
                 StatusCode = (int)HttpStatusCode.InternalServerError,
                 Body = JsonSerializer.Serialize(e),
                 Headers = new Dictionary<string, string> {
@@ -56,35 +59,35 @@ public class StripeProductWebhook(IStripeClient stripeClient,
         }
     }
 
-    private Task HandleProductCreatedEvent(Event stripeEvent) {
+    private void HandleProductCreatedEvent(Event stripeEvent, ILambdaLogger logger) {
         if (stripeEvent.Data.Object is not Product product) {
             logger.LogWarning("Could not find product in event data");
-            return Task.CompletedTask;
+            return;
         }
 
         var db = redis.GetDatabase();
         db.StoreProduct(product.Id, product.Name, product.Description);
         db.SetProductLimits(product.Id, product.Metadata);
-        return Task.CompletedTask;
+        return;
     }
 
-    private Task HandleProductUpdatedEvent(Event stripeEvent) {
+    private void HandleProductUpdatedEvent(Event stripeEvent, ILambdaLogger logger) { 
         if (stripeEvent.Data.Object is not Product product) {
             logger.LogWarning("Could not find product in event data");
-            return Task.CompletedTask;
+            return;
         }
         var db = redis.GetDatabase();
         db.StoreProduct(product.Id, product.Name, product.Description);
         db.SetProductLimits(product.Id, product.Metadata);
-        return Task.CompletedTask;
+        return;
     }
 
-    private Task HandleProductDeletedEvent(Event stripeEvent) {
+    private void HandleProductDeletedEvent(Event stripeEvent, ILambdaLogger logger) {
         if (stripeEvent.Data.Object is not Product product) {
             logger.LogWarning("Could not find product in event data");
-            return Task.CompletedTask;
+            return;
         }
         // TODO: delete product from redis
-        return Task.CompletedTask;
+        return;
     }
 }

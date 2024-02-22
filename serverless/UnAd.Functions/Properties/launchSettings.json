@@ -1,34 +1,13 @@
 {
   "profiles": {
-    "http": {
-      "commandName": "Project",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "http://localhost:7071"
-      }
-    },
     "Mock Lambda Test Tool": {
       "commandName": "Executable",
       "commandLineArgs": "--port 7071 --config-file template.json",
       "executablePath": "dotnet-lambda-test-tool-8.0",
       "workingDirectory": ".\\bin\\Debug\\net8.0",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "REDIS_URL": "localhost,abortConnect=true",
-        "STRIPE_API_KEY": "sk_test_51MtKShE8A2efFCQSK8cxjP720Ya7fl0JFpvrPc1pUR1dqiOEhuOjC07cn9YLNBxPH38a1vZLMkGGhuApBQr90E3J00aqS8IsGu",
-        "STRIPE_SUBSCRIPTION_ENDPOINT_SECRET": "whsec_SzXQF1grYiTX4sbEWLlEGshdVlrf9NW5",
-        "STRIPE_PRODUCT_ENDPOINT_SECRET": "whsec_hqJQbx0JyKKObi4Zl3oJM8Obx1zwSi78",
-        "STRIPE_PAYMENT_ENDPOINT_SECRET": "whsec_oj97MjKzsm0ULffxkIOwEvejS0fob3fD",
-        "TWILIO_ACCOUNT_SID": "ACa47f561109b02f76ad0d06e6c409ed37",
-        "TWILIO_AUTH_TOKEN": "3fabad71f99120b1dbf36eefc324ce42",
-        "TWILIO_MESSAGE_SERVICE_SID": "MG286e5e74c953d5720fbc002c41a2bdd6",
-        "ClientLinkBaseUri": "http://localhost:3000/subscribe",
-        "SMS_LINK_BASE_URL": "http://localhost:3000/announcement",
-        "StripePortalUrl": "https://pay.theunad.com/p/login/test_9AQ8Ag7pwgGg0c84gg",
-        "AccountUrl": "http://localhost:3000/account",
-        "MIXPANEL_TOKEN": "bc58f676986b86540e39ead3274931e8"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
-  }
   }
 }

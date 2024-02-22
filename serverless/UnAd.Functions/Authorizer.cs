@@ -17,6 +17,7 @@ internal class Authorizer(IConfiguration config) {
             };
         }
 
+
         context.Logger.LogLine("Unuthorized");
         return new APIGatewayCustomAuthorizerV2SimpleResponse {
             IsAuthorized = false,
