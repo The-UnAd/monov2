@@ -8,6 +8,8 @@ import Stripe from 'stripe';
 import { createTranslator, importMessages } from '@/lib/i18n';
 import { createModelFactory } from '@/lib/redis';
 import { Client } from '@/models';
+import { getAppDataSource } from '@/lib/db';
+import { Users } from '@unad/models';
 
 interface PageData {
   accountUrl: string;
@@ -107,9 +109,11 @@ export async function getServerSideProps(
   }
 
   try {
-    const client = await models.getClientById(
-      session.client_reference_id as string
-    );
+    const source = await getAppDataSource();
+    const clientRepo = source.getRepository(Users.Client);
+    const client = await clientRepo.findOneBy({
+      id: session.client_reference_id as string,
+    });
     if (!client) {
       return {
         props: {
