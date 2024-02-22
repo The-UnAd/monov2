@@ -14,11 +14,6 @@ public class ClientTypeExtensions : ObjectTypeExtension<Client> {
                 var result = await dbContext.Clients.FindAsync(id.ToString());
                 return result;
             });
-        descriptor.Field(f => f.Id)
-            .Resolve(f => f.ToString())
-            .Name("id")
-            .Type<NonNullType<IdType>>()
-            .ID();
     }
 }
 

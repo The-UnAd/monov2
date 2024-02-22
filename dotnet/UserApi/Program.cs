@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
 using StackExchange.Redis;
 using UserApi;
+using HotChocolate.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,8 +29,8 @@ builder.Services.AddExceptionHandler(o => o.ExceptionHandler = context => {
     return Task.CompletedTask;
 });
 
-builder.Services.AddPooledDbContextFactory<UserDbContext>(o
-    => o.UseNpgsql(""));
+builder.Services.AddPooledDbContextFactory<UserDbContext>((s, o) =>
+    o.UseNpgsql(s.GetRequiredService<IConfiguration>().GetConnectionString("UserDb")));
 
 builder.Services.AddHttpResponseFormatter(new HttpResponseFormatterOptions {
     Json = new JsonResultFormatterOptions {
@@ -37,13 +38,20 @@ builder.Services.AddHttpResponseFormatter(new HttpResponseFormatterOptions {
     }
 });
 
+builder.Services.AddSingleton<IChangeTypeProvider, GuidFormatter>();
+
 builder.Services
     .AddGraphQLServer()
     .AddAuthorization()
-    .AddQueryType<Query>()
+    .AddQueryType<QueryType>()
+    //.AddPaging()
+    .AddFiltering()
+    .AddProjections()
+    .AddSorting()
+    .AddMutationType<MutationType>()
+    .AddMutationConventions()
     .AddTypeExtension<ClientTypeExtensions>()
     .AddGlobalObjectIdentification()
-    .AddProjections()
     .RegisterDbContext<UserDbContext>(DbContextKind.Pooled)
     .ModifyRequestOptions(opt =>
         opt.IncludeExceptionDetails = builder.Environment.IsDevelopment())
