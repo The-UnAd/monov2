@@ -109,6 +109,141 @@ resource "aws_lambda_function" "unad_functions_product" {
   }
 }
 
+resource "aws_lambda_function" "unad_functions_payment" {
+  function_name = "unad-functions-payment"
+  package_type  = "Zip"
+  s3_bucket     = aws_s3_bucket.lambda_bucket.bucket
+  s3_key        = "GraphMonitor.zip"
+  runtime       = "provided.al2023"
+  handler       = "UnAd.Functions::UnAd.Functions.StripePaymentWebhook_Run_Generated::Run"
+  role          = aws_iam_role.lambda_role.arn
+  timeout       = 60
+  memory_size   = 256
+
+  vpc_config {
+    subnet_ids         = var.subnet_ids
+    security_group_ids = var.security_group_ids
+  }
+
+  environment {
+    variables = {
+      ASPNETCORE_ENVIRONMENT              = "Production"
+      REDIS_URL                           = "${var.redis_connection_string}"
+      STRIPE_API_KEY                      = "sk_test_51MtKShE8A2efFCQSK8cxjP720Ya7fl0JFpvrPc1pUR1dqiOEhuOjC07cn9YLNBxPH38a1vZLMkGGhuApBQr90E3J00aqS8IsGu",
+      STRIPE_SUBSCRIPTION_ENDPOINT_SECRET = "whsec_SzXQF1grYiTX4sbEWLlEGshdVlrf9NW5",
+      STRIPE_PRODUCT_ENDPOINT_SECRET      = "whsec_hqJQbx0JyKKObi4Zl3oJM8Obx1zwSi78",
+      STRIPE_PAYMENT_ENDPOINT_SECRET      = "whsec_oj97MjKzsm0ULffxkIOwEvejS0fob3fD",
+      TWILIO_ACCOUNT_SID                  = "ACa47f561109b02f76ad0d06e6c409ed37",
+      TWILIO_AUTH_TOKEN                   = "3fabad71f99120b1dbf36eefc324ce42",
+      TWILIO_MESSAGE_SERVICE_SID          = "MG286e5e74c953d5720fbc002c41a2bdd6",
+      ClientLinkBaseUri                   = "http://signup.unad.dev/subscribe",
+      SMS_LINK_BASE_URL                   = "http://signup.unad.dev/announcement",
+      StripePortalUrl                     = "https://pay.theunad.com/p/login/test_9AQ8Ag7pwgGg0c84gg",
+      AccountUrl                          = "http://signup.unad.dev/account",
+      MIXPANEL_TOKEN                      = "bc58f676986b86540e39ead3274931e8"
+    }
+  }
+
+  provisioner "local-exec" {
+    command     = "deploy-unad-functions-payment.ps1"
+    working_dir = "../serverless/UnAd.Functions"
+    interpreter = ["pwsh"]
+    when        = create
+    on_failure  = fail
+    quiet       = false
+  }
+}
+
+resource "aws_lambda_function" "unad_functions_messages" {
+  function_name = "unad-functions-messages"
+  package_type  = "Zip"
+  s3_bucket     = aws_s3_bucket.lambda_bucket.bucket
+  s3_key        = "GraphMonitor.zip"
+  runtime       = "provided.al2023"
+  handler       = "UnAd.Functions::UnAd.Functions.MessageHandler_Run_Generated::Run"
+  role          = aws_iam_role.lambda_role.arn
+  timeout       = 60
+  memory_size   = 256
+
+  vpc_config {
+    subnet_ids         = var.subnet_ids
+    security_group_ids = var.security_group_ids
+  }
+
+  environment {
+    variables = {
+      ASPNETCORE_ENVIRONMENT              = "Production"
+      REDIS_URL                           = "${var.redis_connection_string}"
+      STRIPE_API_KEY                      = "sk_test_51MtKShE8A2efFCQSK8cxjP720Ya7fl0JFpvrPc1pUR1dqiOEhuOjC07cn9YLNBxPH38a1vZLMkGGhuApBQr90E3J00aqS8IsGu",
+      STRIPE_SUBSCRIPTION_ENDPOINT_SECRET = "whsec_SzXQF1grYiTX4sbEWLlEGshdVlrf9NW5",
+      STRIPE_PRODUCT_ENDPOINT_SECRET      = "whsec_hqJQbx0JyKKObi4Zl3oJM8Obx1zwSi78",
+      STRIPE_PAYMENT_ENDPOINT_SECRET      = "whsec_oj97MjKzsm0ULffxkIOwEvejS0fob3fD",
+      TWILIO_ACCOUNT_SID                  = "ACa47f561109b02f76ad0d06e6c409ed37",
+      TWILIO_AUTH_TOKEN                   = "3fabad71f99120b1dbf36eefc324ce42",
+      TWILIO_MESSAGE_SERVICE_SID          = "MG286e5e74c953d5720fbc002c41a2bdd6",
+      ClientLinkBaseUri                   = "http://signup.unad.dev/subscribe",
+      SMS_LINK_BASE_URL                   = "http://signup.unad.dev/announcement",
+      StripePortalUrl                     = "https://pay.theunad.com/p/login/test_9AQ8Ag7pwgGg0c84gg",
+      AccountUrl                          = "http://signup.unad.dev/account",
+      MIXPANEL_TOKEN                      = "bc58f676986b86540e39ead3274931e8"
+    }
+  }
+
+  provisioner "local-exec" {
+    command     = "deploy-unad-functions-messages.ps1"
+    working_dir = "../serverless/UnAd.Functions"
+    interpreter = ["pwsh"]
+    when        = create
+    on_failure  = fail
+    quiet       = false
+  }
+}
+
+resource "aws_lambda_function" "unad_functions_subscription" {
+  function_name = "unad-functions-subscription"
+  package_type  = "Zip"
+  s3_bucket     = aws_s3_bucket.lambda_bucket.bucket
+  s3_key        = "GraphMonitor.zip"
+  runtime       = "provided.al2023"
+  handler       = "UnAd.Functions::UnAd.Functions.StripeSubscriptionWebhook_Run_Generated::Run"
+  role          = aws_iam_role.lambda_role.arn
+  timeout       = 60
+  memory_size   = 256
+
+  vpc_config {
+    subnet_ids         = var.subnet_ids
+    security_group_ids = var.security_group_ids
+  }
+
+  environment {
+    variables = {
+      ASPNETCORE_ENVIRONMENT              = "Production"
+      REDIS_URL                           = "${var.redis_connection_string}"
+      STRIPE_API_KEY                      = "sk_test_51MtKShE8A2efFCQSK8cxjP720Ya7fl0JFpvrPc1pUR1dqiOEhuOjC07cn9YLNBxPH38a1vZLMkGGhuApBQr90E3J00aqS8IsGu",
+      STRIPE_SUBSCRIPTION_ENDPOINT_SECRET = "whsec_SzXQF1grYiTX4sbEWLlEGshdVlrf9NW5",
+      STRIPE_PRODUCT_ENDPOINT_SECRET      = "whsec_hqJQbx0JyKKObi4Zl3oJM8Obx1zwSi78",
+      STRIPE_PAYMENT_ENDPOINT_SECRET      = "whsec_oj97MjKzsm0ULffxkIOwEvejS0fob3fD",
+      TWILIO_ACCOUNT_SID                  = "ACa47f561109b02f76ad0d06e6c409ed37",
+      TWILIO_AUTH_TOKEN                   = "3fabad71f99120b1dbf36eefc324ce42",
+      TWILIO_MESSAGE_SERVICE_SID          = "MG286e5e74c953d5720fbc002c41a2bdd6",
+      ClientLinkBaseUri                   = "http://signup.unad.dev/subscribe",
+      SMS_LINK_BASE_URL                   = "http://signup.unad.dev/announcement",
+      StripePortalUrl                     = "https://pay.theunad.com/p/login/test_9AQ8Ag7pwgGg0c84gg",
+      AccountUrl                          = "http://signup.unad.dev/account",
+      MIXPANEL_TOKEN                      = "bc58f676986b86540e39ead3274931e8"
+    }
+  }
+
+  provisioner "local-exec" {
+    command     = "deploy-unad-functions-subscription.ps1"
+    working_dir = "../serverless/UnAd.Functions"
+    interpreter = ["pwsh"]
+    when        = create
+    on_failure  = fail
+    quiet       = false
+  }
+}
+
 resource "aws_apigatewayv2_domain_name" "unad_functions_domain" {
   domain_name = "funcs.${var.domain_name}"
   domain_name_configuration {

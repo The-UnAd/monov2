@@ -43,4 +43,5 @@ resource "random_id" "bucket_id" {
 
 resource "aws_s3_bucket" "lambda_bucket" {
   bucket = "unad-code-bucket-${random_id.bucket_id.hex}"
+  force_destroy = true
 }
