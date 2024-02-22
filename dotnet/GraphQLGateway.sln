@@ -10,6 +10,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQLGateway.Tests.Unit",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQLGateway.Tests.Integration", "GraphQLGateway\GraphQLGateway.Tests.Unit\GraphQLGateway.Tests.Integration.csproj", "{1B3D9A74-F65A-4FD7-BC73-6068279E7C68}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnAd.Auth.Web", "UnAd.Auth.Web\UnAd.Auth.Web.csproj", "{2DEA9A9C-B59D-4161-8B93-EA518B35D56E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{1B3D9A74-F65A-4FD7-BC73-6068279E7C68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B3D9A74-F65A-4FD7-BC73-6068279E7C68}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B3D9A74-F65A-4FD7-BC73-6068279E7C68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DEA9A9C-B59D-4161-8B93-EA518B35D56E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DEA9A9C-B59D-4161-8B93-EA518B35D56E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DEA9A9C-B59D-4161-8B93-EA518B35D56E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DEA9A9C-B59D-4161-8B93-EA518B35D56E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

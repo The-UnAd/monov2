@@ -25,8 +25,8 @@ export default function MyDocument() {
         <div className="footer text-center">
           <div className="container-app">
             <p>
-              &copy; {new Date().getFullYear()} Double Precision Software. All
-              rights reserved.
+              &copy; {new Date().getFullYear()} The UnAd, LLC. All rights
+              reserved.
             </p>
           </div>
         </div>

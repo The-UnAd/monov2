@@ -12,7 +12,7 @@
         ]
       },
       "Properties": {
-        "Runtime": "dotnet8",
+        "Runtime": "provided.al2023",
         "CodeUri": ".",
         "MemorySize": 256,
         "Timeout": 30,
@@ -41,7 +41,7 @@
         ]
       },
       "Properties": {
-        "Runtime": "dotnet8",
+        "Runtime": "provided.al2023",
         "CodeUri": ".",
         "MemorySize": 256,
         "Timeout": 30,
@@ -67,7 +67,7 @@
         "Tool": "Amazon.Lambda.Annotations"
       },
       "Properties": {
-        "Runtime": "dotnet8",
+        "Runtime": "provided.al2023",
         "CodeUri": ".",
         "MemorySize": 256,
         "Timeout": 30,
