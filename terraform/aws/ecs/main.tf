@@ -7,7 +7,7 @@ resource "aws_ecr_repository" "this" {
 
 resource "aws_ecr_lifecycle_policy" "lasttwoimages" {
   repository = aws_ecr_repository.this.name
-  policy     = jsonencode({
+  policy = jsonencode({
     "rules" : [
       {
         "rulePriority" : 1,
@@ -91,7 +91,7 @@ resource "aws_ecs_service" "this" {
 
   network_configuration {
     subnets          = var.private_subnet_ids
-    security_groups  = concat(var.service_security_group_ids, [aws_security_group.tasks[0].id])
+    security_groups  = concat(var.service_security_group_ids, aws_security_group.tasks.*.id)
     assign_public_ip = false
   }
 
@@ -190,6 +190,32 @@ resource "aws_lb_listener" "this_listener" {
 
   lifecycle {
     replace_triggered_by = [aws_lb_target_group.this_target_group[count.index].id]
+  }
+}
+
+resource "aws_lb_listener_rule" "cognito" {
+  count        = var.enable_cognito ? 1 : 0
+  listener_arn = aws_lb_listener.this_listener[count.index].arn
+
+  action {
+    type = "authenticate-cognito"
+
+    authenticate_cognito {
+      user_pool_arn       = var.cognito_pool_arn
+      user_pool_client_id = var.cognito_pool_client_id
+      user_pool_domain    = var.cognito_pool_domain
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = ["/*"]
+    }
+  }
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.this_target_group[count.index].arn
   }
 }
 
