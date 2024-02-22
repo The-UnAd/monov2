@@ -7,7 +7,7 @@
       "commands": ["fusion"]
     },
     "dotnet-ef": {
-      "version": "8.0.1",
+      "version": "2",
       "commands": ["dotnet-ef"]
     }
   }
