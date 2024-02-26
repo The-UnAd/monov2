@@ -8,22 +8,22 @@ services:
 
   redis:
     image: redis:7-alpine
+    networks:
+      - UnAd
     ports:
       - 6379:6379
-    networks:
-      - UnAd
       
   postgres:
-    networks:
-      - UnAd
     build:
       context: ./db
+    networks:
+      - UnAd
     ports:
       - "5432:5432"
     env_file:
       - ./db/.env.docker
 
-  migrator:
+  db-migrator:
     build:
       context: ./dotnet/
       dockerfile: Migrator.Dockerfile
@@ -34,37 +34,41 @@ services:
     env_file:
       - ./db/.env.docker
 
-  # pgadmin:
-  #   networks:
-  #     - UnAd
-  #   image: dpage/pgadmin4
-  #   ports:
-  #     - "5431:5431"
-  #   env_file:
-  #     - ./db/.env.docker
+  db-seeder:
+    build:
+      context: ./dotnet
+      dockerfile: DbSeeder.Dockerfile
+    networks:
+      - UnAd
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - ./dotnet/.env.docker
 
-  # graph-monitor:
-  #   networks:
-  #     - UnAd
-  #   restart: always
-  #   build:
-  #     context: ./dotnet/GraphMonitor/GraphMonitor
-  #     dockerfile: Dockerfile.local
-  #   ports:
-  #     - "5145:5145"
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Development
-  #     - ASPNETCORE_URLS=http://+:5145
-  #   env_file:
-  #     - ./dotnet/.env.docker
-  #   healthcheck:
-  #     test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/5145' || exit 1
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #   depends_on:
-  #     - redis
+  graph-monitor:
+    networks:
+      - UnAd
+    build:
+      context: ./dotnet/GraphMonitor
+    ports:
+      - "5145:5145"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - HTTP_PORTS=5145
+    env_file:
+      - ./dotnet/.env.docker
 
-# volumes:
-#   postgres:
-#     external: false
+  unad-functions:
+    networks:
+      - UnAd
+    build:
+      context: ./dotnet
+      dockerfile: UnAd.Functions.Dockerfile
+    ports:
+      - "7071:7071"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - HTTP_PORTS=7071
+    env_file:
+      - ./dotnet/.env.docker

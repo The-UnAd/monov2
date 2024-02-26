@@ -7,6 +7,3 @@ dotnet run --project ../../UserApi/UserApi.csproj -- schema export --output sche
 dotnet fusion subgraph pack -w ../../UserApi
 dotnet fusion compose -p gateway -s ../../UserApi
 dotnet run -- schema export --output schema.graphql
-
-
-

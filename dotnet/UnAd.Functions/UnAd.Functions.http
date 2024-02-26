@@ -1,0 +1,11 @@
+@UnAd.Functions_HostAddress = http://localhost:7071
+
+GET {{UnAd.Functions_HostAddress}}/todos/
+Accept: application/json
+
+###
+
+GET {{UnAd.Functions_HostAddress}}/todos/1
+Accept: application/json
+
+###

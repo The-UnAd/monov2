@@ -1,13 +1,13 @@
-name: Build and Deploy graph-monitor to ECS
+name: Build and Deploy unad-functions to ECS
 
 on:
   workflow_dispatch:
 
 env:
-  ECR_REPOSITORY: unad/graph-monitor
+  ECR_REPOSITORY: unad/unad-functions
   ECS_CLUSTER: unad-cluster
-  ECS_SERVICE: graph-monitor
-  CONTEXT_PATH: dotnet/GraphMonitor
+  ECS_SERVICE: unad-functions
+  CONTEXT_PATH: dotnet
   
 jobs:
   build:
@@ -35,6 +35,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ${{ env.CONTEXT_PATH }}
+          file: ${{ env.CONTEXT_PATH }}/UnAd.Functions.Dockerfile
           push: true
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}

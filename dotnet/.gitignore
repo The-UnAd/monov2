@@ -170,3 +170,5 @@ subgraph-config.json
 appsettings.*.json
 
 efbundle*
+headers
+http-client.env.json.user

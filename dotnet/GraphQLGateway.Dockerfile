@@ -27,7 +27,7 @@ RUN dotnet tool restore
 
 RUN dotnet fusion subgraph config set name "UserApi" -w ./UserApi -c ./UserApi/subgraph-config.json
 RUN --mount=type=secret,id=graphmonitorheaders,target=/run/secrets/headers \
-    URL=$(curl -sb -f -H @/run/secrets/headers ${GRAPH_MONITOR_URL}/user-api) && \
+    URL=$(curl -Sf -H @/run/secrets/headers ${GRAPH_MONITOR_URL}/user-api) && \
     dotnet fusion subgraph config set http --url "$URL" -w ./UserApi -c ./UserApi/subgraph-config.json
 
 RUN dotnet run --project UserApi/UserApi.csproj -- schema export --output schema.graphql
