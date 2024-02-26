@@ -226,89 +226,208 @@ resource "aws_route53_record" "signup-site" {
   zone_id         = data.aws_route53_zone.main.zone_id
 }
 
-module "graphql-gateway" {
-  source                       = "./ecs"
-  region                       = data.aws_region.current.name
-  project_name                 = "graphql-gateway"
-  container_port               = 3000
-  task_role_arn                = aws_iam_role.ecs_task_execution_role.arn
-  execution_role_arn           = aws_iam_role.ecs_task_execution_role.arn
-  public_subnet_ids            = aws_subnet.public_subnet.*.id
-  vpc_id                       = aws_vpc.vpc.id
-  vpc_cidr                     = var.vpc_cidr
-  private_subnet_ids           = aws_subnet.private_subnet.*.id
-  service_security_group_ids   = [aws_security_group.ecs_private.id]
-  desired_count                = 1
-  cluster_arn                  = aws_ecs_cluster.cluster.arn
-  task_cpu                     = 256
-  task_memory                  = 512
-  health_check_path            = "/health"
-  enable_service_connect       = true
-  service_connect_namespace    = aws_service_discovery_private_dns_namespace.this.arn
-  service_connect_namespace_id = aws_service_discovery_private_dns_namespace.this.id
-  ssl_certificate_arn          = aws_acm_certificate.wildcard.arn
-  # enable_cognito               = true
-  # cognito_pool_client_id       = aws_cognito_user_pool_client.cognito_client.id
-  # cognito_pool_domain          = aws_cognito_user_pool_domain.main.domain
-  # cognito_pool_arn              = aws_cognito_user_pool.cognito_pool.arn
+# module "graphql-gateway" {
+#   source                       = "./ecs"
+#   region                       = data.aws_region.current.name
+#   project_name                 = "graphql-gateway"
+#   container_port               = 3000
+#   task_role_arn                = aws_iam_role.ecs_task_execution_role.arn
+#   execution_role_arn           = aws_iam_role.ecs_task_execution_role.arn
+#   public_subnet_ids            = aws_subnet.public_subnet.*.id
+#   vpc_id                       = aws_vpc.vpc.id
+#   vpc_cidr                     = var.vpc_cidr
+#   private_subnet_ids           = aws_subnet.private_subnet.*.id
+#   service_security_group_ids   = [aws_security_group.ecs_private.id]
+#   desired_count                = 1
+#   cluster_arn                  = aws_ecs_cluster.cluster.arn
+#   task_cpu                     = 256
+#   task_memory                  = 512
+#   health_check_path            = "/health"
+#   enable_service_connect       = true
+#   service_connect_namespace    = aws_service_discovery_private_dns_namespace.this.arn
+#   service_connect_namespace_id = aws_service_discovery_private_dns_namespace.this.id
+#   ssl_certificate_arn          = aws_acm_certificate.wildcard.arn
+#   # enable_cognito               = true
+#   # cognito_pool_client_id       = aws_cognito_user_pool_client.cognito_client.id
+#   # cognito_pool_domain          = aws_cognito_user_pool_domain.main.domain
+#   # cognito_pool_arn              = aws_cognito_user_pool.cognito_pool.arn
+#   container_secrets = [
+#     {
+#       name      = "REDIS_URL"
+#       valueFrom = "${aws_ssm_parameter.redis_connection_string.arn}"
+#     }
+#   ]
+#   container_environment = [{
+#     name  = "ASPNETCORE_ENVIRONMENT"
+#     value = "Production"
+#     }, {
+#     name  = "ASPNETCORE_URLS"
+#     value = "http://+:3000"
+#   }]
+# }
+
+# resource "aws_route53_record" "graphql-api" {
+#   allow_overwrite = true
+#   name            = "api.${data.aws_route53_zone.main.name}"
+#   records         = [module.graphql-gateway.load_balancer_dns_name]
+#   ttl             = 60
+#   type            = "CNAME"
+#   zone_id         = data.aws_route53_zone.main.zone_id
+# }
+
+# module "user-api" {
+#   source                       = "./ecs"
+#   region                       = data.aws_region.current.name
+#   project_name                 = "user-api"
+#   container_port               = 3000
+#   task_role_arn                = aws_iam_role.ecs_task_execution_role.arn
+#   execution_role_arn           = aws_iam_role.ecs_task_execution_role.arn
+#   vpc_id                       = aws_vpc.vpc.id
+#   vpc_cidr                     = var.vpc_cidr
+#   private_subnet_ids           = aws_subnet.private_subnet.*.id
+#   service_security_group_ids   = [aws_security_group.ecs_private.id]
+#   desired_count                = 1
+#   cluster_arn                  = aws_ecs_cluster.cluster.arn
+#   task_cpu                     = 256
+#   task_memory                  = 512
+#   health_check_path            = "/health"
+#   enable_service_connect       = true
+#   service_connect_namespace    = aws_service_discovery_private_dns_namespace.this.arn
+#   service_connect_namespace_id = aws_service_discovery_private_dns_namespace.this.id
+#   container_secrets = [
+#     {
+#       name      = "ConnectionStrings__UserDb"
+#       valueFrom = "${aws_ssm_parameter.rds_cluster_db_connection_string.arn}"
+#     },
+#     {
+#       name      = "REDIS_URL"
+#       valueFrom = "${aws_ssm_parameter.redis_hosts.arn}"
+#     }
+#   ]
+#   container_environment = [{
+#     name  = "ASPNETCORE_ENVIRONMENT"
+#     value = "Production"
+#     }, {
+#     name  = "ASPNETCORE_URLS"
+#     value = "http://+:3000"
+#   }]
+# }
+
+# resource "random_password" "graph_monitor_api_key" {
+#   length  = 32
+#   special = false
+# }
+
+# resource "aws_ssm_parameter" "graph_monitor_api_key" {
+#   name  = "/ecs/graph-monitor-api-key"
+#   type  = "SecureString"
+#   value = random_password.graph_monitor_api_key.result
+# }
+
+# output "graph_monitor_api_key" {
+#   value     = random_password.graph_monitor_api_key.result
+#   sensitive = true
+# }
+
+# module "graph-monitor" {
+#   source                     = "./ecs"
+#   region                     = data.aws_region.current.name
+#   project_name               = "graph-monitor"
+#   container_port             = 3000
+#   task_role_arn              = aws_iam_role.ecs_task_execution_role.arn
+#   execution_role_arn         = aws_iam_role.ecs_task_execution_role.arn
+#   vpc_id                     = aws_vpc.vpc.id
+#   vpc_cidr                   = var.vpc_cidr
+#   private_subnet_ids         = aws_subnet.private_subnet.*.id
+#   service_security_group_ids = [aws_security_group.ecs_private.id]
+#   desired_count              = 1
+#   cluster_arn                = aws_ecs_cluster.cluster.arn
+#   task_cpu                   = 256
+#   task_memory                = 512
+#   health_check_path          = "/health"
+#   container_secrets = [
+#     {
+#       name      = "REDIS_URL"
+#       valueFrom = "${aws_ssm_parameter.redis_hosts.arn}"
+#     },
+#     {
+#       name      = "API_KEY"
+#       valueFrom = "${aws_ssm_parameter.graph_monitor_api_key.arn}"
+#     }
+#   ]
+#   container_environment = [{
+#     name  = "ASPNETCORE_ENVIRONMENT"
+#     value = "Production"
+#     }, {
+#     name  = "HTTP_PORTS"
+#     value = "3000"
+#   }]
+# }
+
+# output "graph_monitor_api_url" {
+#   value = module.graph-monitor.load_balancer_dns_name
+# }
+
+resource "random_password" "unad_functions_api_key" {
+  length  = 32
+  special = false
+}
+
+resource "aws_ssm_parameter" "unad_functions_api_key" {
+  name  = "/ecs/graph-monitor-api-key"
+  type  = "SecureString"
+  value = random_password.unad_functions_api_key.result
+}
+output "unad_functions_api_key" {
+  value     = random_password.unad_functions_api_key.result
+  sensitive = true
+}
+
+module "unad-functions" {
+  source                     = "./ecs"
+  region                     = data.aws_region.current.name
+  project_name               = "unad-functions"
+  container_port             = 3000
+  task_role_arn              = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn         = aws_iam_role.ecs_task_execution_role.arn
+  vpc_id                     = aws_vpc.vpc.id
+  vpc_cidr                   = var.vpc_cidr
+  private_subnet_ids         = aws_subnet.private_subnet.*.id
+  service_security_group_ids = [aws_security_group.ecs_private.id]
+  desired_count              = 1
+  cluster_arn                = aws_ecs_cluster.cluster.arn
+  task_cpu                   = 256
+  task_memory                = 512
+  health_check_path          = "/health"
   container_secrets = [
     {
       name      = "REDIS_URL"
-      valueFrom = "${aws_ssm_parameter.redis_connection_string.arn}"
+      valueFrom = "${aws_ssm_parameter.redis_hosts.arn}"
+    },
+    {
+      name      = "API_KEY"
+      valueFrom = "${aws_ssm_parameter.unad_functions_api_key.arn}"
     }
   ]
   container_environment = [{
     name  = "ASPNETCORE_ENVIRONMENT"
     value = "Production"
     }, {
-    name  = "ASPNETCORE_URLS"
-    value = "http://+:3000"
+    name  = "HTTP_PORTS"
+    value = "3000"
   }]
 }
 
-resource "aws_route53_record" "graphql-api" {
+resource "aws_route53_record" "functions" {
   allow_overwrite = true
-  name            = "api.${data.aws_route53_zone.main.name}"
-  records         = [module.graphql-gateway.load_balancer_dns_name]
+  name            = "funcs.${data.aws_route53_zone.main.name}"
+  records         = [module.signup-site.load_balancer_dns_name]
   ttl             = 60
   type            = "CNAME"
   zone_id         = data.aws_route53_zone.main.zone_id
 }
 
-module "user-api" {
-  source                       = "./ecs"
-  region                       = data.aws_region.current.name
-  project_name                 = "user-api"
-  container_port               = 3000
-  task_role_arn                = aws_iam_role.ecs_task_execution_role.arn
-  execution_role_arn           = aws_iam_role.ecs_task_execution_role.arn
-  vpc_id                       = aws_vpc.vpc.id
-  vpc_cidr                     = var.vpc_cidr
-  private_subnet_ids           = aws_subnet.private_subnet.*.id
-  service_security_group_ids   = [aws_security_group.ecs_private.id]
-  desired_count                = 1
-  cluster_arn                  = aws_ecs_cluster.cluster.arn
-  task_cpu                     = 256
-  task_memory                  = 512
-  health_check_path            = "/health"
-  enable_service_connect       = true
-  service_connect_namespace    = aws_service_discovery_private_dns_namespace.this.arn
-  service_connect_namespace_id = aws_service_discovery_private_dns_namespace.this.id
-  container_secrets = [
-    {
-      name      = "ConnectionStrings__UserDb"
-      valueFrom = "${aws_ssm_parameter.rds_cluster_db_connection_string.arn}"
-    },
-    {
-      name      = "REDIS_URL"
-      valueFrom = "${aws_ssm_parameter.redis_hosts.arn}"
-    }
-  ]
-  container_environment = [{
-    name  = "ASPNETCORE_ENVIRONMENT"
-    value = "Production"
-    }, {
-    name  = "ASPNETCORE_URLS"
-    value = "http://+:3000"
-  }]
+
+output "unad_functions_api_url" {
+  value = "https://funcs.${data.aws_route53_zone.main.name}"
 }
