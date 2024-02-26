@@ -399,16 +399,38 @@ module "unad-functions" {
   task_cpu                   = 256
   task_memory                = 512
   health_check_path          = "/health"
-  container_secrets = [
-    {
-      name      = "REDIS_URL"
-      valueFrom = "${aws_ssm_parameter.redis_hosts.arn}"
-    },
-    {
-      name      = "API_KEY"
-      valueFrom = "${aws_ssm_parameter.unad_functions_api_key.arn}"
-    }
-  ]
+  ssl_certificate_arn        = aws_acm_certificate_validation.wildcard.certificate_arn
+  container_secrets = [{
+    name      = "REDIS_URL"
+    valueFrom = "${aws_ssm_parameter.redis_hosts.arn}"
+    }, {
+    name      = "API_KEY"
+    valueFrom = "${aws_ssm_parameter.unad_functions_api_key.arn}"
+    }, {
+    name      = "TWILIO_ACCOUNT_SID"
+    valueFrom = "${data.aws_ssm_parameter.twilio_account_sid.arn}"
+    }, {
+    name      = "TWILIO_AUTH_TOKEN"
+    valueFrom = "${data.aws_ssm_parameter.twilio_auth_token.arn}"
+    }, {
+    name      = "STRIPE_API_KEY"
+    valueFrom = "${data.aws_ssm_parameter.stripe_api_key.arn}"
+    }, {
+    name      = "STRIPE_SUBSCRIPTION_ENDPOINT_SECRET"
+    valueFrom = "${data.aws_ssm_parameter.stripe_subscription_endpoint_secret.arn}"
+    }, {
+    name      = "STRIPE_PRODUCT_ENDPOINT_SECRET"
+    valueFrom = "${data.aws_ssm_parameter.stripe_product_endpoint_secret.arn}"
+    }, {
+    name      = "STRIPE_PAYMENT_ENDPOINT_SECRET"
+    valueFrom = "${data.aws_ssm_parameter.stripe_payment_endpoint_secret.arn}"
+    }, {
+    name      = "MIXPANEL_TOKEN"
+    valueFrom = "${data.aws_ssm_parameter.mixpanel_token.arn}"
+    }, {
+    name      = "ConnectionStrings__UserDb"
+    valueFrom = "${aws_ssm_parameter.rds_cluster_db_connection_string.arn}"
+  }]
   container_environment = [{
     name  = "ASPNETCORE_ENVIRONMENT"
     value = "Production"

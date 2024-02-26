@@ -30,6 +30,18 @@ data "aws_ssm_parameter" "stripe_publishable_key" {
   name  = "/stripe/stripe_publishable_key"
 }
 
+data "aws_ssm_parameter" "stripe_subscription_endpoint_secret" {
+  name  = "/stripe/subscription_endpoint_secret"
+}
+
+data "aws_ssm_parameter" "stripe_payment_endpoint_secret" {
+  name  = "/stripe/payment_endpoint_secret"
+}
+
+data "aws_ssm_parameter" "stripe_product_endpoint_secret" {
+  name  = "/stripe/product_endpoint_secret"
+}
+
 output "jwt_public_key" {
   value = tls_private_key.jwt_key.public_key_openssh
 }
