@@ -10,9 +10,8 @@ WORKDIR /app
 
 COPY package.json package-lock.json* ./
 COPY web/unad-web ./web/unad-web
-COPY packages/models ./packages/models
+COPY packages/db-models ./packages/db-models
 RUN npm ci
-
 
 ENV NEXT_TELEMETRY_DISABLED 1
 
