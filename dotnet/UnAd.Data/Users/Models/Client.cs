@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace UnAd.Data.Users.Models;
 
-public partial class Client {
+public partial class Client
+{
     public Guid Id { get; set; }
 
     public string Name { get; set; } = null!;
@@ -16,5 +17,7 @@ public partial class Client {
 
     public string Locale { get; set; } = null!;
 
-    public virtual ICollection<Subscriber> Subscribers { get; set; } = new List<Subscriber>();
+    public virtual ICollection<Announcement> Announcements { get; set; } = new List<Announcement>();
+
+    public virtual ICollection<Subscriber> SubscriberPhoneNumbers { get; set; } = new List<Subscriber>();
 }

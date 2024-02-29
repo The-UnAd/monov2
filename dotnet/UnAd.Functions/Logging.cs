@@ -1,5 +1,3 @@
-using UnAd.Functions.Endpoints;
-
 namespace UnAd.Functions;
 
 internal static class Logging {

@@ -1,22 +1,50 @@
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using UnAd.Data.Users.Models;
 
 namespace UnAd.Data.Users;
 
-public partial class UserDbContext : DbContext {
+public partial class UserDbContext : DbContext
+{
     public UserDbContext(DbContextOptions<UserDbContext> options)
-        : base(options) { }
+        : base(options)
+    {
+    }
+
+    public virtual DbSet<Announcement> Announcements { get; set; }
 
     public virtual DbSet<Client> Clients { get; set; }
 
-    public virtual DbSet<Product> Products { get; set; }
-
     public virtual DbSet<Subscriber> Subscribers { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder) {
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
         modelBuilder.HasPostgresExtension("uuid-ossp");
 
-        modelBuilder.Entity<Client>(entity => {
+        modelBuilder.Entity<Announcement>(entity =>
+        {
+            entity.HasKey(e => e.MessageSid).HasName("announcement_pkey");
+
+            entity.ToTable("announcement");
+
+            entity.Property(e => e.MessageSid)
+                .HasMaxLength(34)
+                .IsFixedLength()
+                .HasColumnName("message_sid");
+            entity.Property(e => e.ClientId).HasColumnName("client_id");
+            entity.Property(e => e.SentOn)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("sent_on");
+
+            entity.HasOne(d => d.Client).WithMany(p => p.Announcements)
+                .HasForeignKey(d => d.ClientId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("announcement_client_id_fkey");
+        });
+
+        modelBuilder.Entity<Client>(entity =>
+        {
             entity.HasKey(e => e.Id).HasName("client_pkey");
 
             entity.ToTable("client");
@@ -45,7 +73,7 @@ public partial class UserDbContext : DbContext {
                 .HasColumnType("character varying")
                 .HasColumnName("subscription_id");
 
-            entity.HasMany(d => d.Subscribers).WithMany(p => p.Clients)
+            entity.HasMany(d => d.SubscriberPhoneNumbers).WithMany(p => p.Clients)
                 .UsingEntity<Dictionary<string, object>>(
                     "ClientSubscriber",
                     r => r.HasOne<Subscriber>().WithMany()
@@ -54,7 +82,8 @@ public partial class UserDbContext : DbContext {
                     l => l.HasOne<Client>().WithMany()
                         .HasForeignKey("ClientId")
                         .HasConstraintName("client_subscriber_client_id_fkey"),
-                    j => {
+                    j =>
+                    {
                         j.HasKey("ClientId", "SubscriberPhoneNumber").HasName("client_subscriber_pkey");
                         j.ToTable("client_subscriber");
                         j.IndexerProperty<Guid>("ClientId").HasColumnName("client_id");
@@ -64,18 +93,8 @@ public partial class UserDbContext : DbContext {
                     });
         });
 
-        modelBuilder.Entity<Product>(entity => {
-            entity.HasKey(e => e.ProductId).HasName("product_pkey");
-
-            entity.ToTable("product");
-
-            entity.Property(e => e.ProductId)
-                .HasColumnType("character varying")
-                .HasColumnName("product_id");
-            entity.Property(e => e.Description).HasColumnName("description");
-        });
-
-        modelBuilder.Entity<Subscriber>(entity => {
+        modelBuilder.Entity<Subscriber>(entity =>
+        {
             entity.HasKey(e => e.PhoneNumber).HasName("subscriber_pkey");
 
             entity.ToTable("subscriber");
@@ -86,6 +105,10 @@ public partial class UserDbContext : DbContext {
             entity.Property(e => e.JoinedDate)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("joined_date");
+            entity.Property(e => e.Locale)
+                .HasMaxLength(5)
+                .HasDefaultValueSql("'en-US'::character varying")
+                .HasColumnName("locale");
         });
 
         OnModelCreatingPartial(modelBuilder);

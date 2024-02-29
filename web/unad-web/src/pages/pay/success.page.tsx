@@ -1,15 +1,14 @@
 import { ParsedUrlQuery } from 'node:querystring';
 
+import { Users } from '@unad/models';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import Stripe from 'stripe';
 
+import { prisma } from '@/lib/db';
 import { createTranslator, importMessages } from '@/lib/i18n';
 import { createModelFactory } from '@/lib/redis';
-import { Client } from '@/models';
-import { getAppDataSource } from '@/lib/db';
-import { Users } from '@unad/models';
 
 interface PageData {
   accountUrl: string;
@@ -109,10 +108,8 @@ export async function getServerSideProps(
   }
 
   try {
-    const source = await getAppDataSource();
-    const clientRepo = source.getRepository(Users.Client);
-    const client = await clientRepo.findOneBy({
-      id: session.client_reference_id as string,
+    const client = await prisma.client.findUnique({
+      where: { id: session.client_reference_id! },
     });
     if (!client) {
       return {
@@ -130,9 +127,7 @@ export async function getServerSideProps(
         messages: await importMessages(context.locale),
         accountUrl: `${process.env.SITE_HOST}/account`,
         portalUrl: `${process.env.STRIPE_PORTAL_HOST}`,
-        subscribeUrl: `${process.env.SUBSCRIBE_HOST}/${Client.hashId(
-          session.client_reference_id as string
-        )}`,
+        subscribeUrl: `${process.env.SUBSCRIBE_HOST}/${session.client_reference_id}`,
       },
     };
   } catch (error: any) {

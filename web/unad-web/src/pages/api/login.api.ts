@@ -1,5 +1,7 @@
+import { Users } from '@unad/models';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { prisma } from '@/lib/db';
 import { createTranslator } from '@/lib/i18n';
 import { signJwt } from '@/lib/jwt';
 import { validateToken } from '@/lib/otp';
@@ -30,7 +32,9 @@ export default async function handler(
     using models = createModelFactory();
     await models.connect();
 
-    const client = await models.getClientByPhone(phone);
+    const client = await prisma.client.findUnique({
+      where: { phone_number: phone },
+    });
     if (!client) {
       await models.deleteOtpSecret(phone);
       throw new Error(t('errors.invalidClient'));

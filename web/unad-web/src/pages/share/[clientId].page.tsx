@@ -4,8 +4,8 @@ import type { GetServerSidePropsContext } from 'next/types';
 import { useTranslations } from 'next-intl';
 import { ParsedUrlQuery } from 'querystring';
 
+import { prisma } from '@/lib/db';
 import { importMessages } from '@/lib/i18n';
-import { createModelFactory } from '@/lib/redis';
 
 interface PageData {
   subscribeUrl: string;
@@ -65,9 +65,7 @@ export async function getServerSideProps(
 ) {
   const { clientId } = context.params as ServerProps;
   try {
-    using models = createModelFactory();
-    await models.connect();
-    const client = await models.getClientById(clientId);
+    const client = await prisma.client.findUnique({ where: { id: clientId } });
     if (!client) {
       return {
         notFound: true,

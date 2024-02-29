@@ -9,8 +9,6 @@ import {
 import { ulid } from 'ulid';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Client, type ClientData } from '../models/Client';
-import { Subscriber } from '../models/Subscriber';
 import { ITransactionContext } from './transactions';
 
 export type RedisClientType = ReturnType<
@@ -55,17 +53,11 @@ export function createModelFactory() {
  * This interface provides methods for creating clients, subscribers, sessions, and managing OTP secrets.
  */
 export interface ModelFactoryInterface extends Disposable {
-  createClient(name: string, phone: string): Client;
-  createSubscriber(phone: string): Subscriber;
-  getSubscriberByPhone(phone: string): Subscriber;
   createSession(jwt: string): Promise<string>;
   getSession(token: string): Promise<string | null>;
   setOtpSecret(phone: string, secret: string): Promise<void>;
   getOtpSecret(phone: string): Promise<string | null>;
   deleteOtpSecret(phone: string): Promise<void>;
-  getClientByPhone(phoneNumber: string): Promise<Client | null>;
-  getClientById(id: string): Promise<Client | null>;
-  getClientByClientId(clientId: string): Promise<Client | null>;
   healthCheck(): Promise<boolean>;
 }
 
@@ -98,9 +90,6 @@ class ModelFactory implements TransactionalModelFactoryInterface {
     },
     sessionToken(token: string) {
       return `session:${token}`;
-    },
-    announcementSid(guid: string) {
-      return `link:${guid}`;
     },
     confirmationCode() {
       return `confirmations`;
@@ -200,52 +189,6 @@ class ModelFactory implements TransactionalModelFactoryInterface {
       this.redisClient.quit();
     }
   }
-
-  /**
-   * Create a new Client model instance
-   * @param name Client name
-   * @param phone Client phone number
-   * @returns Client instance
-   */
-  public createClient(name: string, phone: string): Client {
-    return new Client(name, phone, this.redisClient, this.transaction);
-  }
-
-  /**
-   * Create a new Subscriber model instance
-   * @param phone Subscriber phone number
-   * @returns Subscriber instance
-   */
-  public createSubscriber(phone: string): Subscriber {
-    return new Subscriber(phone, this.redisClient, this.transaction);
-  }
-
-  /**
-   * Get a Subscriber model instance by phone number
-   * @param phone Subscriber phone number
-   * @returns Subscriber instance
-   */
-  public getSubscriberByPhone(phone: string): Subscriber {
-    return new Subscriber(phone, this.redisClient as RedisClientType);
-  }
-
-  public async getTotalSubscribers(): Promise<number> {
-    return await this.redisClient.sCard(Subscriber.keys.subscribersSet());
-  }
-
-  public async getAnnouncementSmsSidByGuid(
-    guid: string
-  ): Promise<string | undefined> {
-    return await this.redisClient.hGet(
-      ModelFactory.keys.announcementSid(guid),
-      'sid'
-    );
-  }
-
-  public async getTotalClients(): Promise<number> {
-    return await this.redisClient.sCard(Client.keys.clientsSet());
-  }
-
   /**
    * Create a new session and store it in Redis
    * @param jwt JSON Web Token
@@ -318,57 +261,6 @@ class ModelFactory implements TransactionalModelFactoryInterface {
 
   public async deleteOtpSecret(phone: string): Promise<void> {
     await this.redisClient.del(ModelFactory.keys.otpSecret(phone));
-  }
-
-  public async getClientByPhone(phoneNumber: string): Promise<Client | null> {
-    const data = await this.redisClient.hGetAll(
-      Client.keys.clientHash(phoneNumber)
-    );
-    if (Object.keys(data).length === 0) {
-      return null;
-    }
-    const { name } = data as ClientData;
-    return new Client(name, phoneNumber, this.redisClient, this.transaction);
-  }
-
-  public async getClientById(id: string): Promise<Client | null> {
-    const phoneNumber = await this.redisClient.get(
-      Client.keys.clientIdToPhone(id)
-    );
-    if (phoneNumber === null) {
-      return null;
-    }
-    const { name, phone } = await this.redisClient.hGetAll(
-      Client.keys.clientHash(phoneNumber)
-    );
-    return new Client(
-      name,
-      phone,
-      this.redisClient as RedisClientType,
-      this.transaction
-    );
-  }
-
-  public async getClientByClientId(clientId: string): Promise<Client | null> {
-    const id = await this.redisClient.get(Client.keys.clientHashToId(clientId));
-    if (id === null) {
-      return null;
-    }
-    const phoneNumber = await this.redisClient.get(
-      Client.keys.clientIdToPhone(id)
-    );
-    if (phoneNumber === null) {
-      return null;
-    }
-    const { name, phone } = await this.redisClient.hGetAll(
-      Client.keys.clientHash(phoneNumber)
-    );
-    return new Client(
-      name,
-      phone,
-      this.redisClient as RedisClientType,
-      this.transaction
-    );
   }
 
   [Symbol.dispose]() {

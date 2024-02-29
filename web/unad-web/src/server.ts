@@ -2,7 +2,7 @@ import { createServer } from 'http';
 import next from 'next';
 import { parse } from 'url';
 
-import { AppDataSource } from './lib/db';
+import { prisma } from './lib/db';
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = process.env.HOST || 'localhost';
@@ -13,7 +13,7 @@ const handle = app.getRequestHandler();
 
 process.on('SIGINT', () => {
   console.log('Caught interrupt signal.  Exiting. 😵');
-  AppDataSource.destroy().then(() => {
+  prisma.$disconnect().then(() => {
     console.log('📉 Database disconnected!');
     process.exit();
   });
@@ -21,7 +21,7 @@ process.on('SIGINT', () => {
 
 process.on('SIGUSR2', () => {
   console.log('Caught restart signal. Cleaning up and restarting. 🔄');
-  AppDataSource.destroy().then(() => {
+  prisma.$disconnect().then(() => {
     console.log('📉 Database disconnected!');
     process.exit();
   });
@@ -30,7 +30,7 @@ process.on('SIGUSR2', () => {
 console.log('Preparing server...');
 app.prepare().then(() => {
   console.log('Starting server...');
-  AppDataSource.initialize().then(() => {
+  prisma.$connect().then(() => {
     console.log('📈 Database connected!');
     createServer(async (req, res) => {
       try {
@@ -53,11 +53,10 @@ app.prepare().then(() => {
       })
       .on('error', (err) => {
         console.error(err);
-        AppDataSource.destroy().then(() => {
+        prisma.$disconnect().then(() => {
           console.log('📉 Database disconnected!');
-          process.exit();
+          process.exit(1);
         });
-        process.exit(1);
       });
   });
 });

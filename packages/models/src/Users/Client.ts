@@ -23,7 +23,7 @@ export class Client {
   @Column({ type: 'varchar', nullable: true, name: 'subscription_id' })
   subscriptionId: string | null;
 
-  @Column({ type: 'varchar', length: 10, nullable: true })
+  @Column({ type: 'varchar', length: 5, nullable: false })
   locale: string | null;
 }
 
@@ -47,4 +47,23 @@ export class Subscriber {
     name: 'joined_date',
   })
   joinedDate: Date;
+
+  @Column({ type: 'varchar', length: 5, nullable: false })
+  locale: string | null;
+}
+
+@Entity({ name: 'announcement' })
+export class Announcement {
+  @PrimaryColumn({ type: 'char', length: 34, name: 'message_sid' })
+  messageSid: string;
+
+  @CreateDateColumn({
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+    name: 'sent_pn',
+  })
+  sentOn: Date;
+
+  @Column({ type: 'varchar', length: 5, nullable: false })
+  locale: string | null;
 }

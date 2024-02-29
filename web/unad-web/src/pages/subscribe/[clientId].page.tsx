@@ -1,3 +1,4 @@
+import { Users } from '@unad/models';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -10,8 +11,8 @@ import { useCallback, useState } from 'react';
 import OtpForm, { OtpFormData } from '@/Components/OtpForm';
 import SubscribeForm, { SubscribeData } from '@/Components/SubscribeForm';
 import { generateOtp, subscribeToClient, validateOtp } from '@/lib/api';
+import { prisma } from '@/lib/db';
 import { importMessages } from '@/lib/i18n';
-import { createModelFactory } from '@/lib/redis';
 import { sanitizePhoneNumber } from '@/lib/util';
 
 interface SubscribeProps {
@@ -135,11 +136,13 @@ function Subscribe({ name, clientId }: SubscribeProps) {
 export async function getServerSideProps(
   context: GetServerSidePropsContext<ServerProps>
 ) {
-  using models = createModelFactory();
   const { clientId } = context.params as ServerProps;
   try {
-    await models.connect();
-    const client = await models.getClientByClientId(clientId);
+    const client = await prisma.client.findUnique({
+      where: { id: clientId },
+      select: { name: true },
+    });
+
     if (!client) {
       return {
         notFound: true,

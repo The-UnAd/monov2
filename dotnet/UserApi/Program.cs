@@ -1,12 +1,12 @@
 using HotChocolate.AspNetCore.Serialization;
 using HotChocolate.Execution.Serialization;
-using UnAd.Data.Users;
+using HotChocolate.Utilities;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
 using StackExchange.Redis;
+using UnAd.Data.Users;
 using UserApi;
-using HotChocolate.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,8 +15,8 @@ builder.Logging.AddConsole(b => b.FormatterName = ConsoleFormatterNames.Systemd)
     .AddDebug();
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddSingleton(typeof(ILogger), c => c.GetRequiredService<ILoggerFactory>()
-        .CreateLogger("UserApi"));
+builder.Services.AddSingleton(typeof(ILogger), c =>
+    c.GetRequiredService<ILoggerFactory>().CreateLogger("UserApi"));
 
 builder.Services.AddTransient<IConnectionMultiplexer>(c =>
     ConnectionMultiplexer.Connect(c.GetRequiredService<IConfiguration>()["REDIS_URL"]!));
@@ -25,7 +25,9 @@ builder.Services.AddExceptionHandler(o => o.ExceptionHandler = context => {
     var exception = context.Features.Get<IExceptionHandlerFeature>()
         ?.Error;
     var logger = context.Features.Get<ILogger>();
-    logger?.LogError(new EventId(), exception, "Unhandled exception: {Message}", exception?.Message);
+    if (logger is not null && exception is not null) {
+        LogProgramException(logger, exception.Message, exception);
+    }
     return Task.CompletedTask;
 });
 
@@ -69,13 +71,16 @@ app.UseHealthChecks("/health");
 //app.UseAuthorization();
 
 app.MapGraphQL();
-    //.RequireAuthorization();
+//.RequireAuthorization();
 
 //IdentityModelEventSource.ShowPII = app.Environment.IsDevelopment();
 
 app.RunWithGraphQLCommands(args);
 
-public partial class Program { }
+public partial class Program {
+    private static readonly Action<ILogger, string, Exception?> LogProgramException =
+        LoggerMessage.Define<string>(LogLevel.Error, new EventId(1, "UnhandledException"), "Unexpected Error: {Message}");
+}
 
 
 

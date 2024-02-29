@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import type { ParsedUrlQuery } from 'querystring';
 import Stripe from 'stripe';
 
-import { getAppDataSource } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { createTranslator, importMessages } from '@/lib/i18n';
 
 interface PageData {
@@ -66,9 +66,7 @@ export async function getServerSideProps(
   const { clientId } = context.params as ServerProps;
 
   try {
-    const source = await getAppDataSource();
-    const clientRepo = source.getRepository(Users.Client);
-    const client = await clientRepo.findOneBy({ id: clientId });
+    const client = await prisma.client.findUnique({ where: { id: clientId } });
     if (!client) {
       return {
         props: {
@@ -82,7 +80,7 @@ export async function getServerSideProps(
     const stripe = new Stripe(process.env.STRIPE_API_KEY as string, {
       apiVersion: '2023-10-16',
     });
-    if (!client.subscriptionId) {
+    if (!client.subscription_id) {
       // this is the happy path: client created, but no subscription
       return {
         props: {
@@ -93,7 +91,7 @@ export async function getServerSideProps(
       };
     }
     const subscription = await stripe.subscriptions.retrieve(
-      client.subscriptionId
+      client.subscription_id
     );
     if (subscription.status === 'active') {
       return {

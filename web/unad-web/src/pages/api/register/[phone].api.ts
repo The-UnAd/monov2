@@ -1,7 +1,7 @@
 import { Users } from '@unad/models';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getAppDataSource } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { createTranslator } from '@/lib/i18n';
 import { generateSecret, generateToken } from '@/lib/otp';
 import { createModelFactory } from '@/lib/redis';
@@ -28,13 +28,13 @@ export default async function handler(
   const { phone, name } = req.body;
 
   try {
-    const source = await getAppDataSource();
     if (!validatePhone(phone as string)) {
       throw new Error(t('errors.invalidPhoneNumber'));
     }
-    const clientRepo = source.getRepository(Users.Client);
-    const existingClient = await clientRepo.findOneBy({ phoneNumber: phone });
-    if (existingClient) {
+    const client = await prisma.client.findUnique({
+      where: { phone_number: phone },
+    });
+    if (client) {
       throw new Error(t('errors.phoneNumberRegistered'));
     }
 

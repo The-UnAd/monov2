@@ -1,14 +1,17 @@
+using System.Globalization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using StackExchange.Redis;
 using Stripe;
-using System.Globalization;
 using Twilio.Rest.Api.V2010.Account;
+using UnAd.Data.Users;
 using UnAd.Redis;
 
-namespace UnAd.Functions.Endpoints;
+namespace UnAd.Functions;
 public class StripeSubscriptionWebhook(IStripeClient stripeClient,
                                        IStripeVerifier stripeVerifier,
                                        IConnectionMultiplexer redis,
+                                       IDbContextFactory<UserDbContext> dbFactory,
                                        ILogger<StripeSubscriptionWebhook> logger,
                                        IStringLocalizer<StripeSubscriptionWebhook> localizer,
                                        MixpanelClient mixpanelClient,
@@ -19,14 +22,9 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
     private readonly string _stripePortalUrl = config.GetStripePortalUrl();
     private readonly string _clientLinkBaseUri = config.GetClientLinkBaseUri();
 
-    private void SetThreadCulture(string phone) {
-        var db = redis.GetDatabase();
-        var clientLocale = db.GetClientHashValue(phone, "locale");
-        var location = clientLocale.HasValue ? clientLocale.ToString() : "en-US";
-
-        var culture = new CultureInfo(location);
-        CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = culture;
-    }
+    private static void SetThreadCulture(string culture) => CultureInfo.CurrentCulture
+            = CultureInfo.CurrentUICulture
+            = new CultureInfo(culture);
 
     public async Task<IResult> Endpoint(HttpRequest request) {
         logger.LogDebug("Processing StripeSubscriptionWebhook");
@@ -60,7 +58,7 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
 
             return Results.Ok();
         } catch (Exception e) {
-            logger.LogError("Stripe event {Type} unhandled", stripeEvent?.Type);
+            logger.LogError("Stripe event {Type} failed", stripeEvent?.Type);
             return Results.Problem(e.Message);
         }
     }
@@ -73,29 +71,27 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
         var id = session.ClientReferenceId;
         var subscriptionId = session.SubscriptionId;
         var db = redis.GetDatabase();
-        var clientPhone = db.GetClientPhone(id!);
-        if (!clientPhone.HasValue) {
+        await using var context = await dbFactory.CreateDbContextAsync();
+        var client = context.Clients.FirstOrDefault(c => c.Id == Guid.Parse(id));
+        if (client is null) {
             logger.LogWarning("Could not find client with id {id}", id);
             return;
         }
-        SetThreadCulture(clientPhone.ToString());
-        db.SetSubscriptionPhone(subscriptionId, clientPhone.ToString());
-
-        // TODO: this is timing out for some reason
-        db.SetClientHashValue(clientPhone.ToString(), "subscriptionId", subscriptionId);
-        var clientName = db.GetClientHashValue(clientPhone.ToString(), "name");
+        SetThreadCulture(client.Locale);
+        client.SubscriptionId = subscriptionId;
+        await context.SaveChangesAsync();
         var customerService = new CustomerService(stripeClient);
         await customerService.UpdateAsync(session.CustomerId, new() {
-            Description = clientName.ToString(),
-            Phone = clientPhone.ToString(),
+            Description = client.Name,
+            Phone = client.PhoneNumber,
             Metadata = new() {
                 { "id", id },
-                { "businessName",  clientName.ToString() }
+                { "businessName",  client.Name }
             },
         });
         await mixpanelClient.Track(MixpanelClient.Events.StripeEvent(stripeEvent.Type), new() {
                 { "subscriptionId", subscriptionId},
-            }, clientPhone);
+            }, client.PhoneNumber);
     }
 
     private async Task HandleSubscriptionCreated(Event stripeEvent) {
@@ -103,26 +99,26 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
             logger.LogWarning("Could not find subscription in event data");
             return;
         }
-        var db = redis.GetDatabase();
-        var clientPhone = db.GetSubscriptionPhone(subscription.Id);
-        if (!clientPhone.HasValue) {
+        await using var context = await dbFactory.CreateDbContextAsync();
+        var client = context.Clients.FirstOrDefault(c => c.SubscriptionId == subscription.Id);
+        if (client is null) {
             logger.LogWarning("Could not find subscription with id {subscriptionId}", subscription.Id);
             return;
         }
-        var validPhone = clientPhone.ToString();
-        SetThreadCulture(validPhone);
-        db.SetClientHashValue(validPhone, "customerId", subscription.CustomerId);
+        SetThreadCulture(client.Locale);
+        client.CustomerId = subscription.CustomerId;
+        await context.SaveChangesAsync();
 
         var productId = subscription.Items.Data[0].Plan.ProductId;
+        var db = redis.GetDatabase();
         var maxMessages = db.GetProductLimitValue(productId, "maxMessages");
-        db.SetClientProductLimit(validPhone, "maxMessages", maxMessages);
+        db.SetClientProductLimit(client.PhoneNumber, "maxMessages", maxMessages);
 
-        var clientId = db.GetClientHashValue(validPhone, "clientId");
-        await MessageResource.CreateAsync(new CreateMessageOptions(validPhone) {
+        await MessageResource.CreateAsync(new CreateMessageOptions(client.PhoneNumber) {
             MessagingServiceSid = _messageServiceSid,
             Body = localizer.GetStringWithReplacements("SubscriptionStartedMessage",
             new {
-                shareLink = $"{_clientLinkBaseUri}/{clientId}",
+                shareLink = $"{_clientLinkBaseUri}/{client.Id}",
                 subLink = _stripePortalUrl,
                 trialInfo = subscription.TrialEnd.HasValue ?
                     "\n\n" + localizer.GetStringWithReplacements("TrialInfo",
@@ -134,7 +130,7 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
         });
         await mixpanelClient.Track(MixpanelClient.Events.StripeEvent(stripeEvent.Type), new() {
                 { "subscriptionId", subscription.Id},
-            }, validPhone);
+            }, client.PhoneNumber);
     }
 
     private async Task HandleSubscriptionUpdated(Event stripeEvent) {
@@ -142,28 +138,27 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
             logger.LogWarning("Could not find subscription in event data");
             return;
         }
-        var db = redis.GetDatabase();
-        var clientPhone = db.GetSubscriptionPhone(subscription.Id);
-        if (!clientPhone.HasValue) {
+        //var db = redis.GetDatabase();
+        await using var context = await dbFactory.CreateDbContextAsync();
+        var client = context.Clients.FirstOrDefault(c => c.SubscriptionId == subscription.Id);
+        if (client is null) {
             logger.LogWarning("Could not find subscription with id {subscriptionId}", subscription.Id);
             return;
         }
-        var validPhone = clientPhone.ToString();
-        SetThreadCulture(validPhone);
-        db.SetClientHashValue(validPhone, "customerId", subscription.CustomerId);
+        SetThreadCulture(client.Locale);
 
         var productId = subscription.Items.Data[0].Plan.ProductId;
         // TODO: store the product id in the client's subscription data
         // so we don't have to look it up later from Stripe
+        var db = redis.GetDatabase();
         var maxMessages = db.GetProductLimitValue(productId, "maxMessages");
-        db.SetClientProductLimit(validPhone, "maxMessages", maxMessages);
+        db.SetClientProductLimit(client.PhoneNumber, "maxMessages", maxMessages);
 
-        var clientId = db.GetClientHashValue(validPhone, "clientId");
-        await MessageResource.CreateAsync(new CreateMessageOptions(validPhone) {
+        await MessageResource.CreateAsync(new CreateMessageOptions(client.PhoneNumber) {
             MessagingServiceSid = _messageServiceSid,
             Body = localizer.GetStringWithReplacements("SubscriptionStartedMessage",
             new {
-                shareLink = $"{_clientLinkBaseUri}/{clientId}",
+                shareLink = $"{_clientLinkBaseUri}/{client.Id}",
                 subLink = _stripePortalUrl,
                 trialInfo = subscription.TrialEnd.HasValue ?
                     "\n\n" + localizer.GetStringWithReplacements("TrialInfo",
@@ -175,23 +170,26 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
         });
         await mixpanelClient.Track(MixpanelClient.Events.StripeEvent(stripeEvent.Type), new() {
                 { "subscriptionId", subscription.Id},
-            }, validPhone);
+            }, client.PhoneNumber);
     }
 
     private async Task UpdateClient(Event stripeEvent, string resourceName, object? replacements = default) {
-        var subscription = stripeEvent.Data.Object as Subscription;
-        var subscriptionId = subscription?.Id;
-        var db = redis.GetDatabase();
-        var clientPhone = db.GetSubscriptionPhone(subscriptionId!);
-        if (!clientPhone.HasValue) {
-            logger.LogWarning("Could not find subscription {subscriptionId}", subscriptionId);
+        if (stripeEvent.Data.Object is not Subscription subscription) {
+            logger.LogWarning("Could not find subscription in event data");
             return;
         }
-        SetThreadCulture(clientPhone.ToString());
+
+        await using var context = await dbFactory.CreateDbContextAsync();
+        var client = context.Clients.FirstOrDefault(c => c.SubscriptionId == subscription.Id);
+        if (client is null) {
+            logger.LogWarning("Could not find subscription {subscriptionId}", subscription.Id);
+            return;
+        }
+        SetThreadCulture(client.Locale);
         await mixpanelClient.Track(MixpanelClient.Events.StripeEvent(stripeEvent.Type), new() {
-                { "subscriptionId", subscriptionId! },
-            }, clientPhone);
-        await MessageResource.CreateAsync(new CreateMessageOptions(clientPhone.ToString()) {
+                { "subscriptionId", subscription.Id! },
+            }, client.PhoneNumber);
+        await MessageResource.CreateAsync(new CreateMessageOptions(client.PhoneNumber) {
             MessagingServiceSid = _messageServiceSid,
             Body = localizer.GetStringWithReplacements(resourceName, replacements ?? new { }),
         });

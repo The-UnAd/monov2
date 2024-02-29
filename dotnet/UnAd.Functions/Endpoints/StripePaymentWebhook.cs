@@ -1,13 +1,16 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using StackExchange.Redis;
 using Stripe;
 using System.Globalization;
+using UnAd.Data.Users;
 using UnAd.Redis;
 
-namespace UnAd.Functions.Endpoints;
+namespace UnAd.Functions;
 public class StripePaymentWebhook(IStripeClient stripeClient,
                                   IStripeVerifier stripeVerifier,
                                   IConnectionMultiplexer redis,
+                                  IDbContextFactory<UserDbContext> dbFactory,
                                   IMessageSender messageSender,
                                   IStringLocalizer<StripePaymentWebhook> localizer,
                                   ILogger<StripePaymentWebhook> logger,
@@ -16,10 +19,16 @@ public class StripePaymentWebhook(IStripeClient stripeClient,
     private readonly string _stripePortalUrl = config.GetStripePortalUrl();
     private readonly string _stripeEndpointSecret = config.GetStripePaymentEndpointSecret();
 
-    private void SetThreadCulture(string phone) {
-        var db = redis.GetDatabase();
-        var clientLocale = db.GetClientHashValue(phone, "locale");
-        var location = clientLocale.HasValue ? clientLocale.ToString() : "en-US";
+    private void SetThreadCulture(string phone, string? culture) {
+        if (culture is not null) {
+            CultureInfo.CurrentCulture
+                = CultureInfo.CurrentUICulture
+                = new CultureInfo(culture);
+            return;
+        }
+        using var context = dbFactory.CreateDbContext();
+        var client = context.Clients.FirstOrDefault(c => c.PhoneNumber == phone);
+        var location = client?.Locale ?? "en-US";
 
         CultureInfo.CurrentCulture
             = CultureInfo.CurrentUICulture
@@ -70,30 +79,25 @@ public class StripePaymentWebhook(IStripeClient stripeClient,
             return;
         }
 
-        var db = redis.GetDatabase();
-        var clientPhone = db.GetSubscriptionPhone(invoice.SubscriptionId);
+        await using var context = await dbFactory.CreateDbContextAsync();
+        var client = context.Clients.FirstOrDefault(c => c.SubscriptionId == invoice.SubscriptionId);
 
-        if (!clientPhone.HasValue) {
-            logger.LogWarning($"No subscription found for phon number {clientPhone}");
+        if (client is null) {
+            logger.LogWarning($"No client found for SubscriptionId {invoice.SubscriptionId}");
             return;
         }
-        var validPhone = clientPhone.ToString();
 
         // TODO: check if we can get the product ID from the invoice
         var subscription = await new SubscriptionService(stripeClient).GetAsync(invoice.SubscriptionId);
 
         var productId = subscription.Items.Data[0].Plan.ProductId;
+        var db = redis.GetDatabase();
         var maxMessages = db.GetProductLimitValue(productId, "maxMessages");
 
-        db.SetClientProductLimit(validPhone, "maxMessages", maxMessages);
+        db.SetClientProductLimit(client.PhoneNumber, "maxMessages", maxMessages);
 
-        if (!clientPhone.HasValue) {
-            logger.LogWarning($"No client found with subscription {invoice.SubscriptionId}");
-            return;
-        }
-
-        SetThreadCulture(validPhone);
-        await messageSender.Send(clientPhone.ToString(), localizer.GetStringWithReplacements("InvoicePaid", new {
+        SetThreadCulture(client.PhoneNumber, client.Locale);
+        await messageSender.Send(client.PhoneNumber, localizer.GetStringWithReplacements("InvoicePaid", new {
             portalUrl = _stripePortalUrl
         }));
     }
@@ -104,17 +108,16 @@ public class StripePaymentWebhook(IStripeClient stripeClient,
             return;
         }
 
-        if (string.IsNullOrEmpty(invoice.SubscriptionId)) {
-            logger.LogWarning($"No subscription found on invoice {invoice.Id}");
+        await using var context = await dbFactory.CreateDbContextAsync();
+        var client = context.Clients.FirstOrDefault(c => c.SubscriptionId == invoice.SubscriptionId);
+
+        if (client is null) {
+            logger.LogWarning($"No client found for SubscriptionId {invoice.SubscriptionId}");
             return;
         }
 
-        var db = redis.GetDatabase();
-        var clientPhone = db.GetSubscriptionPhone(invoice.SubscriptionId);
-
-
-        SetThreadCulture(clientPhone.ToString());
-        await messageSender.Send(clientPhone.ToString(), localizer.GetStringWithReplacements("InvoicePaymentFailed", new {
+        SetThreadCulture(client.PhoneNumber, client.Locale);
+        await messageSender.Send(client.PhoneNumber, localizer.GetStringWithReplacements("InvoicePaymentFailed", new {
             portalUrl = _stripePortalUrl
         }));
     }

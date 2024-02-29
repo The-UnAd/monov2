@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using Stripe;
+using Twilio;
 using UnAd.Data.Users;
 using UnAd.Functions;
-using UnAd.Functions.Endpoints;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -51,8 +51,7 @@ builder.Services.AddTransient<IStripeVerifier, StripeVerifier>();
 builder.Services.AddTransient<MessageHelper>();
 builder.Services.AddSingleton<IMessageSender, MessageSender>();
 builder.Services.AddPooledDbContextFactory<UserDbContext>((c, o) =>
-    o.UseNpgsql(builder.Configuration.GetConnectionString("UserDb"))
-        .UseModel(UnAd.Data.UserDbContextModel.Instance));
+    o.UseNpgsql(builder.Configuration.GetConnectionString("UserDb")));
 
 builder.Services.AddTransient<MessageHandler>();
 builder.Services.AddTransient<StripePaymentWebhook>();
@@ -60,6 +59,9 @@ builder.Services.AddTransient<StripeProductWebhook>();
 builder.Services.AddTransient<StripeSubscriptionWebhook>();
 
 builder.Services.AddHealthChecks();
+
+TwilioClient.Init(builder.Configuration.GetTwilioAccountSid(),
+       builder.Configuration.GetTwilioAuthToken());
 
 var app = builder.Build();
 

@@ -1,7 +1,6 @@
-import { Users } from '@unad/models';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { AppDataSource, getAppDataSource } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { createTranslator, DefaultLocale, getRequestLocale } from '@/lib/i18n';
 import mixpanel from '@/lib/mixpanel';
 import { validateToken } from '@/lib/otp';
@@ -30,7 +29,6 @@ export default async function handler(
   const { phone, otp, name } = req.body;
 
   using models = createModelFactory();
-  const source = await getAppDataSource();
   try {
     await models.connect();
     const secret = await models.getOtpSecret(phone);
@@ -45,11 +43,13 @@ export default async function handler(
 
     const locale = getRequestLocale(req) ?? DefaultLocale;
 
-    const client = new Users.Client();
-    client.phoneNumber = phone;
-    client.name = name;
-    client.locale = locale;
-    await source.manager.save(client);
+    const client = await prisma.client.create({
+      data: {
+        phone_number: phone,
+        name,
+        locale,
+      },
+    });
 
     await models.deleteOtpSecret(phone);
     mixpanel.people.set(phone, {

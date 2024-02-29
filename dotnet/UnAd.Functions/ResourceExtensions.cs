@@ -14,7 +14,7 @@ internal static partial class ResourceExtensions {
     }
 
     public static string GetStringWithReplacements<T>(this IStringLocalizer<T> localizer, string name, params object[] replacements) =>
-        string.Format(localizer.GetString(name), replacements);
+        string.Format(Thread.CurrentThread.CurrentCulture, localizer.GetString(name), replacements);
 
     [GeneratedRegex(@"\{(\w+)\}", RegexOptions.Compiled)]
     private static partial Regex ReplaceByName();

@@ -12,8 +12,8 @@ using UnAd.Data.Users;
 namespace UnAd.Data.Users.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20240208202525_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20240228001003_AddAnnouncements")]
+    partial class AddAnnouncements
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -43,6 +43,32 @@ namespace UnAd.Data.Users.Migrations
                     b.HasIndex("SubscriberPhoneNumber");
 
                     b.ToTable("client_subscriber", (string)null);
+                });
+
+            modelBuilder.Entity("UnAd.Data.Users.Models.Announcement", b =>
+                {
+                    b.Property<string>("MessageSid")
+                        .HasMaxLength(34)
+                        .HasColumnType("character(34)")
+                        .HasColumnName("message_sid")
+                        .IsFixedLength();
+
+                    b.Property<Guid?>("ClientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("client_id");
+
+                    b.Property<DateTime?>("SentOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_on")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("MessageSid")
+                        .HasName("announcement_pkey");
+
+                    b.HasIndex("ClientId");
+
+                    b.ToTable("announcement", (string)null);
                 });
 
             modelBuilder.Entity("UnAd.Data.Users.Models.Client", b =>
@@ -91,22 +117,6 @@ namespace UnAd.Data.Users.Migrations
                     b.ToTable("client", (string)null);
                 });
 
-            modelBuilder.Entity("UnAd.Data.Users.Models.Product", b =>
-                {
-                    b.Property<string>("ProductId")
-                        .HasColumnType("character varying")
-                        .HasColumnName("product_id");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
-                    b.HasKey("ProductId")
-                        .HasName("product_pkey");
-
-                    b.ToTable("product", (string)null);
-                });
-
             modelBuilder.Entity("UnAd.Data.Users.Models.Subscriber", b =>
                 {
                     b.Property<string>("PhoneNumber")
@@ -119,6 +129,14 @@ namespace UnAd.Data.Users.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("joined_date")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Locale")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)")
+                        .HasColumnName("locale")
+                        .HasDefaultValueSql("'en-US'::character varying");
 
                     b.HasKey("PhoneNumber")
                         .HasName("subscriber_pkey");
@@ -141,6 +159,22 @@ namespace UnAd.Data.Users.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("client_subscriber_subscriber_phone_number_fkey");
+                });
+
+            modelBuilder.Entity("UnAd.Data.Users.Models.Announcement", b =>
+                {
+                    b.HasOne("UnAd.Data.Users.Models.Client", "Client")
+                        .WithMany("Announcements")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("announcement_client_id_fkey");
+
+                    b.Navigation("Client");
+                });
+
+            modelBuilder.Entity("UnAd.Data.Users.Models.Client", b =>
+                {
+                    b.Navigation("Announcements");
                 });
 #pragma warning restore 612, 618
         }

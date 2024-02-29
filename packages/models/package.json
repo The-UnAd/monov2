@@ -1,13 +1,12 @@
 {
   "name": "@unad/models",
   "version": "1.0.0",
-  "description": "",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
-    "typeorm": "typeorm-ts-node-commonjs",
     "build": "tsc",
     "build:watch": "tsc --watch",
+    "clean": "rimraf build",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix"
   },
@@ -17,10 +16,13 @@
     "@types/node": "^18.18.2",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
-    "typescript": "5.3.3"
+    "typescript": "5.3.3",
+    "rimraf": "^5.0.5"
   },
   "dependencies": {
     "reflect-metadata": "^0.2.1",
     "typeorm": "0.3.20"
-  }
+  },
+  "keywords": [],
+  "description": ""
 }

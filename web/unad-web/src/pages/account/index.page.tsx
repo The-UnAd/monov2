@@ -41,6 +41,7 @@ function Login() {
       try {
         const { token } = await api.login(phoneNumber, otp);
         const { sub: clientId } = await api.validateJwt(token);
+        debugger;
         setCookie('token', token, {
           path: '/',
           sameSite: true,

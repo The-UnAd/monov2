@@ -1,12 +1,13 @@
+using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using System.Globalization;
 using System.Net;
 using System.Text;
-using UnAd.Redis;
+using UnAd.Data.Users;
 
-namespace UnAd.Functions.Endpoints;
+namespace UnAd.Functions;
 
-public class MessageHandler(MessageHelper messageHelper, IConnectionMultiplexer redis) {
+public class MessageHandler(MessageHelper messageHelper, IDbContextFactory<UserDbContext> dbFactory) {
 
 
     private static readonly string[] IgnoreList = [
@@ -37,10 +38,10 @@ public class MessageHandler(MessageHelper messageHelper, IConnectionMultiplexer 
 
         // NOTE: MessagingServiceSid and AccountSid are avialable in the form data
 
-        var db = redis.GetDatabase();
-        var subLocale = db.GetSubscriberHashValue(smsFrom, "locale");
-        var clientLocale = db.GetClientHashValue(smsFrom, "locale");
-        var location = subLocale.HasValue ? subLocale.ToString() : clientLocale.HasValue ? clientLocale.ToString() : "en-US";
+        await using var context = await dbFactory.CreateDbContextAsync();
+        var client = await context.Clients.FirstOrDefaultAsync(c => c.PhoneNumber == smsFrom);
+        var sub = await context.Subscribers.FirstOrDefaultAsync(s => s.PhoneNumber == smsFrom);
+        var location = string.IsNullOrEmpty(sub?.Locale) ? string.IsNullOrEmpty(client?.Locale) ? "en-US" : client.Locale : sub.Locale;
 
         var culture = new CultureInfo(location);
         CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = culture;

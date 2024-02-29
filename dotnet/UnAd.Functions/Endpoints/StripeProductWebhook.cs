@@ -2,7 +2,7 @@ using StackExchange.Redis;
 using Stripe;
 using UnAd.Redis;
 
-namespace UnAd.Functions.Endpoints;
+namespace UnAd.Functions;
 
 public class StripeProductWebhook(IConnectionMultiplexer redis,
                                   IStripeVerifier stripeVerifier,
