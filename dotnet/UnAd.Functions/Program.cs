@@ -50,8 +50,10 @@ builder.Services.AddSingleton<IStripeClient>(s =>
 builder.Services.AddTransient<IStripeVerifier, StripeVerifier>();
 builder.Services.AddTransient<MessageHelper>();
 builder.Services.AddSingleton<IMessageSender, MessageSender>();
+
 builder.Services.AddPooledDbContextFactory<UserDbContext>((c, o) =>
-    o.UseNpgsql(builder.Configuration.GetConnectionString("UserDb")));
+    o.UseNpgsql(builder.Configuration.GetConnectionString("UserDb"), options =>
+        options.EnableRetryOnFailure()));
 
 builder.Services.AddTransient<MessageHandler>();
 builder.Services.AddTransient<StripePaymentWebhook>();
