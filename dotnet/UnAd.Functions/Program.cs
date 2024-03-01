@@ -68,6 +68,9 @@ var app = builder.Build();
 app.MapHealthChecks("/health");
 
 app.Use((context, next) => {
+    if (context.Request.Path.StartsWithSegments("/health")) {
+        return next(context);
+    }
     if (context.Request.Query.TryGetValue("code", out var value) &&
         value == context.RequestServices.GetRequiredService<IConfiguration>().GetValue<string>("API_KEY")) {
         return next(context);
