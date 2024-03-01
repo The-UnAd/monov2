@@ -92,6 +92,15 @@ resource "aws_security_group_rule" "ecs_egress_redis" {
   security_group_id = aws_security_group.ecs_private.id
 }
 
+resource "aws_security_group_rule" "ecs_egress_rds" {
+  type              = "egress"
+  from_port         = aws_rds_cluster.aurora.port
+  to_port           = aws_rds_cluster.aurora.port
+  protocol          = "tcp"
+  cidr_blocks       = [var.vpc_cidr]
+  security_group_id = aws_security_group.ecs_private.id
+}
+
 resource "aws_security_group_rule" "ecs_egress_tls" {
   # we need this for the ECS service to be able to access SSM and Secrets Manager
   type              = "egress"
@@ -384,6 +393,7 @@ module "unad-functions" {
   vpc_id                     = aws_vpc.vpc.id
   vpc_cidr                   = var.vpc_cidr
   private_subnet_ids         = aws_subnet.private_subnet.*.id
+  public_subnet_ids          = aws_subnet.public_subnet.*.id
   service_security_group_ids = [aws_security_group.ecs_private.id]
   desired_count              = 1
   cluster_arn                = aws_ecs_cluster.cluster.arn
@@ -434,13 +444,12 @@ module "unad-functions" {
 resource "aws_route53_record" "functions" {
   allow_overwrite = true
   name            = "funcs.${data.aws_route53_zone.main.name}"
-  records         = [module.signup-site.load_balancer_dns_name]
+  records         = [module.unad-functions.load_balancer_dns_name]
   ttl             = 60
   type            = "CNAME"
   zone_id         = data.aws_route53_zone.main.zone_id
 }
 
-
 output "unad_functions_api_url" {
-  value = "https://funcs.${data.aws_route53_zone.main.name}"
+  value = "https://funcs.${aws_route53_record.functions.name}"
 }
