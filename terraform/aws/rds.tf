@@ -122,5 +122,11 @@ resource "aws_ssm_parameter" "rds_cluster_db_connection_string" {
   value = "User ID=${local.rds_user};Password=${random_password.rds_password.result};Host=${aws_rds_cluster.aurora.endpoint};Port=${aws_rds_cluster.aurora.port}"
 }
 
+resource "aws_ssm_parameter" "rds_cluster_userdb_url" {
+  name  = "/rds/rds_cluster_userdb_url"
+  type  = "String"
+  value = "postgresql://${local.rds_user}:${random_password.rds_password.result}@${aws_rds_cluster.aurora.endpoint}:${aws_rds_cluster.aurora.port}/userdb?schema=public"
+}
+
 
 

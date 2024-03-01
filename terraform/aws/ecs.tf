@@ -156,20 +156,11 @@ module "signup-site" {
     name      = "JWT_PRIVATE_KEY"
     valueFrom = "${aws_ssm_parameter.jwt_private_key.arn}"
     }, {
-    name      = "DB_PASS"
-    valueFrom = "${aws_ssm_parameter.rds_cluster_password.arn}"
-    }, {
-    name      = "DB_USER"
-    valueFrom = "${aws_ssm_parameter.rds_cluster_user.arn}"
-    }, {
-    name      = "DB_PORT"
-    valueFrom = "${aws_ssm_parameter.rds_cluster_db_port.arn}"
-    }, {
-    name      = "DB_HOST"
-    valueFrom = "${aws_ssm_parameter.rds_cluster_endpoint.arn}"
-    }, {
     name      = "REDIS_URL"
     valueFrom = "${aws_ssm_parameter.redis_hosts.arn}"
+    }, {
+    name      = "DATABASE_URL"
+    valueFrom = "${aws_ssm_parameter.rds_cluster_userdb_url.arn}"
     }, {
     name      = "MIXPANEL_TOKEN"
     valueFrom = "${data.aws_ssm_parameter.mixpanel_token.arn}"
