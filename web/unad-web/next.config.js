@@ -1,3 +1,4 @@
+const { PrismaPlugin } = require('@prisma/nextjs-monorepo-workaround-plugin');
 const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
@@ -33,11 +34,14 @@ const nextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
-  webpack: (config, { dev }) => {
+  webpack: (config, { isServer }) => {
     config.module.rules.push({
       test: /\.(spec|test)\.[t|j]s[x]*$/,
       loader: 'ignore-loader',
     });
+    if (isServer) {
+      config.plugins = [...config.plugins, new PrismaPlugin()];
+    }
     return config;
   },
   async rewrites() {
