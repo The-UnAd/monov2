@@ -297,7 +297,7 @@ resource "aws_route53_record" "signup-site" {
 #   container_secrets = [
 #     {
 #       name      = "ConnectionStrings__UserDb"
-#       valueFrom = "${aws_ssm_parameter.rds_cluster_db_connection_string.arn}"
+#       valueFrom = "${aws_ssm_parameter.rds_cluster_userdb_connection_string.arn}"
 #     },
 #     {
 #       name      = "REDIS_URL"
@@ -378,6 +378,7 @@ resource "aws_ssm_parameter" "unad_functions_api_key" {
   type  = "SecureString"
   value = random_password.unad_functions_api_key.result
 }
+
 output "unad_functions_api_key" {
   value     = random_password.unad_functions_api_key.result
   sensitive = true
@@ -430,7 +431,7 @@ module "unad-functions" {
     valueFrom = "${data.aws_ssm_parameter.mixpanel_token.arn}"
     }, {
     name      = "ConnectionStrings__UserDb"
-    valueFrom = "${aws_ssm_parameter.rds_cluster_db_connection_string.arn}"
+    valueFrom = "${aws_ssm_parameter.rds_cluster_userdb_connection_string.arn}"
     }, {
     name      = "TWILIO_MESSAGE_SERVICE_SID"
     valueFrom = "${data.aws_ssm_parameter.twilio_message_service_sid.arn}"
@@ -443,16 +444,16 @@ module "unad-functions" {
     value = "3000"
     }, {
     name  = "ClientLinkBaseUri"
-    value = "https://${data.aws_route53_zone.main.name}/subscribe"
+    value = "https://signup.${data.aws_route53_zone.main.name}/subscribe"
     }, {
     name  = "SMS_LINK_BASE_URL"
-    value = "https://${data.aws_route53_zone.main.name}/announcement"
+    value = "https://signup.${data.aws_route53_zone.main.name}/announcement"
     }, {
     name  = "StripePortalUrl"
     value = "https://pay.theunad.com/p/login/test_9AQ8Ag7pwgGg0c84gg"
     }, {
     name  = "AccountUrl"
-    value = "https://${data.aws_route53_zone.main.name}/account"
+    value = "https://signup.${data.aws_route53_zone.main.name}/account"
   }]
 }
 

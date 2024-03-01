@@ -79,17 +79,12 @@ output "rds_cluster_endpoint" {
   value = aws_rds_cluster.aurora.endpoint
 }
 
-
 output "rds_cluster_port" {
   value = aws_rds_cluster.aurora.port
 }
 
 output "rds_cluster_password" {
   value = random_password.rds_password.result
-}
-
-output "rds_cluster_db_connection_string" {
-  value = "User ID=${local.rds_user};Password=${random_password.rds_password.result};Host=${aws_rds_cluster.aurora.endpoint};Port=${aws_rds_cluster.aurora.port}"
 }
 
 resource "aws_ssm_parameter" "rds_cluster_password" {
@@ -116,10 +111,10 @@ resource "aws_ssm_parameter" "rds_cluster_db_port" {
   value = aws_rds_cluster.aurora.port
 }
 
-resource "aws_ssm_parameter" "rds_cluster_db_connection_string" {
-  name  = "/rds/rds_cluster_db_connection_string"
+resource "aws_ssm_parameter" "rds_cluster_userdb_connection_string" {
+  name  = "/rds/rds_cluster_userdb_connection_string"
   type  = "SecureString"
-  value = "User ID=${local.rds_user};Password=${random_password.rds_password.result};Host=${aws_rds_cluster.aurora.endpoint};Port=${aws_rds_cluster.aurora.port}"
+  value = "Username=${local.rds_user};Password=${random_password.rds_password.result};Host=${aws_rds_cluster.aurora.endpoint};Port=${aws_rds_cluster.aurora.port};Database=userdb;"
 }
 
 resource "aws_ssm_parameter" "rds_cluster_userdb_url" {
