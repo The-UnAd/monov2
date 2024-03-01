@@ -431,6 +431,9 @@ module "unad-functions" {
     }, {
     name      = "ConnectionStrings__UserDb"
     valueFrom = "${aws_ssm_parameter.rds_cluster_db_connection_string.arn}"
+    }, {
+    name      = "TWILIO_MESSAGE_SERVICE_SID"
+    valueFrom = "${data.aws_ssm_parameter.twilio_message_service_sid.arn}"
   }]
   container_environment = [{
     name  = "ASPNETCORE_ENVIRONMENT"
@@ -438,6 +441,18 @@ module "unad-functions" {
     }, {
     name  = "HTTP_PORTS"
     value = "3000"
+    }, {
+    name  = "ClientLinkBaseUri"
+    value = "https://${data.aws_route53_zone.main.name}/subscribe"
+    }, {
+    name  = "SMS_LINK_BASE_URL"
+    value = "https://${data.aws_route53_zone.main.name}/announcement"
+    }, {
+    name  = "StripePortalUrl"
+    value = "https://pay.theunad.com/p/login/test_9AQ8Ag7pwgGg0c84gg"
+    }, {
+    name  = "AccountUrl"
+    value = "https://${data.aws_route53_zone.main.name}/account"
   }]
 }
 
