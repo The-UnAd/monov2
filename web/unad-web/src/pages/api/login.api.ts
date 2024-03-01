@@ -1,4 +1,3 @@
-import { Users } from '@unad/models';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { prisma } from '@/lib/db';

@@ -1,6 +1,5 @@
 import { ParsedUrlQuery } from 'node:querystring';
 
-import { Users } from '@unad/models';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
