@@ -403,7 +403,7 @@ module "unad-functions" {
   ssl_certificate_arn        = aws_acm_certificate_validation.wildcard.certificate_arn
   container_secrets = [{
     name      = "REDIS_URL"
-    valueFrom = "${aws_ssm_parameter.redis_hosts.arn}"
+    valueFrom = "${aws_ssm_parameter.redis_connection_string.arn}"
     }, {
     name      = "API_KEY"
     valueFrom = "${aws_ssm_parameter.unad_functions_api_key.arn}"
