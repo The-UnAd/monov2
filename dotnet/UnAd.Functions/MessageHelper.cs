@@ -151,7 +151,9 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
     public MessagingResponse ProcessConfirmAnnouncementMessage(string smsFrom) {
         var db = redis.GetDatabase();
         using var context = dbContextFactory.CreateDbContext();
-        var client = context.Clients.FirstOrDefault(x => x.PhoneNumber == smsFrom);
+        var client = context.Clients
+            .Include(c => c.SubscriberPhoneNumbers)
+            .FirstOrDefault(x => x.PhoneNumber == smsFrom);
         if (client is null) {
             return CreateSmsResponseContent(localizer.GetString("NotCustomer"));
         }
