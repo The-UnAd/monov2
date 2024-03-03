@@ -35,5 +35,5 @@ jobs:
 
           kill -9 $(lsof -t -i :5050)
         env:
-          REDIS_URL: "${{ vars.REDIS_HOST }}:5050,abortConnect=false"
+          REDIS_URL: "localhost:5050,abortConnect=false"
           STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
