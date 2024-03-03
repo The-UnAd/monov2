@@ -5,7 +5,8 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "web/unad-web"
+    "web/unad-web",
+    "web/admin-ui"
   ],
   "scripts": {
     "build": "npm run build --workspaces",
