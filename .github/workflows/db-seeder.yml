@@ -31,7 +31,7 @@ jobs:
 
           ssh -i ~/.ssh/jumpbox_ed25519 -o StrictHostKeyChecking=no -L 5050:${{ vars.REDIS_HOST }}:${{ vars.REDIS_PORT }} ubuntu@${{ vars.JUMPBOX_HOST }} -N & echo $! > ssh_tunnel.pid
 
-          REDIS_URL="${{ vars.REDIS_HOST }}:5050,abortConnect=true" dotnet run --project dotnet/DbSeeder/DbSeeder.csproj
+          dotnet run --project dotnet/DbSeeder/DbSeeder.csproj
 
           kill -9 $(lsof -t -i :5050)
         env:

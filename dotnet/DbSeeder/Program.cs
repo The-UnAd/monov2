@@ -9,7 +9,9 @@ using Microsoft.EntityFrameworkCore;
 
 static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
-        .ConfigureAppConfiguration((hostingContext, config) => config.AddUserSecrets<Program>())
+        .ConfigureAppConfiguration((hostingContext, config) =>
+            config.AddUserSecrets<Program>()
+            .AddEnvironmentVariables())
         .UseConsoleLifetime()
         .ConfigureServices((hostContext, services) => {
             var config = hostContext.Configuration;
