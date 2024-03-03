@@ -287,6 +287,21 @@
     },
     "footer": {
       "p": "Grow your business easily with text updates, promos & offerings to all customers at once!"
+    },
+    "OtpForm": {
+      "instructions": "Please enter the one-time code sent to your phone number via text message.",
+      "inputs": {
+        "otp": {
+          "label": "One-Time Password",
+          "placeholder": "000000"
+        }
+      },
+      "buttons": {
+        "submit": {
+          "unpressed": "Log In",
+          "loading": "Please Wait..."
+        }
+      }
     }
   },
   "pages/share/[clientId]": {
@@ -326,6 +341,21 @@
     },
     "links": {
       "learnMore": "<link>Learn more</link>"
+    },
+    "OtpForm": {
+      "instructions": "Please enter the one-time code sent to your phone number via text message.",
+      "inputs": {
+        "otp": {
+          "label": "One-Time Password",
+          "placeholder": "000000"
+        }
+      },
+      "buttons": {
+        "submit": {
+          "unpressed": "Log In",
+          "loading": "Please Wait..."
+        }
+      }
     }
   },
   "pages/subscribe/success/[code]": {

@@ -110,7 +110,12 @@ function Subscribe({ name, clientId }: SubscribeProps) {
 
               {!phoneNumber && <SubscribeForm onSubmit={clickGetOtp} />}
 
-              {phoneNumber && <OtpForm onSubmit={clickValidate} />}
+              {phoneNumber && (
+                <OtpForm
+                  tFunc={(k) => t(`OtpForm.${k}`)}
+                  onSubmit={clickValidate}
+                />
+              )}
 
               {error && (
                 <div className="col-12">

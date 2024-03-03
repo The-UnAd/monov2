@@ -99,7 +99,12 @@ function Register() {
                 </div>
               </div>
               {!registerData && <RegisterForm onSubmit={clickRegister} />}
-              {registerData && <OtpForm onSubmit={clickValidate} />}
+              {registerData && (
+                <OtpForm
+                  tFunc={(k) => t(`OtpForm.${k}`)}
+                  onSubmit={clickValidate}
+                />
+              )}
               {error && (
                 <div className="col-12">
                   <div className="form-message text-center" id="form-message">

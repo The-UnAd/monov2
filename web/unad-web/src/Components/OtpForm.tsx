@@ -1,5 +1,4 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useTranslations } from 'next-intl';
 import { FormProvider, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 
