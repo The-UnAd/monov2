@@ -1,14 +1,20 @@
 import { memo } from 'react';
-import { Route, Router, useParams } from 'wouter';
+import { Route, RouteProps, Router, RouterProps, useParams } from 'wouter';
 
 import ErrorBoundary from '../ErrorBoundary';
+import { RelayNavigatorProps } from './withRelay';
+
+type RelayNavigationScreenProps = RouteProps & {
+  readonly Component: React.ComponentType<any>;
+  readonly path: string;
+};
 
 const RelayNavigationRoute = memo(function RelayNavigationScreen({
   Component,
   path,
   ...props
-}) {
-  const params = useParams(path);
+}: RelayNavigationScreenProps) {
+  const params = useParams();
   return (
     <ErrorBoundary>
       <Component queryVars={params} {...props} />
@@ -18,8 +24,11 @@ const RelayNavigationRoute = memo(function RelayNavigationScreen({
 
 RelayNavigationRoute.displayName = 'RelayNavigationScreen';
 
-export default function relayRouterFactory() {
-  return function RouterWrapper({ screens, ...wrapperProps }) {
+export default function createRouterFactory() {
+  return function RouterWrapper({
+    screens,
+    ...wrapperProps
+  }: RelayNavigatorProps) {
     return (
       <Router {...wrapperProps}>
         {screens.map(({ path, component, ...r }) => (

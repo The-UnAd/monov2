@@ -1,7 +1,7 @@
 import graphql from 'babel-plugin-relay/macro';
-import { usePreloadedQuery } from 'react-relay/hooks';
 import { Link } from 'wouter';
 
+import { RelayRoute, RouteDefinition } from '../Router/withRelay';
 import type { HomeQuery } from './__generated__/HomeQuery.graphql';
 
 export const HomeQueryDef = graphql`
@@ -31,9 +31,7 @@ export const HomeQueryDef = graphql`
   }
 `;
 
-export default function HomePage(props: any) {
-  const data = usePreloadedQuery<HomeQuery>(HomeQueryDef, props.queryReference);
-
+export default function HomePage({ data }: RelayRoute<HomeQuery>) {
   return (
     <div>
       <ul>
@@ -47,8 +45,9 @@ export default function HomePage(props: any) {
   );
 }
 
-export const route = {
+export const route: RouteDefinition<HomeQuery> = {
   path: '/',
+  gqlQuery: HomeQueryDef,
   component: HomePage,
   query: require('./__generated__/HomeQuery.graphql.ts'),
 };

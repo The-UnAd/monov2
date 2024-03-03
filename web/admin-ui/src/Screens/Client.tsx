@@ -1,6 +1,7 @@
 import graphql from 'babel-plugin-relay/macro';
-import { useFragment, usePreloadedQuery } from 'react-relay/hooks';
+import { useFragment } from 'react-relay/hooks';
 
+import { RelayRoute } from '../Router/withRelay';
 import { ClientQuery } from './__generated__/ClientQuery.graphql';
 
 export const ClientQueryDef = graphql`
@@ -24,12 +25,7 @@ function ClientName({ client }: any) {
   return <p>Client: {data.name}!</p>;
 }
 
-export default function ClientPage(props: any) {
-  const data = usePreloadedQuery<ClientQuery>(
-    ClientQueryDef,
-    props.queryReference
-  );
-
+export default function ClientPage({ data }: RelayRoute<ClientQuery>) {
   return (
     <div>
       <ClientName client={data.client} />
@@ -39,6 +35,7 @@ export default function ClientPage(props: any) {
 
 export const route = {
   path: '/client/:clientId',
+  gqlQuery: ClientQueryDef,
   component: ClientPage,
   query: require('./__generated__/ClientQuery.graphql.ts'),
 };

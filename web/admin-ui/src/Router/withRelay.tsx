@@ -1,5 +1,14 @@
 import React, { useCallback, useContext, useMemo } from 'react';
-import { useQueryLoader } from 'react-relay';
+import {
+  type PreloadedQuery,
+  usePreloadedQuery,
+  useQueryLoader,
+} from 'react-relay';
+import type {
+  GraphQLTaggedNode,
+  OperationType,
+  PreloadableConcreteRequest,
+} from 'relay-runtime';
 
 export interface RelayNavigatorContextType {
   readonly suspenseFallback:
@@ -31,6 +40,11 @@ interface ComponentWrapperProps {
   readonly Component: React.ComponentType<any>;
   readonly [key: string]: any;
 }
+interface RelayComponentWrapperProps<TQuery extends OperationType> {
+  readonly Component: React.ComponentType<any>;
+  readonly gqlQuery: GraphQLTaggedNode;
+  readonly queryReference: PreloadedQuery<TQuery>;
+}
 
 const ComponentWrapper = React.forwardRef<unknown, ComponentWrapperProps>(
   ({ Component, ...props }, ref) => {
@@ -39,10 +53,24 @@ const ComponentWrapper = React.forwardRef<unknown, ComponentWrapperProps>(
 );
 ComponentWrapper.displayName = 'RelayComponentWrapper';
 
-type RelayQuery = any; // TODO: better type here
+function RelayComponentWrapper<T extends OperationType>({
+  Component,
+  gqlQuery,
+  queryReference,
+  ...props
+}: RelayComponentWrapperProps<T>) {
+  const data = usePreloadedQuery(gqlQuery, queryReference);
+  return <Component Component={Component} data={data} {...props} />;
+}
 
-export interface RouteDefinition {
-  readonly query?: RelayQuery;
+export type RelayRoute<T extends OperationType> = {
+  readonly data: T['response'];
+};
+
+export interface RouteDefinition<T extends OperationType> {
+  readonly path: string;
+  readonly query: PreloadableConcreteRequest<T>;
+  readonly gqlQuery: GraphQLTaggedNode;
   readonly skeleton?: React.ReactNode | JSX.Element | (() => JSX.Element);
   readonly component: React.ComponentType<any>;
   readonly fetchPolicy?:
@@ -51,19 +79,12 @@ export interface RouteDefinition {
     | 'network-only';
 }
 
-export type RelayRouteDefinition<T extends RouteDefinition> = Omit<
-  T,
-  'component'
-> &
-  T;
-
-type RelayScreenWrapperProps = Omit<RouteDefinition, 'component'> & {
-  readonly skeleton?: React.ReactNode | JSX.Element | (() => JSX.Element);
-  readonly component: React.ComponentType<any>;
-  readonly queryVars: {
-    readonly [key: string]: any;
+type RelayScreenWrapperProps<T extends OperationType = OperationType> =
+  RouteDefinition<T> & {
+    readonly queryVars: {
+      readonly [key: string]: any;
+    };
   };
-};
 
 function RelayScreenWrapper({
   fetchPolicy,
@@ -71,6 +92,7 @@ function RelayScreenWrapper({
   skeleton,
   component,
   queryVars,
+  gqlQuery,
   ...props
 }: RelayScreenWrapperProps) {
   const { suspenseFallback } = useRelayNavigatorContext();
@@ -103,9 +125,10 @@ function RelayScreenWrapper({
       <React.Suspense
         fallback={<ComponentWrapper Component={skeleton ?? suspenseFallback} />}
       >
-        <ComponentWrapper
+        <RelayComponentWrapper
           Component={component}
           queryReference={queryReference}
+          gqlQuery={gqlQuery}
           {...props}
         />
       </React.Suspense>
@@ -117,38 +140,27 @@ export interface RelayWrapperProps {
   readonly [key: string]: any;
 }
 
-export interface RelayNavigatorProps {
-  readonly screens: RouteDefinition[];
+export interface RelayNavigatorProps<T extends OperationType = OperationType> {
+  readonly screens: RouteDefinition<T>[];
 }
 
-export default function withRelay(
-  WrappedNavigator: React.ComponentType<RelayNavigatorProps>,
-  routeDefList: RouteDefinition[],
+export default function withRelay<T extends OperationType = OperationType>(
+  WrappedNavigator: React.ComponentType<any>,
+  routeDefList: RouteDefinition<T>[],
   suspenseFallback: React.ReactNode | JSX.Element | (() => JSX.Element)
 ) {
   const screens = routeDefList.map(({ query, component, ...rest }) => {
     return {
       ...rest,
-      component: query
-        ? function RelayQueryScreen(props: RelayScreenWrapperProps) {
-            return (
-              <RelayScreenWrapper
-                {...props}
-                {...rest}
-                query={query}
-                component={component}
-              />
-            );
-          }
-        : function RelayScreen(props: any) {
-            return (
-              <ComponentWrapper Component={component} {...props} {...rest} />
-            );
-          },
+      component: function RelayQueryScreen(props: RelayScreenWrapperProps) {
+        return (
+          <RelayScreenWrapper {...props} query={query} component={component} />
+        );
+      },
     };
   });
 
-  return function RelayContextWrapper(wrapperProps: RelayWrapperProps) {
+  return function RelayContextWrapper(wrapperProps: any) {
     const [contextValue] = React.useState({ suspenseFallback });
     return (
       <RelayNavigatorContext.Provider value={contextValue}>
