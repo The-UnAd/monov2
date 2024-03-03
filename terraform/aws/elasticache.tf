@@ -46,6 +46,14 @@ output "redis_endpoints" {
   value = join(",", [for endpoint in aws_elasticache_cluster.unad.cache_nodes : "${endpoint.address}:${aws_elasticache_cluster.unad.port}"])
 }
 
+output "redis_hosts" {
+  value = join(",", [for endpoint in aws_elasticache_cluster.unad.cache_nodes : "${endpoint.address}"])
+}
+
+output "redis_port" {
+  value = aws_elasticache_cluster.unad.port
+}
+
 output "redis_connection_string" {
   sensitive = true
   value     = "${join(",", [for endpoint in aws_elasticache_cluster.unad.cache_nodes : "${endpoint.address}:${aws_elasticache_cluster.unad.port}"])},ssl=false,abortConnect=false"

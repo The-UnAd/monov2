@@ -53,6 +53,8 @@ module "github" {
   jumpbox_host          = module.aws.jumpbox_host
   graph_monitor_url     = "https://monitor.unad.dev" # module.aws.graph_monitor_api_url
   graph_monitor_api_key = "test" # module.aws.graph_monitor_api_key
+  redis_host            = module.aws.redis_hosts
+  redis_port            = module.aws.redis_port
 }
 
 

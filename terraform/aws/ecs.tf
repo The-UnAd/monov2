@@ -467,5 +467,5 @@ resource "aws_route53_record" "functions" {
 }
 
 output "unad_functions_api_url" {
-  value = "https://funcs.${aws_route53_record.functions.name}"
+  value = "https://${aws_route53_record.functions.name}"
 }

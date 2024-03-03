@@ -20,6 +20,21 @@ resource "github_actions_environment_variable" "db_host" {
   value         = var.db_host
 }
 
+
+resource "github_actions_environment_variable" "redis_host" {
+  repository    = "monov2"
+  environment   = "development"
+  variable_name = "REDIS_HOST"
+  value         = var.redis_host
+}
+
+resource "github_actions_environment_variable" "redis_port" {
+  repository    = "monov2"
+  environment   = "development"
+  variable_name = "REDIS_PORT"
+  value         = var.redis_port
+}
+
 resource "github_actions_environment_variable" "jumpbox_host" {
   repository    = "monov2"
   environment   = "development"
@@ -62,6 +77,16 @@ variable "token" {
 }
 
 variable "db_host" {
+  type     = string
+  nullable = false
+}
+
+variable "redis_host" {
+  type     = string
+  nullable = false
+}
+
+variable "redis_port" {
   type     = string
   nullable = false
 }
