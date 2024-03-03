@@ -72,10 +72,12 @@ app.MapHealthChecks("/health");
 app.Use(async (context, next) => {
     if (context.Request.Path.StartsWithSegments("/health")) {
         await next.Invoke(context);
+        return;
     }
     if (context.Request.Query.TryGetValue("code", out var value) &&
         value == context.RequestServices.GetRequiredService<IConfiguration>().GetValue<string>("API_KEY")) {
         await next.Invoke(context);
+        return;
     }
     context.Response.StatusCode = 401;
     await context.Response.WriteAsync("Unauthorized");
