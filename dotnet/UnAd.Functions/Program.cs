@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Diagnostics;
@@ -70,18 +69,16 @@ var app = builder.Build();
 
 app.MapHealthChecks("/health");
 
-app.Use((context, next) => {
+app.Use(async (context, next) => {
     if (context.Request.Path.StartsWithSegments("/health")) {
-        return next(context);
+        await next.Invoke(context);
     }
     if (context.Request.Query.TryGetValue("code", out var value) &&
         value == context.RequestServices.GetRequiredService<IConfiguration>().GetValue<string>("API_KEY")) {
-        return next(context);
+        await next.Invoke(context);
     }
     context.Response.StatusCode = 401;
-    context.Response.WriteAsync("Unauthorized").ConfigureAwait(false).GetAwaiter().GetResult();
-    context.Response.CompleteAsync().ConfigureAwait(false);
-    return next(context);
+    await context.Response.WriteAsync("Unauthorized");
 });
 
 var api = app.MapGroup("/api");
