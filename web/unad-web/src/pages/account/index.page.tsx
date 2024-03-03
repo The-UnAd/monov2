@@ -40,7 +40,7 @@ function Login() {
     async ({ otp }: OtpFormData) => {
       try {
         const { token } = await api.login(phoneNumber, otp);
-        const { sub: clientId } = await api.validateJwt(token);
+        const { clientId } = await api.validateJwt(token);
         debugger;
         setCookie('token', token, {
           path: '/',
@@ -63,7 +63,7 @@ function Login() {
         <meta property="og:title" content="Log in to your UnAd Account" />
         <meta property="og:locale" content="en_US" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`https://unad.tech/account`} />
+        <meta property="og:url" content={`https://signup.unad.dev/account`} />
         <meta property="og:site_name" content="UnAd" />
         <meta property="og:site_name" content="UnAd" />
         <meta property="og:image" content="https://theunad.com/logo-wide.svg" />
@@ -87,7 +87,12 @@ function Login() {
               </div>
 
               {!phoneNumber && <PhoneNumberForm onSubmit={clickGetOtp} />}
-              {phoneNumber && <OtpForm onSubmit={clickLogin} />}
+              {phoneNumber && (
+                <OtpForm
+                  tFunc={(k) => t(`OtpForm.${k}`)}
+                  onSubmit={clickLogin}
+                />
+              )}
 
               {error && (
                 <div className="col-12">
@@ -102,7 +107,7 @@ function Login() {
               <div className="col-12">
                 <div className="text-center">
                   <p className="ternary">
-                    {t.rich('links.register', {
+                    {t.rich('links.login', {
                       link: (text) => (
                         <Link
                           className="links quaternary"

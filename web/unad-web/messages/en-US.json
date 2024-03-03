@@ -129,18 +129,30 @@
     }
   },
   "pages/account/index": {
-    "title": "UnAd",
-    "subscribers": "You have {subscribers} subscribers",
-    "announcementCount": "You have sent {announcementCount} announcements",
+    "title": "UnAd - Login to Your Account",
     "header": {
-      "h1": "Welcome to your UnAd account",
-      "p": "Here you can manage your subscribers and send announcements to your customers."
+      "h1": "Welcome to your UnAd account"
     },
     "links": {
-      "register": "Don't have an account? <link>Register here</link>."
+      "login": "Don't have an account? <link>Register here</link>."
     },
     "footer": {
       "p": "Grow your business easily with text updates, promos & offerings to all customers at once!"
+    },
+    "OtpForm": {
+      "instructions": "Please enter the one-time code sent to your phone number via text message.",
+      "inputs": {
+        "otp": {
+          "label": "One-Time Password",
+          "placeholder": "000000"
+        }
+      },
+      "buttons": {
+        "submit": {
+          "unpressed": "Log In",
+          "loading": "Please Wait..."
+        }
+      }
     }
   },
   "pages/api/jwt": {
@@ -213,7 +225,8 @@
   "pages/pay/[clientId]": {
     "title": "UnAd - Payment",
     "h1": "Payment",
-    "mb4": "Just one last step and you're done!",
+    "p1": "Just one last step and you're done!",
+    "p2": "NOTE: If the list below does not load, <link>refresh</link> this page.",
     "errors": {
       "clientNotFound": "Client not found",
       "customerNotFound": "Customer not found",

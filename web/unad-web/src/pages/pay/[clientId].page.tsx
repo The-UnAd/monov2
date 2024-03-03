@@ -40,7 +40,23 @@ function Pay({ clientId, pricingTableId }: PageData) {
                 />
                 <h1 className="primary mb-1">{t('h1')}</h1>
                 <div className="mb-4">
-                  <p>{t('mb4')}</p>
+                  <p>{t('p1')}</p>
+                </div>
+                <div className="mb-4">
+                  <p>
+                    {t.rich('p2', {
+                      link: (text) => (
+                        <a
+                          key="0"
+                          className="links link-4"
+                          href={''}
+                          rel="noopener noreferrer"
+                        >
+                          {text}
+                        </a>
+                      ),
+                    })}
+                  </p>
                 </div>
               </div>
               <div className="my-2">

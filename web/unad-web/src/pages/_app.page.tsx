@@ -1,7 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.css';
 import './sass/main.scss';
 
-import { Analytics } from '@vercel/analytics/react';
 import type { AppProps } from 'next/app';
 import Error from 'next/error';
 import { useRouter } from 'next/router';
@@ -48,7 +47,6 @@ function MyApp({ Component, pageProps }: AppProps) {
       timeZone={Intl.DateTimeFormat().resolvedOptions().timeZone}
     >
       <Component {...pageProps} />
-      <Analytics />
     </NextIntlClientProvider>
   );
 }

@@ -101,5 +101,6 @@ export async function validateJwt(token: string): Promise<JwtPayload> {
     throw new Error(error.message);
   }
   const payload = await resp.json();
+  debugger;
   return payload;
 }

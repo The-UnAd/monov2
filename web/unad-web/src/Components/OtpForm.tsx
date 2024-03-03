@@ -14,10 +14,10 @@ export type OtpFormData = yup.InferType<typeof schema>;
 
 export interface OtpFormProps {
   onSubmit: (data: OtpFormData) => void;
+  tFunc: (key: string) => string;
 }
 
-function OtpForm({ onSubmit }: OtpFormProps) {
-  const t = useTranslations('Components/OtpForm');
+function OtpForm({ onSubmit, tFunc: t }: OtpFormProps) {
   const methods = useForm<OtpFormData>({
     resolver: yupResolver(schema),
     mode: 'onBlur',

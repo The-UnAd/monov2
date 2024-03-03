@@ -30,7 +30,7 @@ export default async function handler(
     const otp = generateToken(secret);
 
     await twilio.sendSms(phone, t('sms.otp', { otp }));
-    return res.status(200).end();
+    return res.status(200).json({});
   } catch (error: any) {
     console.error('error in /api/otp', error.stack);
     return res.status(500).json({
