@@ -9,9 +9,7 @@ public class Query {
         return user;
     }
 
-    public IQueryable<Client> GetClients(UserDbContext context) {
-        return context.Clients;
-    }
+    public IQueryable<Client> GetClients(UserDbContext context) => context.Clients;
 }
 
 public sealed class QueryType : ObjectType<Query> {
@@ -20,7 +18,7 @@ public sealed class QueryType : ObjectType<Query> {
             .Argument("id", a => a.Type<NonNullType<IdType>>().ID(nameof(Client)))
             .Type<ObjectType<Client>>();
         descriptor.Field(f => f.GetClients(default!))
-            //.UsePaging()
+            .UsePaging()
             .UseProjection()
             .UseFiltering()
             .UseSorting();

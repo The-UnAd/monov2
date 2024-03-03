@@ -50,7 +50,17 @@ public sealed class BasicTests(ApiFactory factory) : IAsyncLifetime {
             Name = "Test Client",
             PhoneNumber = "+11111111111",
             Locale = "en-US",
-            Subscribers = new List<Subscriber> { testSubscriber.Entity }
+            SubscriberPhoneNumbers = [
+                new() {
+                    PhoneNumber = testSubscriber.Entity.PhoneNumber
+                }
+            ],
+            Announcements = [
+                new Announcement {
+                   MessageSid = "SM4c09151fa7582245042aa94dffd68a4d",
+                   SentOn = DateTime.UtcNow,
+                }
+            ]
         });
         await dbContext.SaveChangesAsync();
     }

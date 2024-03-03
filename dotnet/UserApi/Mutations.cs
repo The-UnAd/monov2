@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using HotChocolate.Utilities;
 using StackExchange.Redis;
 using UnAd.Data.Users;
 using UnAd.Data.Users.Models;
@@ -25,35 +23,9 @@ public record ClientNotFoundError(Guid ClientId) {
 }
 
 public class MutationType : ObjectType<Mutation> {
-    protected override void Configure(IObjectTypeDescriptor<Mutation> descriptor) {
+    protected override void Configure(IObjectTypeDescriptor<Mutation> descriptor) =>
         descriptor
             .Field(f => f.DeleteClient(default, default, default))
             .Argument("id", a => a.Type<NonNullType<IdType>>().ID(nameof(Client)))
             .UseMutationConvention();
-    }
-}
-
-class GuidFormatter : IChangeTypeProvider {
-    bool IChangeTypeProvider.TryCreateConverter(Type source, Type target, ChangeTypeProvider root, [NotNullWhen(true)] out ChangeType converter) {
-        if (source == typeof(Guid) && target == typeof(string)) {
-            converter = Format;
-            return true;
-        }
-        if (target == typeof(Guid) && source == typeof(string)) {
-            converter = DeFormat;
-            return true;
-        }
-        converter = null;
-        return false;
-    }
-
-    private static object Format(object input)
-        => input is Guid g
-            ? g.ToString()
-            : default;
-
-    private static object DeFormat(object input)
-        => input is string s
-            ? Guid.Parse(s)
-            : default;
 }
