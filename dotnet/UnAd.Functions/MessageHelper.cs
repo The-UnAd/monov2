@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using StackExchange.Redis;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Twilio.Rest.Api.V2010.Account;
@@ -210,7 +211,7 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
         // TOOD: still need to store these in Redis
         db.DecrementClientProductLimitValue(smsFrom, "maxMessages", 1);
         mixpanelClient.Track(Events.AnnouncementSent, new() {
-            { "count", count.ToString()}
+            { "count", count.ToString(CultureInfo.CurrentCulture)}
         }, smsFrom).ConfigureAwait(false).GetAwaiter().GetResult();
         return CreateSmsResponseContent(localizer.GetStringWithReplacements("AnnouncementSent", new { count }));
     }

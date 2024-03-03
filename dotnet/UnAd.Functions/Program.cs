@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Diagnostics;
@@ -78,6 +79,7 @@ app.Use((context, next) => {
         return next(context);
     }
     context.Response.StatusCode = 401;
+    context.Response.WriteAsync("Unauthorized").ConfigureAwait(false).GetAwaiter().GetResult();
     context.Response.CompleteAsync().ConfigureAwait(false);
     return next(context);
 });
