@@ -1,0 +1,292 @@
+type Query {
+  """
+  Fetches an object given its ID.
+  """
+  node(
+    """
+    ID of the object.
+    """
+    id: ID!
+  ): Node
+
+  """
+  Lookup nodes by a list of IDs.
+  """
+  nodes(
+    """
+    The list of node IDs.
+    """
+    ids: [ID!]!
+  ): [Node]!
+  client(id: ID!): Client
+  clients(
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: String
+    where: ClientFilterInput
+    order: [ClientSortInput!]
+  ): ClientsConnection
+}
+
+type Mutation {
+  deleteClient(input: DeleteClientInput!): DeleteClientPayload!
+}
+
+"""
+The node interface is implemented by entities that have a global unique identifier.
+"""
+interface Node {
+  id: ID!
+}
+
+enum ApplyPolicy {
+  BEFORE_RESOLVER
+  AFTER_RESOLVER
+  VALIDATION
+}
+
+input ClientFilterInput {
+  and: [ClientFilterInput!]
+  or: [ClientFilterInput!]
+  id: UuidOperationFilterInput
+  name: StringOperationFilterInput
+  phoneNumber: StringOperationFilterInput
+  customerId: StringOperationFilterInput
+  subscriptionId: StringOperationFilterInput
+  locale: StringOperationFilterInput
+  announcements: ListFilterInputTypeOfAnnouncementFilterInput
+  subscriberPhoneNumbers: ListFilterInputTypeOfSubscriberFilterInput
+}
+
+input ClientSortInput {
+  id: SortEnumType
+  name: SortEnumType
+  phoneNumber: SortEnumType
+  customerId: SortEnumType
+  subscriptionId: SortEnumType
+  locale: SortEnumType
+}
+
+type Client implements Node {
+  id: ID!
+  name: String!
+  phoneNumber: String!
+  customerId: String
+  subscriptionId: String
+  locale: String!
+  announcements: [Announcement!]!
+  subscriberPhoneNumbers: [Subscriber!]!
+  subscription: StripeSubscription
+  subscribers: [Subscriber!]!
+}
+
+"""
+A connection to a list of items.
+"""
+type ClientsConnection {
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+
+  """
+  A list of edges.
+  """
+  edges: [ClientsEdge!]
+
+  """
+  A flattened list of the nodes.
+  """
+  nodes: [Client!]
+}
+
+type StripeSubscription {
+  id: String
+  status: String
+}
+
+input UuidOperationFilterInput {
+  eq: UUID
+  neq: UUID
+  in: [UUID]
+  nin: [UUID]
+  gt: UUID
+  ngt: UUID
+  gte: UUID
+  ngte: UUID
+  lt: UUID
+  nlt: UUID
+  lte: UUID
+  nlte: UUID
+}
+
+input StringOperationFilterInput {
+  and: [StringOperationFilterInput!]
+  or: [StringOperationFilterInput!]
+  eq: String
+  neq: String
+  contains: String
+  ncontains: String
+  in: [String]
+  nin: [String]
+  startsWith: String
+  nstartsWith: String
+  endsWith: String
+  nendsWith: String
+}
+
+input ListFilterInputTypeOfAnnouncementFilterInput {
+  all: AnnouncementFilterInput
+  none: AnnouncementFilterInput
+  some: AnnouncementFilterInput
+  any: Boolean
+}
+
+input ListFilterInputTypeOfSubscriberFilterInput {
+  all: SubscriberFilterInput
+  none: SubscriberFilterInput
+  some: SubscriberFilterInput
+  any: Boolean
+}
+
+enum SortEnumType {
+  ASC
+  DESC
+}
+
+"""
+Information about pagination in a connection.
+"""
+type PageInfo {
+  """
+  Indicates whether more edges exist following the set defined by the clients arguments.
+  """
+  hasNextPage: Boolean!
+
+  """
+  Indicates whether more edges exist prior the set defined by the clients arguments.
+  """
+  hasPreviousPage: Boolean!
+
+  """
+  When paginating backwards, the cursor to continue.
+  """
+  startCursor: String
+
+  """
+  When paginating forwards, the cursor to continue.
+  """
+  endCursor: String
+}
+
+"""
+An edge in a connection.
+"""
+type ClientsEdge {
+  """
+  A cursor for use in pagination.
+  """
+  cursor: String!
+
+  """
+  The item at the end of the edge.
+  """
+  node: Client!
+}
+
+scalar UUID @specifiedBy(url: "https://tools.ietf.org/html/rfc4122")
+
+input AnnouncementFilterInput {
+  and: [AnnouncementFilterInput!]
+  or: [AnnouncementFilterInput!]
+  messageSid: StringOperationFilterInput
+  sentOn: DateTimeOperationFilterInput
+  clientId: UuidOperationFilterInput
+  client: ClientFilterInput
+}
+
+input SubscriberFilterInput {
+  and: [SubscriberFilterInput!]
+  or: [SubscriberFilterInput!]
+  phoneNumber: StringOperationFilterInput
+  joinedDate: DateTimeOperationFilterInput
+  locale: StringOperationFilterInput
+  clients: ListFilterInputTypeOfClientFilterInput
+}
+
+input DateTimeOperationFilterInput {
+  eq: DateTime
+  neq: DateTime
+  in: [DateTime]
+  nin: [DateTime]
+  gt: DateTime
+  ngt: DateTime
+  gte: DateTime
+  ngte: DateTime
+  lt: DateTime
+  nlt: DateTime
+  lte: DateTime
+  nlte: DateTime
+}
+
+input ListFilterInputTypeOfClientFilterInput {
+  all: ClientFilterInput
+  none: ClientFilterInput
+  some: ClientFilterInput
+  any: Boolean
+}
+
+"""
+The `DateTime` scalar represents an ISO-8601 compliant date time type.
+"""
+scalar DateTime @specifiedBy(url: "https://www.graphql-scalars.com/date-time")
+
+type ClientNotFoundError implements Error {
+  clientId: UUID!
+  message: String!
+}
+
+type Subscriber {
+  phoneNumber: String!
+  joinedDate: DateTime
+  locale: String!
+  clients: [Client!]!
+}
+
+type Announcement {
+  messageSid: String!
+  sentOn: DateTime
+  clientId: UUID
+  client: Client
+}
+
+interface Error {
+  message: String!
+}
+
+input DeleteClientInput {
+  id: ID!
+}
+
+union DeleteClientError = ClientNotFoundError
+
+type DeleteClientPayload {
+  client: Client
+  errors: [DeleteClientError!]
+}
