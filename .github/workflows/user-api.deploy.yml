@@ -7,7 +7,7 @@ env:
   ECR_REPOSITORY: unad/user-api
   ECS_CLUSTER: unad-cluster
   ECS_SERVICE: user-api
-  CONTEXT_PATH: dotnet/UserApi
+  CONTEXT_PATH: dotnet
   
 jobs:
   build:
