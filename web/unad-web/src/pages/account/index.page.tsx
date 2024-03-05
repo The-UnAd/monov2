@@ -41,12 +41,11 @@ function Login() {
       try {
         const { token } = await api.login(phoneNumber, otp);
         const { clientId } = await api.validateJwt(token);
-        debugger;
         setCookie('token', token, {
           path: '/',
           sameSite: true,
           secure: true,
-          maxAge: Number(process.env.NEXT_PUBLIC_SESSION_LENGTH),
+          maxAge: 86400,
         });
         router.push(`/account/${clientId}`);
       } catch (err: any) {
