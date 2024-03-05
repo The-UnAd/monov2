@@ -21,8 +21,9 @@ builder.Services.AddPooledDbContextFactory<UserDbContext>((s, o) =>
 builder.Services.AddSingleton<IStripeClient>(s =>
     new StripeClient(s.GetRequiredService<IConfiguration>().GetValue<string>("STRIPE_API_KEY")));
 
-TwilioClient.Init(builder.Configuration.GetTwilioAccountSid(),
-       builder.Configuration.GetTwilioAuthToken());
+builder.Services.AddSingleton(() =>
+    TwilioClient.Init(builder.Configuration.GetTwilioAccountSid(),
+       builder.Configuration.GetTwilioAuthToken()));
 
 builder.Services
     .AddGraphQLServer()
