@@ -2,10 +2,6 @@ name: Build and Deploy graphql-gateway to ECS
 
 on:
   workflow_dispatch:
-      
-permissions:
-  packages: read
-  contents: read
 
 env:
   ECR_REPOSITORY: unad/graphql-gateway
@@ -37,7 +33,6 @@ jobs:
         run: |
           echo "${{ secrets.GRAPH_MONITOR_HEADERS }}" > ${{ env.CONTEXT_PATH }}/graphmonitorheaders
 
-      # TODO: https://docs.docker.com/build/cache/backends/gha/
       - name: Build and tag Docker image
         id: build-image
         uses: docker/build-push-action@v2

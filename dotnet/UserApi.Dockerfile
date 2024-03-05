@@ -14,11 +14,7 @@ COPY . .
 WORKDIR /src/UserApi
 RUN dotnet build -c Release -o /app
 
-FROM build AS submit
-RUN --mount=type=secret,id=graphmonitorheaders,target=/run/secrets/headers \
-    curl -sSf -H @/run/secrets/headers -d "http://user-api:5300/graphql" ${GRAPH_MONITOR_URL}/user-api
-
-FROM submit AS publish
+FROM build AS publish
 RUN dotnet publish UserApi.csproj -c Release -o /src/publish /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
