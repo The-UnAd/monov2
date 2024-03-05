@@ -69,5 +69,5 @@ jobs:
         run: |
           echo "${{ secrets.GRAPH_MONITOR_HEADERS }}" > headers
           URL="http://${{ env.ECS_SERVICE }}.unad.local/graphql"
-          curl --fail-early -H @headers -d "$URL" https://${{ vars.GRAPH_MONITOR_URL }}/user-api
+          curl --fail-early -H @headers -d "$URL" ${{ vars.GRAPH_MONITOR_URL }}/user-api
       
