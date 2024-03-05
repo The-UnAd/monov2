@@ -20,14 +20,18 @@ builder.Services.AddHealthChecks();
 var app = builder.Build();
 
 
-app.Use((context, next) => {
+app.Use(async (context, next) => {
+    if (context.Request.Path.StartsWithSegments("/health")) {
+        await next.Invoke(context);
+        return;
+    }
     if (context.Request.Headers.TryGetValue("X-Api-Key", out var value) &&
         value == context.RequestServices.GetRequiredService<IConfiguration>().GetValue<string>("API_KEY")) {
-        return next(context);
+        await next.Invoke(context);
+        return;
     }
     context.Response.StatusCode = 401;
-    context.Response.CompleteAsync().ConfigureAwait(false);
-    return next(context);
+    await context.Response.WriteAsync("Unauthorized");
 });
 
 app.MapGet("/{name}", async (string name, IConnectionMultiplexer redis) => {
