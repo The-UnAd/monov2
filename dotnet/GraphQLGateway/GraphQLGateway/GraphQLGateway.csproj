@@ -9,10 +9,12 @@
   </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Amazon.AspNetCore.Identity.Cognito" Version="3.0.1" />
       <PackageReference Include="HotChocolate.AspNetCore.CommandLine" Version="13.9.0" />
       <PackageReference Include="HotChocolate.Caching" Version="13.9.0" />
       <PackageReference Include="HotChocolate.Fusion" Version="13.9.0" />
       <PackageReference Include="HotChocolate.Stitching" Version="13.9.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1" />
       <PackageReference Include="Microsoft.AspNetCore.HeaderPropagation" Version="8.0.2" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
       <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />

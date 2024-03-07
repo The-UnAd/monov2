@@ -1,34 +1,16 @@
 using GraphQLGateway;
 using HotChocolate.AspNetCore;
-using HotChocolate.AspNetCore.Serialization;
-using HotChocolate.Execution.Serialization;
 using HotChocolate.Stitching;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.Extensions.Logging.Console;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Polly;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole(b => b.FormatterName = ConsoleFormatterNames.Systemd)
-    .AddDebug();
-
-builder.Services.AddHttpContextAccessor();
-
-builder.Services.AddSingleton(typeof(ILogger), c => {
-    var logger = c.GetRequiredService<ILoggerFactory>()
-        .CreateLogger("GraphQLGateway");
-    return logger;
-});
-
-builder.Services.AddExceptionHandler(o => o.ExceptionHandler = context => {
-    var exception = context.Features.Get<IExceptionHandlerFeature>()
-        ?.Error;
-    var logger = context.Features.Get<ILogger>();
-    logger?.LogError(exception, "Unhandled exception {Message}", exception?.Message);
-    return Task.CompletedTask;
-});
+builder.Configuration
+    .AddEnvironmentVariables()
+    .AddUserSecrets(typeof(Program).Assembly);
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHeaderPropagation(o => {
@@ -36,16 +18,17 @@ builder.Services.AddHeaderPropagation(o => {
         c.HeaderValue.ToString()
             .Split(' ')
             .LastOrDefault());
-    //o.Headers.Add("Authorization", "Authorization", c => {
-    //    var redis = c.HttpContext.RequestServices.GetRequiredService<IConnectionMultiplexer>();
-    //    var token = c.HeaderValue.ToString()
-    //        .Split(' ')
-    //        .LastOrDefault();
-    //    var jwt = redis.GetDatabase()
-    //        .StringGet($"token:{token}");
-    //    return $"Bearer {jwt}";
-    //});
+    o.Headers.Add("Authorization", "Authorization", c => {
+        var redis = c.HttpContext.RequestServices.GetRequiredService<IConnectionMultiplexer>();
+        var token = c.HeaderValue.ToString()
+            .Split(' ')
+            .LastOrDefault();
+        var jwt = redis.GetDatabase()
+            .StringGet($"token:{token}");
+        return $"Bearer {jwt}";
+    });
 });
+
 builder.Services.AddHttpClient("Fusion")
     .AddHeaderPropagation()
     .AddTransientHttpErrorPolicy(b
@@ -65,19 +48,26 @@ builder.Services
         opt.IncludeExceptionDetails = builder.Environment.IsDevelopment())
     .InitializeOnStartup();
 
-
 builder.Services.AddHealthChecks();
 
-builder.Services.AddHttpResponseFormatter(new HttpResponseFormatterOptions {
-    Json = new JsonResultFormatterOptions {
-        NullIgnoreCondition = JsonNullIgnoreCondition.Fields
-    }
+builder.Services.AddCognitoIdentity().AddAuthentication(o => {
+    o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(o => {
+    o.Authority = builder.Configuration["COGNITO_AUTHORITY"];
+    o.TokenValidationParameters = new TokenValidationParameters {
+        ValidateIssuerSigningKey = false,
+        ValidateAudience = false,
+    };
 });
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
 app.UseHeaderPropagation();
-app.UseExceptionHandler();
+
+app.UseAuthorization();
+app.UseAuthorization();
 
 app.MapHealthChecks("/health");
 
