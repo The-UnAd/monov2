@@ -172,6 +172,15 @@ resource "aws_lb" "this_lb" {
     Name = "${var.project_name}-lb"
   }
   enable_deletion_protection = false # TODO: turn on for production
+  dynamic "access_logs" {
+    for_each = length(var.alb_logs_bucket_name) > 0 ? [1] : []
+    content {
+      bucket = var.alb_logs_bucket_name
+      prefix = "${var.project_name}-lb"
+      enabled = true
+    }
+    
+  }
 }
 
 resource "aws_lb_listener" "this_listener" {
@@ -209,7 +218,7 @@ resource "aws_lb_listener_rule" "cognito" {
 
   condition {
     path_pattern {
-      values = ["/*"]
+      values = ["/graphql"]
     }
   }
 

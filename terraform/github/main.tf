@@ -67,7 +67,7 @@ resource "github_actions_environment_secret" "graph_monitor_headers" {
   repository      = "monov2"
   environment     = "development"
   secret_name     = "GRAPH_MONITOR_HEADERS"
-  plaintext_value = "X-Api-Key ${var.graph_monitor_api_key}"
+  plaintext_value = "X-Api-Key: ${var.graph_monitor_api_key}"
 }
 
 variable "token" {

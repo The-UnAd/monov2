@@ -1,6 +1,7 @@
 import { ParsedUrlQuery } from 'node:querystring';
 
 import { GetServerSidePropsContext } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import Stripe from 'stripe';
@@ -52,6 +53,19 @@ function Pay({ accountUrl, portalUrl, subscribeUrl }: PageData) {
                     </Link>
                   </p>
                   <p className="white">{t('links.subscribe.description')}</p>
+                </div>
+              </div>
+              <div className="mb-2">
+                <div className="business-link">
+                  <p className="white">
+                    <Image
+                      src={`/api/qr?content=${subscribeUrl}`}
+                      width={200}
+                      height={200}
+                      alt="QR Code"
+                    />
+                  </p>
+                  <p className="white">{t('links.qr.description')}</p>
                 </div>
               </div>
               <div className="mb-2">

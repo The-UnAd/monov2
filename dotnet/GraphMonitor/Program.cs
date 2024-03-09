@@ -19,6 +19,7 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
+app.MapHealthChecks("/health");
 
 app.Use(async (context, next) => {
     if (context.Request.Path.StartsWithSegments("/health")) {
@@ -58,8 +59,6 @@ app.MapPost("/{name}", async (string name, HttpRequest request, IConnectionMulti
     GraphMonitorLogs.LogGraphStored(logger, name, null);
     return Results.Ok();
 });
-
-app.MapHealthChecks("/health");
 
 await app.RunAsync();
 

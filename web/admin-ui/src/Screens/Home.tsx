@@ -12,18 +12,8 @@ export const HomeQueryDef = graphql`
         node {
           id
           name
-          subscriptionId
-          subscription {
-            status
-          }
           subscriberPhoneNumbers {
-            phoneNumber
-          }
-          subscribers {
-            phoneNumber
-            clients {
-              name
-            }
+            __typename
           }
         }
       }
@@ -37,7 +27,10 @@ export default function HomePage({ data }: RelayRoute<HomeQuery>) {
       <ul>
         {data?.clients?.edges?.map(({ node: client }) => (
           <li key={client.id}>
-            <Link to={`/client/${client.id}`}>{client.name}</Link>
+            <span>
+              <Link to={`/client/${client.id}`}>{client.name}</Link> has{' '}
+              {client.subscriberPhoneNumbers.length} subscribers
+            </span>
           </li>
         ))}
       </ul>

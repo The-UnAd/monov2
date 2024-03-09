@@ -262,6 +262,9 @@
       },
       "portal": {
         "text": "Manage your subscription:"
+      },
+      "qr": {
+        "description": "Share this QR code with your customers to subscribe to your business."
       }
     },
     "errors": {

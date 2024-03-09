@@ -91,3 +91,7 @@ variable "cognito_pool_domain" {
   type = string
   default = null
 }
+variable "alb_logs_bucket_name" {
+  type = string
+  default = ""
+}
