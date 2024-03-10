@@ -24,8 +24,7 @@ services:
     networks:
       - UnAd
     build:
-      context: ./
-      dockerfile: ./web/admin-ui/Dockerfile
+      context: ./web/admin-ui/
     ports:
       - "3030:3030"
     environment:

@@ -19,12 +19,12 @@ const nextConfig = {
     defaultLocale: 'en-US',
     domains: [
       {
-        domain: 'unad.tech',
+        domain: 'unad.dev',
         defaultLocale: 'en-US',
         locales: ['en-US', 'es'],
       },
       {
-        domain: 'es.unad.tech',
+        domain: 'es.unad.dev',
         defaultLocale: 'es',
       },
     ],
@@ -80,7 +80,7 @@ const nextConfig = {
             value: 'unad.me',
           },
         ],
-        destination: 'https://unad.tech/',
+        destination: 'https://unad.dev/',
         basePath: false,
         permanent: true,
       },

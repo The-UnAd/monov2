@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { createServer } from 'http';
 import next from 'next';
 import { parse } from 'url';
@@ -37,6 +38,7 @@ app.prepare().then(() => {
         // Be sure to pass `true` as the second argument to `url.parse`.
         // This tells it to parse the query portion of the URL.
         const parsedUrl = parse(req.url as string, true);
+        res.setHeader('x-trace-id', req.headers['x-trace-id'] ?? randomUUID());
         await handle(req, res, parsedUrl);
       } catch (err) {
         console.error('Error occurred handling', req.url, err);

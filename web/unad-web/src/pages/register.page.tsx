@@ -77,7 +77,7 @@ function Register() {
         <meta property="og:site_name" content="UnAd" />
         <meta property="og:site_name" content="UnAd" />
         <meta property="og:image" content="https://theunad.com/logo-wide.svg" />
-        <meta property="og:url" content="https://unad.tech" />
+        <meta property="og:url" content="https://unad.dev" />
         <meta name="description" content="Marketing made simple" />
       </Head>
       <section className="app">
