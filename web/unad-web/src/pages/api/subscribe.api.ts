@@ -36,10 +36,16 @@ export default async function handler(
     const locale = getRequestLocale(req) ?? DefaultLocale;
 
     await prisma.$transaction([
-      prisma.subscriber.create({
-        data: {
+      prisma.subscriber.upsert({
+        create: {
           phone_number: phone,
           locale,
+        },
+        update: {
+          locale,
+        },
+        where: {
+          phone_number: phone,
         },
       }),
       prisma.client_subscriber.create({
