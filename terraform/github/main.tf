@@ -15,57 +15,58 @@ provider "github" {
 
 resource "github_actions_environment_variable" "db_host" {
   repository    = "monov2"
-  environment   = "development"
+  environment   = var.environment
   variable_name = "DB_HOST"
   value         = var.db_host
 }
 
-
 resource "github_actions_environment_variable" "redis_host" {
   repository    = "monov2"
-  environment   = "development"
+  environment   = var.environment
   variable_name = "REDIS_HOST"
   value         = var.redis_host
 }
 
 resource "github_actions_environment_variable" "redis_port" {
   repository    = "monov2"
-  environment   = "development"
+  environment   = var.environment
   variable_name = "REDIS_PORT"
   value         = var.redis_port
 }
 
 resource "github_actions_environment_variable" "jumpbox_host" {
   repository    = "monov2"
-  environment   = "development"
+  environment   = var.environment
   variable_name = "JUMPBOX_HOST"
   value         = var.jumpbox_host
 }
 
 resource "github_actions_environment_variable" "db_port" {
   repository    = "monov2"
-  environment   = "development"
+  environment   = var.environment
   variable_name = "DB_PORT"
   value         = var.db_port
 }
 
 resource "github_actions_environment_variable" "graph_monitor_url" {
+  count         = length(var.graph_monitor_url) > 0 ? 1 : 0
   repository    = "monov2"
-  environment   = "development"
+  environment   = var.environment
   variable_name = "GRAPH_MONITOR_URL"
   value         = var.graph_monitor_url
 }
 
 resource "github_actions_environment_secret" "db_pass" {
   repository      = "monov2"
-  environment     = "development"
+  environment     = var.environment
   secret_name     = "DB_PASS"
   plaintext_value = var.db_pass
 }
 
 resource "github_actions_environment_secret" "graph_monitor_headers" {
+  count           = length(var.graph_monitor_api_key) > 0 ? 1 : 0
   repository      = "monov2"
-  environment     = "development"
+  environment     = var.environment
   secret_name     = "GRAPH_MONITOR_HEADERS"
   plaintext_value = "X-Api-Key: ${var.graph_monitor_api_key}"
 }
@@ -74,6 +75,11 @@ variable "token" {
   type      = string
   sensitive = true
   nullable  = false
+}
+
+variable "environment" {
+  type     = string
+  nullable = false
 }
 
 variable "db_host" {
@@ -109,11 +115,11 @@ variable "jumpbox_host" {
 
 variable "graph_monitor_url" {
   type     = string
-  nullable = false
+  nullable = true
 }
 
 variable "graph_monitor_api_key" {
-  type     = string
-  nullable = false
+  type      = string
+  nullable  = true
   sensitive = true
 }

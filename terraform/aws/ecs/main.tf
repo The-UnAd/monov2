@@ -81,9 +81,8 @@ resource "aws_ecs_service" "this" {
   launch_type     = "FARGATE"
   cluster         = var.cluster_arn
   task_definition = aws_ecs_task_definition.this_task.arn
-  desired_count   = 1
 
-  force_new_deployment = true # set to true for debugging
+  force_new_deployment = false # set to true for debugging
 
   # triggers = {
   #   redeployment = timestamp()

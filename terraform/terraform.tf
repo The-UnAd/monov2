@@ -19,29 +19,18 @@ terraform {
   }
 
   required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "5.38.0"
-    }
     local = {
       source  = "hashicorp/local"
-      version = "~> 2"
-    }
-    external = {
-      source  = "hashicorp/external"
       version = "~> 2"
     }
   }
 }
 
-provider "aws" {
-  region = var.AWS_REGION
-}
-
 module "aws" {
-  source   = "./aws"
-  region   = var.AWS_REGION
-  dns_zone = var.DNS_ZONE
+  source      = "./aws"
+  region      = var.AWS_REGION
+  dns_zone    = var.DNS_ZONE
+  environment = var.ENVIRONMENT
 }
 
 module "github" {
@@ -51,10 +40,11 @@ module "github" {
   db_port               = module.aws.rds_cluster_port
   db_pass               = module.aws.rds_cluster_password
   jumpbox_host          = module.aws.jumpbox_host
-  graph_monitor_url     = module.aws.graph_monitor_api_url
-  graph_monitor_api_key = module.aws.graph_monitor_api_key
-  redis_host            = module.aws.redis_hosts
+  graph_monitor_url     = "" # module.aws.graph_monitor_api_url
+  graph_monitor_api_key = "" # module.aws.graph_monitor_api_key
+  redis_host            = module.aws.redis_host
   redis_port            = module.aws.redis_port
+  environment           = var.ENVIRONMENT
 }
 
 

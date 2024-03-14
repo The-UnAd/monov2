@@ -29,7 +29,7 @@ resource "aws_elasticache_cluster" "unad" {
   engine_version               = "7.1"
 }
 
-resource "aws_ssm_parameter" "redis_hosts" {
+resource "aws_ssm_parameter" "redis_host" {
   name  = "/redis/hosts"
   type  = "String"
   value = join(",", [for endpoint in aws_elasticache_cluster.unad.cache_nodes : "redis://${endpoint.address}:${aws_elasticache_cluster.unad.port}"])
@@ -46,7 +46,7 @@ output "redis_endpoints" {
   value = join(",", [for endpoint in aws_elasticache_cluster.unad.cache_nodes : "${endpoint.address}:${aws_elasticache_cluster.unad.port}"])
 }
 
-output "redis_hosts" {
+output "redis_host" {
   value = join(",", [for endpoint in aws_elasticache_cluster.unad.cache_nodes : "${endpoint.address}"])
 }
 

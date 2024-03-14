@@ -1,5 +1,6 @@
 variable "region" {
   type = string
+  nullable = false
 }
 
 variable "vpc_cidr" {
@@ -8,4 +9,10 @@ variable "vpc_cidr" {
 
 variable "dns_zone" {
   type = string
+  nullable = false
+}
+
+variable "environment" {
+  type = string
+  nullable = false
 }

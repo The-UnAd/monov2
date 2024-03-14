@@ -3,7 +3,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "5.38.0"
+      version = "~> 5"
     }
     random = {
       source  = "hashicorp/random"
@@ -11,7 +11,7 @@ terraform {
     }
     tls = {
       source = "hashicorp/tls"
-      version = "4.0.5"
+      version = "~> 4"
     }
   }
 }
@@ -22,16 +22,10 @@ provider "aws" {
 
 data "aws_region" "current" {}
 
-resource "aws_ssm_parameter" "region" {
-  name  = "/global/region"
-  type  = "String"
-  value = var.region
-}
-
 data "aws_availability_zones" "available" {}
 
 locals {
   availability_zones = data.aws_availability_zones.available.names
-  region = var.region
+  region = data.aws_region.current
   vpc_cidr = var.vpc_cidr
 }
