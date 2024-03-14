@@ -159,7 +159,7 @@ data "aws_iam_policy_document" "s3_bucket_lb_write" {
     actions = [
       "s3:PutObject"
     ]
-    effect = "Allow"
+    effect    = "Allow"
     resources = ["${aws_s3_bucket.alb_logs.arn}/*"]
     principals {
       identifiers = ["delivery.logs.amazonaws.com"]
@@ -172,7 +172,7 @@ data "aws_iam_policy_document" "s3_bucket_lb_write" {
     actions = [
       "s3:GetBucketAcl"
     ]
-    effect = "Allow"
+    effect    = "Allow"
     resources = ["${aws_s3_bucket.alb_logs.arn}"]
     principals {
       identifiers = ["delivery.logs.amazonaws.com"]
@@ -200,6 +200,7 @@ module "signup-site" {
   service_security_group_ids = [aws_security_group.ecs_private.id]
   desired_count              = 1
   cluster_arn                = aws_ecs_cluster.cluster.arn
+  cluster_name               = aws_ecs_cluster.cluster.name
   # health_check_path          = "/health"
   task_cpu            = 256
   task_memory         = 512
@@ -469,6 +470,7 @@ module "unad-functions" {
   service_security_group_ids = [aws_security_group.ecs_private.id]
   desired_count              = 1
   cluster_arn                = aws_ecs_cluster.cluster.arn
+  cluster_name               = aws_ecs_cluster.cluster.name
   task_cpu                   = 256
   task_memory                = 512
   health_check_path          = "/health"

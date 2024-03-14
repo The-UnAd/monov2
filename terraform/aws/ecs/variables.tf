@@ -53,6 +53,9 @@ variable "service_security_group_ids" {
 variable "cluster_arn" {
   type = string
 }
+variable "cluster_name" {
+  type = string
+}
 variable "desired_count" {
   type = number
 }
