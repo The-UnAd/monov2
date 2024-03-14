@@ -3,6 +3,7 @@ import { Link } from 'wouter';
 
 import { RelayRoute, RouteDefinition } from '../Router/withRelay';
 import type { HomeQuery } from './__generated__/HomeQuery.graphql';
+import { Box, List, ListItem } from '@mui/material';
 
 export const HomeQueryDef = graphql`
   query HomeQuery {
@@ -23,18 +24,18 @@ export const HomeQueryDef = graphql`
 
 export default function HomePage({ data }: RelayRoute<HomeQuery>) {
   return (
-    <div>
-      <ul>
+    <Box>
+      <List>
         {data?.clients?.edges?.map(({ node: client }) => (
-          <li key={client.id}>
+          <ListItem key={client.id}>
             <span>
               <Link to={`/client/${client.id}`}>{client.name}</Link> has{' '}
               {client.subscriberPhoneNumbers.length} subscribers
             </span>
-          </li>
+          </ListItem>
         ))}
-      </ul>
-    </div>
+      </List>
+    </Box>
   );
 }
 
