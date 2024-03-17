@@ -147,10 +147,24 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
         }
         SetThreadCulture(client.Locale);
 
+        var db = redis.GetDatabase();
+        if (subscription.CancellationDetails is not null) {
+            db.SetClientProductLimit(client.PhoneNumber, "maxMessages", 0);
+            await MessageResource.CreateAsync(new CreateMessageOptions(client.PhoneNumber) {
+                MessagingServiceSid = _messageServiceSid,
+                Body = localizer.GetStringWithReplacements("SubscriptionCanceledMessage", new {
+                    subLink = _stripePortalUrl,
+                })
+            });
+            await mixpanelClient.Track(MixpanelClient.Events.StripeEvent(stripeEvent.Type), new() {
+                { "subscriptionId", subscription.Id},
+            }, client.PhoneNumber);
+            return;
+        }
+
         var productId = subscription.Items.Data[0].Plan.ProductId;
         // TODO: store the product id in the client's subscription data
         // so we don't have to look it up later from Stripe
-        var db = redis.GetDatabase();
         var maxMessages = db.GetProductLimitValue(productId, "maxMessages");
         db.SetClientProductLimit(client.PhoneNumber, "maxMessages", maxMessages);
 
