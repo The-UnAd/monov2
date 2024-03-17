@@ -500,6 +500,9 @@ module "unad-functions" {
     name      = "STRIPE_PAYMENT_ENDPOINT_SECRET"
     valueFrom = "${data.aws_ssm_parameter.stripe_payment_endpoint_secret.arn}"
     }, {
+    name      = "STRIPE_CUSTOMER_ENDPOINT_SECRET"
+    valueFrom = "${data.aws_ssm_parameter.stripe_customer_endpoint_secret.arn}"
+    }, {
     name      = "MIXPANEL_TOKEN"
     valueFrom = "${data.aws_ssm_parameter.mixpanel_token.arn}"
     }, {

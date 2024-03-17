@@ -1,6 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
-
 namespace UnAd.Functions;
+
 internal static class AppConfiguration {
     public static class Keys {
         public const string MixpanelHttpClient = "Mixpanel";
@@ -16,6 +15,7 @@ internal static class AppConfiguration {
         public const string StripeSubscriptionEndpointSecret = "STRIPE_SUBSCRIPTION_ENDPOINT_SECRET";
         public const string StripeProductEndpointSecret = "STRIPE_PRODUCT_ENDPOINT_SECRET";
         public const string StripePaymentEndpointSecret = "STRIPE_PAYMENT_ENDPOINT_SECRET";
+        public const string StripeCustomerEndpointSecret = "STRIPE_CUSTOMER_ENDPOINT_SECRET";
         public const string AccountUrl = "AccountUrl";
         public const string StripePortalUrl = "StripePortalUrl";
         public const string ClientLinkBaseUri = "ClientLinkBaseUri";
@@ -36,6 +36,9 @@ internal static class AppConfiguration {
     public static string GetStripePaymentEndpointSecret(this IConfiguration configuration) =>
         configuration[Keys.StripePaymentEndpointSecret]
         ?? throw new ArgumentNullException(nameof(Keys.StripePaymentEndpointSecret), $"Value ${Keys.StripePaymentEndpointSecret} has no value");
+    public static string GetStripeCustomerEndpointSecret(this IConfiguration configuration) =>
+        configuration[Keys.StripeCustomerEndpointSecret]
+        ?? throw new ArgumentNullException(nameof(Keys.StripeCustomerEndpointSecret), $"Value ${Keys.StripeCustomerEndpointSecret} has no value");
 
     public static string GetRedisUrl(this IConfiguration configuration) =>
         configuration[Keys.RedisUrl] ?? throw new ArgumentNullException(nameof(Keys.RedisUrl), $"Value ${Keys.RedisUrl} has no value");
