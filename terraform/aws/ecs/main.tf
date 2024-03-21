@@ -97,34 +97,6 @@ resource "aws_appautoscaling_policy" "ecs_policy" {
   }
 }
 
-resource "aws_appautoscaling_scheduled_action" "evening_spin_down" {
-  name               = "spin-down"
-  service_namespace  = "ecs"
-  resource_id        = "service/${var.cluster_name}/${aws_ecs_service.this.name}"
-  scalable_dimension = "ecs:service:DesiredCount"
-
-  schedule = "cron(0 2 * * ? *)" # Run at 10 PM EST every day
-
-  scalable_target_action {
-    min_capacity = 0
-    max_capacity = 0
-  }
-}
-
-resource "aws_appautoscaling_scheduled_action" "morning_spin_up" {
-  name               = "spin-up"
-  service_namespace  = "ecs"
-  resource_id        = "service/${var.cluster_name}/${aws_ecs_service.this.name}"
-  scalable_dimension = "ecs:service:DesiredCount"
-
-  schedule = "cron(0 12 * * ? *)" # Run at 8 AM EST every day
-
-  scalable_target_action {
-    min_capacity = 1
-    max_capacity = 5
-  }
-}
-
 resource "aws_ecs_service" "this" {
   name            = var.project_name
   launch_type     = "FARGATE"
