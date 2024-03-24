@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Net.Http.Headers;
+using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -12,7 +14,7 @@ public sealed class MixpanelClient(IHttpClientFactory httpClientFactory, ILogger
 
     public async Task Track(string eventName, Dictionary<string, string>? properties, string? distinctId = default) {
         properties ??= [];
-        properties.Add("time", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
+        properties.Add("time", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture));
         properties.Add("token", _config.Token);
         properties.Add("$insert_id", Guid.NewGuid().ToString());
 
@@ -20,11 +22,13 @@ public sealed class MixpanelClient(IHttpClientFactory httpClientFactory, ILogger
             properties.Add("distinct_id", distinctId);
         }
 
-        var json = JsonSerializer.Serialize(
-            new MixpanelEvent(eventName, properties), MixpanelJsonSerializerContext.Default.MixpanelEvent);
+        var json = JsonSerializer.Serialize(new MixpanelEvent[] {
+            new(eventName, properties)
+        }, MixpanelJsonSerializerContext.Default.MixpanelEvent);
 
-        using var content = new StringContent(json, Encoding.UTF8, MediaTypeHeaderValue.Parse("application/json"));
-        using var client = _httpClientFactory.CreateClient("Mixpanel");
+        using var content = new StringContent(json, Encoding.UTF8,
+            MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json));
+        using var client = _httpClientFactory.CreateClient(AppConfiguration.Keys.MixpanelHttpClient);
         using var httpResponseMessage = await client.PostAsync("/track", content);
         if (!httpResponseMessage.IsSuccessStatusCode) {
             using var reader = new StreamReader(await httpResponseMessage.Content.ReadAsStreamAsync());
