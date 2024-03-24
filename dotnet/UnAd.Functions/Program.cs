@@ -39,9 +39,9 @@ builder.Services.AddHttpClient(AppConfiguration.Keys.MixpanelHttpClient, (s, c) 
     c.DefaultRequestHeaders.Add("Accept", "text/plain");
     c.DefaultRequestHeaders.Add("User-Agent",
         typeof(Program)?.Assembly.GetName().Name);
-    c.DefaultRequestHeaders.Add("Authorization",
-        $"Basic {Convert.ToBase64String(Encoding.UTF8.GetBytes(
-            builder.Configuration.GetMixPanelToken()))}");
+    //c.DefaultRequestHeaders.Add("Authorization",
+    //    $"Basic {Convert.ToBase64String(Encoding.UTF8.GetBytes(
+    //        $"{builder.Configuration.GetMixPanelToken()}:"))}");
 });
 builder.Services.Configure<MixpanelOptions>(
             builder.Configuration.GetSection(nameof(MixpanelOptions)));
