@@ -201,7 +201,7 @@ module "signup-site" {
   desired_count              = 1
   cluster_arn                = aws_ecs_cluster.cluster.arn
   cluster_name               = aws_ecs_cluster.cluster.name
-  # health_check_path          = "/health"
+  health_check_path          = "/health"
   task_cpu            = 256
   task_memory         = 512
   ssl_certificate_arn = aws_acm_certificate_validation.wildcard.certificate_arn
@@ -473,7 +473,7 @@ module "unad-functions" {
   cluster_name               = aws_ecs_cluster.cluster.name
   task_cpu                   = 256
   task_memory                = 512
-  health_check_path          = "/health"
+  # health_check_path          = "/health"
   ssl_certificate_arn        = aws_acm_certificate_validation.wildcard.certificate_arn
   container_secrets = [{
     name      = "REDIS_URL"
@@ -503,7 +503,7 @@ module "unad-functions" {
     name      = "STRIPE_CUSTOMER_ENDPOINT_SECRET"
     valueFrom = "${data.aws_ssm_parameter.stripe_customer_endpoint_secret.arn}"
     }, {
-    name      = "MIXPANEL_TOKEN"
+    name      = "MixpanelOptions__Token"
     valueFrom = "${data.aws_ssm_parameter.mixpanel_token.arn}"
     }, {
     name      = "ConnectionStrings__UserDb"
