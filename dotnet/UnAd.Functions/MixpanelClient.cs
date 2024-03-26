@@ -52,7 +52,7 @@ public sealed class MixpanelClient(IHttpClientFactory httpClientFactory, ILogger
 [JsonSourceGenerationOptions(
     GenerationMode = JsonSourceGenerationMode.Serialization,
     PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower)]
-[JsonSerializable(typeof(MixpanelEvent))]
+[JsonSerializable(typeof(MixpanelEvent[]))]
 internal partial class MixpanelJsonSerializerContext : JsonSerializerContext { }
 
 public record MixpanelEvent(string Event, IDictionary<string, string> Properties);
