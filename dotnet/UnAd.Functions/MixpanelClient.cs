@@ -22,20 +22,25 @@ public sealed class MixpanelClient(IHttpClientFactory httpClientFactory, ILogger
             properties.Add("distinct_id", distinctId);
         }
 
-        var json = JsonSerializer.Serialize(new MixpanelEvent[] {
-            new(eventName, properties)
-        }, MixpanelJsonSerializerContext.Default.MixpanelEvent);
+        try {
+            var json = JsonSerializer.Serialize(new MixpanelEvent[] {
+                new(eventName, properties)
+            }, MixpanelJsonSerializerContext.Default.MixpanelEvent);
 
-        using var content = new StringContent(json, Encoding.UTF8,
-            MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json));
-        using var client = _httpClientFactory.CreateClient(AppConfiguration.Keys.MixpanelHttpClient);
-        using var httpResponseMessage = await client.PostAsync("/track", content);
-        using var reader = new StreamReader(await httpResponseMessage.Content.ReadAsStreamAsync());
-        var response = await reader.ReadToEndAsync();
-        if (!httpResponseMessage.IsSuccessStatusCode) {
-            _logger.LogErrorResponse(response);
-        } else {
-            _logger.LogInformation("Got response from Mixpanel: {Response}", response);
+            // TODO: maybe base64 encode json?  https://github.com/mixpanel/mixpanel-node/blob/d304d857553ee786984e3b764f3d2140196d2b62/lib/mixpanel-node.js#L71
+            using var content = new StringContent(json, Encoding.UTF8,
+                MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json));
+            using var client = _httpClientFactory.CreateClient(AppConfiguration.Keys.MixpanelHttpClient);
+            using var httpResponseMessage = await client.PostAsync("/track", content);
+            using var reader = new StreamReader(await httpResponseMessage.Content.ReadAsStreamAsync());
+            var response = await reader.ReadToEndAsync();
+            if (!httpResponseMessage.IsSuccessStatusCode) {
+                _logger.LogMixpanelErrorResponse(response);
+            } else {
+                _logger.LogMixpanelResponse(response);
+            }
+        } catch (Exception ex) {
+            _logger.LogMixpanelSendException(ex);
         }
     }
 
