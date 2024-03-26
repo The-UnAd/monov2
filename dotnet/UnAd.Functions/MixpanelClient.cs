@@ -30,10 +30,12 @@ public sealed class MixpanelClient(IHttpClientFactory httpClientFactory, ILogger
             MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json));
         using var client = _httpClientFactory.CreateClient(AppConfiguration.Keys.MixpanelHttpClient);
         using var httpResponseMessage = await client.PostAsync("/track", content);
+        using var reader = new StreamReader(await httpResponseMessage.Content.ReadAsStreamAsync());
+        var response = await reader.ReadToEndAsync();
         if (!httpResponseMessage.IsSuccessStatusCode) {
-            using var reader = new StreamReader(await httpResponseMessage.Content.ReadAsStreamAsync());
-            var response = await reader.ReadToEndAsync();
             _logger.LogErrorResponse(response);
+        } else {
+            _logger.LogInformation("Got response from Mixpanel: {Response}", response);
         }
     }
 
