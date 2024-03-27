@@ -138,7 +138,6 @@ class ModelFactory implements TransactionalModelFactoryInterface {
   public async connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.redisClient.on('ready', () => {
-        console.log('ready');
         if (typeof this.redisClient.ping === 'function') {
           resolve();
         }
@@ -149,7 +148,6 @@ class ModelFactory implements TransactionalModelFactoryInterface {
       });
       if (typeof this.redisClient.ping === 'function') {
         this.redisClient.connect().then(() => {
-          console.log('connected');
           resolve();
         });
       } else {
