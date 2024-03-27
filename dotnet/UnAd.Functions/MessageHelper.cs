@@ -39,7 +39,7 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
             return ProcessStopAllMessage(smsBody, smsFrom);
         }
         if ("unsubscribe".Equals(smsBody, StringComparison.OrdinalIgnoreCase)) {
-            return ProcessUnsubscribeMessage(smsBody, smsFrom);
+            return ProcessUnsubscribeMessage(smsFrom);
         }
         if ("send".Equals(smsBody, StringComparison.OrdinalIgnoreCase)) {
             return ProcessConfirmAnnouncementMessage(smsFrom);
@@ -196,6 +196,8 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
                     continue;
                 }
 
+                // TODO: this should just be one call to the database
+                // figure out what to actually store
                 context.Announcements.Add(new Announcement {
                     ClientId = client.Id,
                     MessageSid = resource.Sid
@@ -211,12 +213,12 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
         // TOOD: still need to store these in Redis
         db.DecrementClientProductLimitValue(smsFrom, "maxMessages", 1);
         mixpanelClient.Track(Events.AnnouncementSent, new() {
-            { "count", count.ToString(CultureInfo.CurrentCulture)}
+            { "count", count.ToString(CultureInfo.InvariantCulture)}
         }, smsFrom).ConfigureAwait(false).GetAwaiter().GetResult();
         return CreateSmsResponseContent(localizer.GetStringWithReplacements("AnnouncementSent", new { count }));
     }
 
-    public MessagingResponse ProcessUnsubscribeMessage(string smsBody, string smsFrom) {
+    public MessagingResponse ProcessUnsubscribeMessage(string smsFrom) {
         var db = redis.GetDatabase();
         using var context = dbContextFactory.CreateDbContext();
         if (context.Clients.Any(c => c.PhoneNumber == smsFrom)) {

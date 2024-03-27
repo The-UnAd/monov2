@@ -23,7 +23,7 @@ interface ServerProps extends ParsedUrlQuery {
   clientId: string;
 }
 
-function Subscribe({ name, clientId }: SubscribeProps) {
+function Subscribe({ name, clientId }: Readonly<SubscribeProps>) {
   const [error, setError] = useState('');
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -56,24 +56,15 @@ function Subscribe({ name, clientId }: SubscribeProps) {
     <>
       <Head>
         <title>{t('page.title', { name })}</title>
-        <meta
-          property="og:title"
-          content={t('page.title', { name }) as string}
-        />
-        <meta
-          property="og:description"
-          content={t('page.title', { name }) as string}
-        />
+        <meta property="og:title" content={t('page.title', { name })} />
+        <meta property="og:description" content={t('page.title', { name })} />
         <meta property="og:locale" content="en_US" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`//unad.me/${clientId}`} />
         <meta property="og:site_name" content="UnAd" />
         <meta property="og:site_name" content="UnAd" />
         <meta property="og:image" content="https://theunad.com/logo-wide.svg" />
-        <meta
-          name="description"
-          content={t('page.title', { name }) as string}
-        />
+        <meta name="description" content={t('page.title', { name })} />
       </Head>
       <section className="app" data-testid="Subscribe__container">
         <div className="container-app h100 d-flex align-items-center">
