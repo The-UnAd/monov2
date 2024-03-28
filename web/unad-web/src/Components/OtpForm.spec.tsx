@@ -18,10 +18,10 @@ describe('OtpForm', () => {
     fetchMock.disableMocks();
   });
 
-  const setup = (props: OtpFormProps) => {
-    const utils = render(<Sut {...props} />);
-    const otp = screen.getByTestId('OtpForm__otp') as HTMLInputElement;
-    const submit = screen.getByTestId('OtpForm__submit') as HTMLInputElement;
+  const setup = (props: Omit<OtpFormProps, 'tFunc'>) => {
+    const utils = render(<Sut {...props} tFunc={(k) => k} />);
+    const otp = screen.getByTestId('OtpForm__otp');
+    const submit = screen.getByTestId('OtpForm__submit');
     return {
       otp,
       submit,
@@ -33,7 +33,7 @@ describe('OtpForm', () => {
   it('renders in a container', () => {
     const onSubmit = jest.fn();
 
-    render(<Sut onSubmit={onSubmit} />);
+    setup({ onSubmit });
 
     const container = screen.getByTestId('OtpForm__container');
 

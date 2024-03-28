@@ -13,15 +13,9 @@ describe('SubscribeForm', () => {
 
   const setup = (props: SubscribeFormProps) => {
     const utils = render(<Sut {...props} />);
-    const phone = screen.getByTestId(
-      'SubscribeForm__phone'
-    ) as HTMLInputElement;
-    const submit = screen.getByTestId(
-      'SubscribeForm__submit'
-    ) as HTMLInputElement;
-    const terms = screen.getByTestId(
-      'SubscribeForm__terms'
-    ) as HTMLInputElement;
+    const phone = screen.getByTestId('SubscribeForm__phone');
+    const submit = screen.getByTestId('SubscribeForm__submit');
+    const terms = screen.getByTestId('SubscribeForm__terms');
     return {
       phone,
       submit,

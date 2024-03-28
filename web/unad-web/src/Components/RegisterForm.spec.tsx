@@ -13,12 +13,10 @@ describe('RegisterForm', () => {
 
   const setup = (props: RegisterFormProps) => {
     const utils = render(<Sut {...props} />);
-    const name = screen.getByTestId('RegisterForm__name') as HTMLInputElement;
-    const phone = screen.getByTestId('RegisterForm__phone') as HTMLInputElement;
-    const terms = screen.getByTestId('RegisterForm__terms') as HTMLInputElement;
-    const submit = screen.getByTestId(
-      'RegisterForm__submit'
-    ) as HTMLInputElement;
+    const name = screen.getByTestId('RegisterForm__name');
+    const phone = screen.getByTestId('RegisterForm__phone');
+    const terms = screen.getByTestId('RegisterForm__terms');
+    const submit = screen.getByTestId('RegisterForm__submit');
     return {
       name,
       phone,

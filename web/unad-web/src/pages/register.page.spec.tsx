@@ -4,8 +4,6 @@ import userEvent from '@testing-library/user-event';
 import fetchMock from 'jest-fetch-mock';
 import mockRouter from 'next-router-mock';
 
-import { Client } from '@/models/Client';
-
 import Register from './register.page';
 
 jest.mock('next/router', () => jest.requireActual('next-router-mock'));
@@ -14,7 +12,7 @@ const Sut = withIntl(Register);
 
 const clientPhone = '1234567890';
 const clientName = 'abc';
-const clientId = Client.hashId(clientName);
+const clientId = 'test';
 
 describe('Register', () => {
   beforeAll(() => {
@@ -30,13 +28,11 @@ describe('Register', () => {
 
   const setup = () => {
     const utils = render(<Sut />);
-    const name = screen.getByTestId('RegisterForm__name') as HTMLInputElement;
-    const phone = screen.getByTestId('RegisterForm__phone') as HTMLInputElement;
-    const terms = screen.getByTestId('RegisterForm__terms') as HTMLInputElement;
+    const name = screen.getByTestId('RegisterForm__name');
+    const phone = screen.getByTestId('RegisterForm__phone');
+    const terms = screen.getByTestId('RegisterForm__terms');
 
-    const registerSubmit = screen.getByTestId(
-      'RegisterForm__submit'
-    ) as HTMLInputElement;
+    const registerSubmit = screen.getByTestId('RegisterForm__submit');
     return {
       name,
       phone,
@@ -44,7 +40,7 @@ describe('Register', () => {
       registerSubmit,
       user: userEvent.setup(),
       getErrorElement() {
-        return screen.getByTestId('Register__error') as HTMLElement;
+        return screen.getByTestId('Register__error');
       },
       ...utils,
     };
@@ -80,7 +76,7 @@ describe('Register', () => {
     await user.click(registerSubmit);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const otp = screen.getByTestId('OtpForm__otp') as HTMLInputElement;
+    const otp = screen.getByTestId('OtpForm__otp');
     expect(otp).toBeInTheDocument();
   });
 
@@ -106,8 +102,8 @@ describe('Register', () => {
     await user.click(registerSubmit);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const otp = screen.getByTestId('OtpForm__otp') as HTMLInputElement;
-    const otpSubmit = screen.getByTestId('OtpForm__submit') as HTMLInputElement;
+    const otp = screen.getByTestId('OtpForm__otp');
+    const otpSubmit = screen.getByTestId('OtpForm__submit');
     expect(otp).toBeInTheDocument();
     await user.type(otp, '123123');
 
@@ -175,8 +171,8 @@ describe('Register', () => {
     await user.click(registerSubmit);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const otp = screen.getByTestId('OtpForm__otp') as HTMLInputElement;
-    const otpSubmit = screen.getByTestId('OtpForm__submit') as HTMLInputElement;
+    const otp = screen.getByTestId('OtpForm__otp');
+    const otpSubmit = screen.getByTestId('OtpForm__submit');
     expect(otp).toBeInTheDocument();
     await user.type(otp, '123123');
 
