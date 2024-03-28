@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
 
 namespace UnAd.Functions;
+
 public sealed class MixpanelClient(IHttpClientFactory httpClientFactory, ILogger<MixpanelClient> logger, IOptions<MixpanelOptions> config) {
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
     private readonly ILogger<MixpanelClient> _logger = logger;
@@ -27,17 +28,14 @@ public sealed class MixpanelClient(IHttpClientFactory httpClientFactory, ILogger
                 new(eventName, properties)
             }, MixpanelJsonSerializerContext.Default.MixpanelEventArray);
 
-            // TODO: maybe base64 encode json?  https://github.com/mixpanel/mixpanel-node/blob/d304d857553ee786984e3b764f3d2140196d2b62/lib/mixpanel-node.js#L71
             using var content = new StringContent(json, Encoding.UTF8,
                 MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json));
             using var client = _httpClientFactory.CreateClient(AppConfiguration.Keys.MixpanelHttpClient);
             using var httpResponseMessage = await client.PostAsync("/track", content);
-            using var reader = new StreamReader(await httpResponseMessage.Content.ReadAsStreamAsync());
-            var response = await reader.ReadToEndAsync();
             if (!httpResponseMessage.IsSuccessStatusCode) {
-                _logger.LogMixpanelErrorResponse(response);
-            } else {
-                _logger.LogMixpanelResponse(response);
+                using var reader = new StreamReader(await httpResponseMessage.Content.ReadAsStreamAsync());
+                var responseBody = await reader.ReadToEndAsync();
+                _logger.LogMixpanelErrorResponse(responseBody);
             }
         } catch (Exception ex) {
             _logger.LogMixpanelSendException(ex);
