@@ -26,12 +26,8 @@ describe('Subscribe', () => {
 
   const setup = () => {
     const utils = render(<Sut />);
-    const phone = screen.getByTestId(
-      'PhoneNumberForm__phone'
-    ) as HTMLInputElement;
-    const phoneSubmit = screen.getByTestId(
-      'PhoneNumberForm__submit'
-    ) as HTMLInputElement;
+    const phone = screen.getByTestId('PhoneNumberForm__phone');
+    const phoneSubmit = screen.getByTestId('PhoneNumberForm__submit');
     return {
       phone,
       phoneSubmit,
@@ -64,7 +60,7 @@ describe('Subscribe', () => {
     await user.click(phoneSubmit);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const otp = screen.getByTestId('OtpForm__otp') as HTMLInputElement;
+    const otp = screen.getByTestId('OtpForm__otp');
     expect(otp).toBeInTheDocument();
   });
 
@@ -109,9 +105,9 @@ describe('Subscribe', () => {
       },
       method: 'POST',
     });
-    const otp = screen.getByTestId('OtpForm__otp') as HTMLInputElement;
+    const otp = screen.getByTestId('OtpForm__otp');
     expect(otp).toBeInTheDocument();
-    const otpSubmit = screen.getByTestId('OtpForm__submit') as HTMLInputElement;
+    const otpSubmit = screen.getByTestId('OtpForm__submit');
     expect(otp).toBeInTheDocument();
     await user.type(otp, DefaultOtp);
 
@@ -159,7 +155,7 @@ describe('Subscribe', () => {
     await user.click(phoneSubmit);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const error = screen.getByTestId('Login__error') as HTMLInputElement;
+    const error = screen.getByTestId('Login__error');
     expect(error).toHaveTextContent('error');
   });
 
@@ -191,9 +187,9 @@ describe('Subscribe', () => {
       },
       method: 'POST',
     });
-    const otp = screen.getByTestId('OtpForm__otp') as HTMLInputElement;
+    const otp = screen.getByTestId('OtpForm__otp');
     expect(otp).toBeInTheDocument();
-    const otpSubmit = screen.getByTestId('OtpForm__submit') as HTMLInputElement;
+    const otpSubmit = screen.getByTestId('OtpForm__submit');
     expect(otp).toBeInTheDocument();
     await user.type(otp, DefaultOtp);
 
@@ -214,7 +210,7 @@ describe('Subscribe', () => {
       method: 'POST',
     });
 
-    const error = screen.getByTestId('Login__error') as HTMLInputElement;
+    const error = screen.getByTestId('Login__error');
     expect(error).toHaveTextContent('error');
   });
 });

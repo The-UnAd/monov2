@@ -13,12 +13,8 @@ describe('PhoneNumberForm', () => {
 
   const setup = (props: PhoneNumberFormProps) => {
     const utils = render(<Sut {...props} />);
-    const phone = screen.getByTestId(
-      'PhoneNumberForm__phone'
-    ) as HTMLInputElement;
-    const submit = screen.getByTestId(
-      'PhoneNumberForm__submit'
-    ) as HTMLInputElement;
+    const phone = screen.getByTestId('PhoneNumberForm__phone');
+    const submit = screen.getByTestId('PhoneNumberForm__submit');
     return {
       phone,
       submit,
