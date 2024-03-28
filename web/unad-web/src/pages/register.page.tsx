@@ -13,6 +13,24 @@ import OtpForm, { OtpFormData } from '../Components/OtpForm';
 import type { RegisterData } from '../Components/RegisterForm';
 import RegisterForm from '../Components/RegisterForm';
 
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchRetry(
+  url: string,
+  options: RequestInit,
+  n = 5,
+  t = 500
+): Promise<Response> {
+  try {
+    return await fetch(url, options);
+  } catch (err) {
+    if (n === 1) throw err;
+    return delay(t).then(() => fetchRetry(url, options, n - 1, t));
+  }
+}
+
 function Register() {
   const [registerData, setRegisterData] = useState<RegisterData>();
   const [error, setError] = useState<string | null>();
@@ -21,16 +39,19 @@ function Register() {
 
   const clickRegister = async ({ phone, name }: RegisterData) => {
     setError(null);
-    const resp = await fetch(`/api/register/${encodeURIComponent(phone)}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        phone: sanitizePhoneNumber(phone),
-        name: name.trim(),
-      }),
-    });
+    const resp = await fetchRetry(
+      `/api/register/${encodeURIComponent(phone)}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phone: sanitizePhoneNumber(phone),
+          name: name.trim(),
+        }),
+      }
+    );
     const data = await resp.json();
 
     if (resp.ok) {
