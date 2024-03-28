@@ -7,7 +7,7 @@ using UnAd.Data.Users;
 
 namespace UnAd.Functions;
 
-public class MessageHandler(MessageHelper messageHelper, IDbContextFactory<UserDbContext> dbFactory) {
+public class MessageHandler(MessageHelper messageHelper, IDbContextFactory<UserDbContext> dbFactory, ILogger<MessageHandler> logger) {
 
 
     private static readonly string[] IgnoreList = [
@@ -37,16 +37,20 @@ public class MessageHandler(MessageHelper messageHelper, IDbContextFactory<UserD
         }
 
         // NOTE: MessagingServiceSid and AccountSid are avialable in the form data
+        try {
+            await using var context = await dbFactory.CreateDbContextAsync();
+            var client = await context.Clients.FirstOrDefaultAsync(c => c.PhoneNumber == smsFrom);
+            var sub = await context.Subscribers.FirstOrDefaultAsync(s => s.PhoneNumber == smsFrom);
+            var location = string.IsNullOrEmpty(sub?.Locale) ? string.IsNullOrEmpty(client?.Locale) ? "en-US" : client.Locale : sub.Locale;
 
-        await using var context = await dbFactory.CreateDbContextAsync();
-        var client = await context.Clients.FirstOrDefaultAsync(c => c.PhoneNumber == smsFrom);
-        var sub = await context.Subscribers.FirstOrDefaultAsync(s => s.PhoneNumber == smsFrom);
-        var location = string.IsNullOrEmpty(sub?.Locale) ? string.IsNullOrEmpty(client?.Locale) ? "en-US" : client.Locale : sub.Locale;
+            var culture = new CultureInfo(location);
+            CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = culture;
 
-        var culture = new CultureInfo(location);
-        CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = culture;
-
-        var message = messageHelper.ProcessMessage(smsBody, smsFrom);
-        return Results.Text(message.ToString(), "text/xml", Encoding.UTF8);
+            var message = messageHelper.ProcessMessage(smsBody, smsFrom);
+            return Results.Text(message.ToString(), "text/xml", Encoding.UTF8);
+        } catch (Exception e) {
+            logger.LogException(e);
+            return Results.Problem(e.Message);
+        }
     }
 }

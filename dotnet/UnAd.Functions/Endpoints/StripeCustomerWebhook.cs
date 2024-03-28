@@ -33,12 +33,12 @@ public class StripeCustomerWebhook(IConnectionMultiplexer redis,
             if (stripeEvent?.Type == Events.CustomerDeleted) {
                 await HandleCustomerDeletedEvent(stripeEvent);
             } else {
-                logger.LogWarning($"Unhandled event type: {stripeEvent?.Type}");
+                logger.LogUnhandledEvent(stripeEvent?.Type ?? "null");
             }
 
             return Results.Ok();
         } catch (StripeException e) {
-            logger.LogError($"Stripe Exception: {e}");
+            logger.LogException(e);
             return Results.Problem(e.Message);
         }
     }

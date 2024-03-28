@@ -27,8 +27,7 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
             = new CultureInfo(culture);
 
     public async Task<IResult> Endpoint(HttpRequest request) {
-        logger.LogDebug("Processing StripeSubscriptionWebhook");
-        Event stripeEvent = default!;
+        Event? stripeEvent = default;
         using var streamReader = new StreamReader(request.Body);
         var body = await streamReader.ReadToEndAsync();
         if (request.Headers.TryGetValue("stripe-signature", out var sig) &&
@@ -37,9 +36,8 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
                 error = "Invalid Stripe signature"
             });
         }
-        logger.LogDebug("Stripe Event Type: {Type}", stripeEvent?.Type);
-        try {
 
+        try {
             if (stripeEvent?.Type == Events.CustomerSubscriptionDeleted) {
                 await UpdateClient(stripeEvent, "SubscriptionCancelled");
             } else if (stripeEvent?.Type == Events.CustomerSubscriptionUpdated) {
@@ -53,12 +51,12 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
             } else if (stripeEvent?.Type == Events.CustomerSubscriptionTrialWillEnd) {
                 await UpdateClient(stripeEvent, "TrailEndsSoon");
             } else {
-                logger.LogWarning("Unhandled event type: {Type}", stripeEvent?.Type);
+                logger.LogUnhandledEvent(stripeEvent?.Type ?? "null");
             }
 
             return Results.Ok();
         } catch (Exception e) {
-            logger.LogError("Stripe event {Type} failed", stripeEvent?.Type);
+            logger.LogException(e);
             return Results.Problem(e.Message);
         }
     }
