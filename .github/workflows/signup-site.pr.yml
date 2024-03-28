@@ -25,4 +25,5 @@ jobs:
       
       - name: Run tests
         run: npm test
+        working-directory: web/unad-web
       
