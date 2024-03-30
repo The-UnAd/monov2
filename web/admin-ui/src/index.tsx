@@ -5,7 +5,7 @@ import {
   StyledEngineProvider,
   ThemeProvider,
 } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
+import { CssBaseline, darkScrollbar } from '@mui/material';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
@@ -16,7 +16,15 @@ const root = ReactDOM.createRoot(rootElement!);
 // All `Portal`-related components need to have the the main app wrapper element as a container
 // so that the are in the subtree under the element used in the `important` option of the Tailwind's config.
 const theme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: (themeParam) => ({
+        body: themeParam.palette.mode === 'dark' ? darkScrollbar() : null,
+      }),
+    },
     MuiPopover: {
       defaultProps: {
         container: rootElement,

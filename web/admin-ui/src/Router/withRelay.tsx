@@ -67,26 +67,29 @@ export type RelayRoute<T extends OperationType> = {
   readonly data: T['response'];
 };
 
-export interface RouteDefinition<T extends OperationType> {
-  readonly path: string;
-  readonly query: PreloadableConcreteRequest<T>;
-  readonly gqlQuery: GraphQLTaggedNode;
-  readonly skeleton?: React.ReactNode | JSX.Element | (() => JSX.Element);
-  readonly component: React.ComponentType<any>;
-  readonly fetchPolicy?:
-    | 'store-or-network'
-    | 'store-and-network'
-    | 'network-only';
-}
+type RelayRouteDefinition<T extends OperationType> = {
+  query: PreloadableConcreteRequest<T>;
+  gqlQuery: GraphQLTaggedNode;
+  fetchPolicy?: 'store-or-network' | 'store-and-network' | 'network-only';
+  skeleton?: React.ReactNode | JSX.Element | (() => JSX.Element);
+};
 
-type RelayScreenWrapperProps<T extends OperationType = OperationType> =
-  RouteDefinition<T> & {
-    readonly queryVars: {
-      readonly [key: string]: any;
-    };
+type BaseRouteDefinition = {
+  path: string;
+  component: React.ComponentType<any>;
+};
+
+export type RouteDefinition<T extends OperationType = never> = T extends never
+  ? Readonly<BaseRouteDefinition>
+  : Readonly<BaseRouteDefinition & RelayRouteDefinition<T>>;
+
+type RelayScreenWrapperProps<T extends OperationType> = RouteDefinition<T> & {
+  readonly queryVars: {
+    readonly [key: string]: any;
   };
+};
 
-function RelayScreenWrapper({
+function RelayScreenWrapper<T extends OperationType>({
   fetchPolicy,
   query,
   skeleton,
@@ -94,7 +97,7 @@ function RelayScreenWrapper({
   queryVars,
   gqlQuery,
   ...props
-}: RelayScreenWrapperProps) {
+}: RelayScreenWrapperProps<T>) {
   const { suspenseFallback } = useRelayNavigatorContext();
   const [queryReference, loadQuery, disposeQuery] = useQueryLoader(query);
 
@@ -152,7 +155,7 @@ export default function withRelay<T extends OperationType = OperationType>(
   const screens = routeDefList.map(({ query, component, ...rest }) => {
     return {
       ...rest,
-      component: function RelayQueryScreen(props: RelayScreenWrapperProps) {
+      component: function RelayQueryScreen(props: RelayScreenWrapperProps<T>) {
         return (
           <RelayScreenWrapper {...props} query={query} component={component} />
         );

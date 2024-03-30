@@ -42,10 +42,13 @@ type Query {
     where: ClientFilterInput
     order: [ClientSortInput!]
   ): ClientsConnection
+  countClients: Int!
+  countSubscribers: Int!
 }
 
 type Mutation {
   deleteClient(input: DeleteClientInput!): DeleteClientPayload!
+  sendMessage(input: SendMessageInput!): SendMessagePayload!
 }
 
 """
@@ -262,6 +265,11 @@ type ClientNotFoundError implements Error {
   message: String!
 }
 
+input SendMessageInput {
+  audience: Audience!
+  message: String!
+}
+
 type Subscriber {
   phoneNumber: String!
   joinedDate: DateTime
@@ -278,6 +286,16 @@ type Announcement {
 
 interface Error {
   message: String!
+}
+
+enum Audience {
+  CLIENTS
+  SUBSCRIBERS
+}
+
+type SendMessagePayload {
+  errors: [String!]!
+  sent: Int!
 }
 
 input DeleteClientInput {

@@ -22,7 +22,7 @@ export const HomeQueryDef = graphql`
   }
 `;
 
-export default function HomePage({ data }: RelayRoute<HomeQuery>) {
+export default function HomePage({ data }: Readonly<RelayRoute<HomeQuery>>) {
   return (
     <Box>
       <List>
