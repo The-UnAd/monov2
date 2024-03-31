@@ -28,6 +28,9 @@ export default function MyDocument() {
               &copy; {new Date().getFullYear()} The UnAd, LLC. All rights
               reserved.
             </p>
+            <p>
+              <a href="mailto:support@theunad.com">Contact Support</a>
+            </p>
           </div>
         </div>
       </body>

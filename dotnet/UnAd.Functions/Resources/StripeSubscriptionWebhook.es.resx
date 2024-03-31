@@ -120,7 +120,7 @@
   <data name="SubscriptionCanceledMessage" xml:space="preserve">
     <value>Su suscripción ha sido cancelada. Puede renovar su suscripción en {subLink}.</value>
   </data>
-  <data name="SubscriptionCancelled" xml:space="preserve">
+  <data name="SubscriptionCanceled" xml:space="preserve">
     <value>Su suscripción ha sido cancelada. Por favor contacte al soporte.</value>
   </data>
   <data name="SubscriptionPaused" xml:space="preserve">

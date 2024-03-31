@@ -120,11 +120,11 @@
   <data name="SubscriptionCanceledMessage" xml:space="preserve">
     <value>Your subscription has been canceled.  You may renew your subscription at {subLink}.</value>
   </data>
-  <data name="SubscriptionCancelled" xml:space="preserve">
-    <value>Your subscription has been cancelled.  Please contact support.</value>
+  <data name="SubscriptionCanceled" xml:space="preserve">
+    <value>Your subscription has been canceled.  Please contact support at support@theunad.com</value>
   </data>
   <data name="SubscriptionPaused" xml:space="preserve">
-    <value>Your subscription has been paused. Please contact support.</value>
+    <value>Your subscription has been paused. Please contact support at support@theunad.com</value>
   </data>
   <data name="SubscriptionResumed" xml:space="preserve">
     <value>Your subscription has been resumed.  You may now use the service again.</value>
@@ -133,13 +133,12 @@
     <value>Your subscription has started.  You may now use the service.
 
 Your subscription link to share is {shareLink}
-Please share this link with your customers.
 
 You can manage your subscription at {subLink}
 You can get more information any time by texting 'help' to this number.{trialInfo}</value>
   </data>
   <data name="TrailEndsSoon" xml:space="preserve">
-    <value>Your trial subscription will end soon. Please contact support to continue using the service.</value>
+    <value>Your trial subscription will end soon. Please contact support@theunad.com to continue using the service.</value>
   </data>
   <data name="TrialInfo" xml:space="preserve">
     <value>Your trial period ends on {endDate}.</value>
