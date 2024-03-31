@@ -1,0 +1,27 @@
+name: Seed DB on SSH Tunnel
+
+on:
+    pull_request:
+      branches:
+        - main
+      paths:
+        - 'dotnet/UnAd.Functions/**'
+        - 'dotnet/UnAd.Data/**'
+        - 'dotnet/UnAd.Redis/**'
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '8.0'
+    
+      - name: Run Unit Tests
+        run: dotnet test
+        working-directory: dotnet/UnAd.Functions/test/UnAd.Functions.Tests.Unit
