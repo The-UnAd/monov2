@@ -24,13 +24,15 @@ services:
     networks:
       - UnAd
     build:
-      context: ./web/admin-ui/
+      context: ./
+      dockerfile: ./web/admin-ui/Dockerfile.local
     ports:
-      - "3030:3030"
+      - "5050:5050"
     environment:
-      - PORT=3030
+      - PORT=5050
     depends_on:
-      - user-api
+      - graphql-gateway
+      - auth-api
 
   user-api:
     networks:
@@ -69,6 +71,20 @@ services:
       - ./dotnet/.env.docker
     depends_on:
       - user-api
+
+  auth-api:
+    networks:
+      - UnAd
+    build:
+      context: ./dotnet
+      dockerfile: AuthApi.Dockerfile
+    ports:
+      - "5555:5555"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - HTTP_PORTS=5555
+    env_file:
+      - ./dotnet/.env.docker
 
 secrets:
   graphmonitorheaders:

@@ -1,10 +1,9 @@
 using GraphQLGateway;
 using HotChocolate.AspNetCore;
 using HotChocolate.Stitching;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using Polly;
 using StackExchange.Redis;
+using UnAd.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,11 +19,15 @@ builder.Services.AddHeaderPropagation(o => {
             .LastOrDefault());
     o.Headers.Add("Authorization", "Authorization", c => {
         var redis = c.HttpContext.RequestServices.GetRequiredService<IConnectionMultiplexer>();
-        var token = c.HeaderValue.ToString()
+        var tokenId = c.HeaderValue.ToString()
             .Split(' ')
-            .LastOrDefault();
-        var jwt = redis.GetDatabase()
-            .StringGet($"token:{token}");
+            .LastOrDefault() ?? string.Empty;
+        var jwt = redis.GetDatabase().GetUserToken(tokenId);
+        /*
+         * TODO: here's the problem:
+         * When this token is missing or invalid, the delegated API will return a 401.
+         * This apparently borks the whole process, and the gateway will return a 200, but with errors.
+         */
         return $"Bearer {jwt}";
     });
 });
@@ -50,24 +53,9 @@ builder.Services
 
 builder.Services.AddHealthChecks();
 
-builder.Services.AddCognitoIdentity().AddAuthentication(o => {
-    o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(o => {
-    o.Authority = builder.Configuration["COGNITO_AUTHORITY"];
-    o.TokenValidationParameters = new TokenValidationParameters {
-        ValidateIssuerSigningKey = false,
-        ValidateAudience = false,
-    };
-});
-builder.Services.AddAuthorization();
-
 var app = builder.Build();
 
 app.UseHeaderPropagation();
-
-app.UseAuthorization();
-app.UseAuthorization();
 
 app.MapHealthChecks("/health");
 

@@ -1,4 +1,31 @@
 type Query {
+  client(id: ID!): Client
+  clients(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+    order: [ClientSortInput!]
+    where: ClientFilterInput
+  ): ClientsConnection
+  countClients: Int!
+  countSubscribers: Int!
+
   """
   Fetches an object given its ID.
   """
@@ -18,32 +45,7 @@ type Query {
     """
     ids: [ID!]!
   ): [Node]!
-  client(id: ID!): Client
-  clients(
-    """
-    Returns the first _n_ elements from the list.
-    """
-    first: Int
-
-    """
-    Returns the elements in the list that come after the specified cursor.
-    """
-    after: String
-
-    """
-    Returns the last _n_ elements from the list.
-    """
-    last: Int
-
-    """
-    Returns the elements in the list that come before the specified cursor.
-    """
-    before: String
-    where: ClientFilterInput
-    order: [ClientSortInput!]
-  ): ClientsConnection
-  countClients: Int!
-  countSubscribers: Int!
+  viewer: User
 }
 
 type Mutation {
@@ -51,63 +53,35 @@ type Mutation {
   sendMessage(input: SendMessageInput!): SendMessagePayload!
 }
 
-"""
-The node interface is implemented by entities that have a global unique identifier.
-"""
-interface Node {
-  id: ID!
-}
-
-enum ApplyPolicy {
-  BEFORE_RESOLVER
-  AFTER_RESOLVER
-  VALIDATION
-}
-
-input ClientFilterInput {
-  and: [ClientFilterInput!]
-  or: [ClientFilterInput!]
-  id: UuidOperationFilterInput
-  name: StringOperationFilterInput
-  phoneNumber: StringOperationFilterInput
-  customerId: StringOperationFilterInput
-  subscriptionId: StringOperationFilterInput
-  locale: StringOperationFilterInput
-  announcements: ListFilterInputTypeOfAnnouncementFilterInput
-  subscriberPhoneNumbers: ListFilterInputTypeOfSubscriberFilterInput
-}
-
-input ClientSortInput {
-  id: SortEnumType
-  name: SortEnumType
-  phoneNumber: SortEnumType
-  customerId: SortEnumType
-  subscriptionId: SortEnumType
-  locale: SortEnumType
+type Announcement {
+  client: Client
+  clientId: UUID
+  messageSid: String!
+  sentOn: DateTime
 }
 
 type Client implements Node {
+  announcements: [Announcement!]!
+  customerId: String
   id: ID!
+  locale: String!
   name: String!
   phoneNumber: String!
-  customerId: String
-  subscriptionId: String
-  locale: String!
-  announcements: [Announcement!]!
   subscriberPhoneNumbers: [Subscriber!]!
-  subscription: StripeSubscription
   subscribers: [Subscriber!]!
+  subscription: StripeSubscription
+  subscriptionId: String
+}
+
+type ClientNotFoundError implements Error {
+  clientId: UUID!
+  message: String!
 }
 
 """
 A connection to a list of items.
 """
 type ClientsConnection {
-  """
-  Information to aid in pagination.
-  """
-  pageInfo: PageInfo!
-
   """
   A list of edges.
   """
@@ -117,85 +91,11 @@ type ClientsConnection {
   A flattened list of the nodes.
   """
   nodes: [Client!]
-}
-
-type StripeSubscription {
-  id: String
-  status: String
-}
-
-input UuidOperationFilterInput {
-  eq: UUID
-  neq: UUID
-  in: [UUID]
-  nin: [UUID]
-  gt: UUID
-  ngt: UUID
-  gte: UUID
-  ngte: UUID
-  lt: UUID
-  nlt: UUID
-  lte: UUID
-  nlte: UUID
-}
-
-input StringOperationFilterInput {
-  and: [StringOperationFilterInput!]
-  or: [StringOperationFilterInput!]
-  eq: String
-  neq: String
-  contains: String
-  ncontains: String
-  in: [String]
-  nin: [String]
-  startsWith: String
-  nstartsWith: String
-  endsWith: String
-  nendsWith: String
-}
-
-input ListFilterInputTypeOfAnnouncementFilterInput {
-  all: AnnouncementFilterInput
-  none: AnnouncementFilterInput
-  some: AnnouncementFilterInput
-  any: Boolean
-}
-
-input ListFilterInputTypeOfSubscriberFilterInput {
-  all: SubscriberFilterInput
-  none: SubscriberFilterInput
-  some: SubscriberFilterInput
-  any: Boolean
-}
-
-enum SortEnumType {
-  ASC
-  DESC
-}
-
-"""
-Information about pagination in a connection.
-"""
-type PageInfo {
-  """
-  Indicates whether more edges exist following the set defined by the clients arguments.
-  """
-  hasNextPage: Boolean!
 
   """
-  Indicates whether more edges exist prior the set defined by the clients arguments.
+  Information to aid in pagination.
   """
-  hasPreviousPage: Boolean!
-
-  """
-  When paginating backwards, the cursor to continue.
-  """
-  startCursor: String
-
-  """
-  When paginating forwards, the cursor to continue.
-  """
-  endCursor: String
+  pageInfo: PageInfo!
 }
 
 """
@@ -213,56 +113,34 @@ type ClientsEdge {
   node: Client!
 }
 
-scalar UUID @specifiedBy(url: "https://tools.ietf.org/html/rfc4122")
-
-input AnnouncementFilterInput {
-  and: [AnnouncementFilterInput!]
-  or: [AnnouncementFilterInput!]
-  messageSid: StringOperationFilterInput
-  sentOn: DateTimeOperationFilterInput
-  clientId: UuidOperationFilterInput
-  client: ClientFilterInput
-}
-
-input SubscriberFilterInput {
-  and: [SubscriberFilterInput!]
-  or: [SubscriberFilterInput!]
-  phoneNumber: StringOperationFilterInput
-  joinedDate: DateTimeOperationFilterInput
-  locale: StringOperationFilterInput
-  clients: ListFilterInputTypeOfClientFilterInput
-}
-
-input DateTimeOperationFilterInput {
-  eq: DateTime
-  neq: DateTime
-  in: [DateTime]
-  nin: [DateTime]
-  gt: DateTime
-  ngt: DateTime
-  gte: DateTime
-  ngte: DateTime
-  lt: DateTime
-  nlt: DateTime
-  lte: DateTime
-  nlte: DateTime
-}
-
-input ListFilterInputTypeOfClientFilterInput {
-  all: ClientFilterInput
-  none: ClientFilterInput
-  some: ClientFilterInput
-  any: Boolean
+type DeleteClientPayload {
+  client: Client
+  errors: [DeleteClientError!]
 }
 
 """
-The `DateTime` scalar represents an ISO-8601 compliant date time type.
+Information about pagination in a connection.
 """
-scalar DateTime @specifiedBy(url: "https://www.graphql-scalars.com/date-time")
+type PageInfo {
+  """
+  When paginating forwards, the cursor to continue.
+  """
+  endCursor: String
 
-type ClientNotFoundError implements Error {
-  clientId: UUID!
-  message: String!
+  """
+  Indicates whether more edges exist following the set defined by the clients arguments.
+  """
+  hasNextPage: Boolean!
+
+  """
+  Indicates whether more edges exist prior the set defined by the clients arguments.
+  """
+  hasPreviousPage: Boolean!
+
+  """
+  When paginating backwards, the cursor to continue.
+  """
+  startCursor: String
 }
 
 type SendMessageFailed implements Error {
@@ -270,27 +148,162 @@ type SendMessageFailed implements Error {
   sid: String
 }
 
+type SendMessagePayload {
+  errors: [SendMessageError!]
+  sent: Int
+}
+
+type StripeSubscription {
+  id: String
+  status: String
+}
+
+type Subscriber {
+  clients: [Client!]!
+  joinedDate: DateTime
+  locale: String!
+  phoneNumber: String!
+}
+
+type User {
+  id: String!
+  name: String!
+}
+
+interface Error {
+  message: String!
+}
+
+"""
+The node interface is implemented by entities that have a global unique identifier.
+"""
+interface Node {
+  id: ID!
+}
+
+union DeleteClientError = ClientNotFoundError
+
+union SendMessageError = SendMessageFailed
+
+input AnnouncementFilterInput {
+  and: [AnnouncementFilterInput!]
+  client: ClientFilterInput
+  clientId: UuidOperationFilterInput
+  messageSid: StringOperationFilterInput
+  or: [AnnouncementFilterInput!]
+  sentOn: DateTimeOperationFilterInput
+}
+
+input ClientFilterInput {
+  and: [ClientFilterInput!]
+  announcements: ListFilterInputTypeOfAnnouncementFilterInput
+  customerId: StringOperationFilterInput
+  id: UuidOperationFilterInput
+  locale: StringOperationFilterInput
+  name: StringOperationFilterInput
+  or: [ClientFilterInput!]
+  phoneNumber: StringOperationFilterInput
+  subscriberPhoneNumbers: ListFilterInputTypeOfSubscriberFilterInput
+  subscriptionId: StringOperationFilterInput
+}
+
+input ClientSortInput {
+  customerId: SortEnumType
+  id: SortEnumType
+  locale: SortEnumType
+  name: SortEnumType
+  phoneNumber: SortEnumType
+  subscriptionId: SortEnumType
+}
+
+input DateTimeOperationFilterInput {
+  eq: DateTime
+  gt: DateTime
+  gte: DateTime
+  in: [DateTime]
+  lt: DateTime
+  lte: DateTime
+  neq: DateTime
+  ngt: DateTime
+  ngte: DateTime
+  nin: [DateTime]
+  nlt: DateTime
+  nlte: DateTime
+}
+
+input DeleteClientInput {
+  id: ID!
+}
+
+input ListFilterInputTypeOfAnnouncementFilterInput {
+  all: AnnouncementFilterInput
+  any: Boolean
+  none: AnnouncementFilterInput
+  some: AnnouncementFilterInput
+}
+
+input ListFilterInputTypeOfClientFilterInput {
+  all: ClientFilterInput
+  any: Boolean
+  none: ClientFilterInput
+  some: ClientFilterInput
+}
+
+input ListFilterInputTypeOfSubscriberFilterInput {
+  all: SubscriberFilterInput
+  any: Boolean
+  none: SubscriberFilterInput
+  some: SubscriberFilterInput
+}
+
 input SendMessageInput {
   audience: Audience!
   message: String!
 }
 
-type Subscriber {
-  phoneNumber: String!
-  joinedDate: DateTime
-  locale: String!
-  clients: [Client!]!
+input StringOperationFilterInput {
+  and: [StringOperationFilterInput!]
+  contains: String
+  endsWith: String
+  eq: String
+  in: [String]
+  ncontains: String
+  nendsWith: String
+  neq: String
+  nin: [String]
+  nstartsWith: String
+  or: [StringOperationFilterInput!]
+  startsWith: String
 }
 
-type Announcement {
-  messageSid: String!
-  sentOn: DateTime
-  clientId: UUID
-  client: Client
+input SubscriberFilterInput {
+  and: [SubscriberFilterInput!]
+  clients: ListFilterInputTypeOfClientFilterInput
+  joinedDate: DateTimeOperationFilterInput
+  locale: StringOperationFilterInput
+  or: [SubscriberFilterInput!]
+  phoneNumber: StringOperationFilterInput
 }
 
-interface Error {
-  message: String!
+input UuidOperationFilterInput {
+  eq: UUID
+  gt: UUID
+  gte: UUID
+  in: [UUID]
+  lt: UUID
+  lte: UUID
+  neq: UUID
+  ngt: UUID
+  ngte: UUID
+  nin: [UUID]
+  nlt: UUID
+  nlte: UUID
+}
+
+enum ApplyPolicy {
+  AFTER_RESOLVER
+  BEFORE_RESOLVER
+  VALIDATION
 }
 
 enum Audience {
@@ -298,20 +311,14 @@ enum Audience {
   SUBSCRIBERS
 }
 
-type SendMessagePayload {
-  sent: Int
-  errors: [SendMessageError!]
+enum SortEnumType {
+  ASC
+  DESC
 }
 
-input DeleteClientInput {
-  id: ID!
-}
+scalar UUID @specifiedBy(url: "https://tools.ietf.org/html/rfc4122")
 
-union DeleteClientError = ClientNotFoundError
-
-type DeleteClientPayload {
-  client: Client
-  errors: [DeleteClientError!]
-}
-
-union SendMessageError = SendMessageFailed
+"""
+The `DateTime` scalar represents an ISO-8601 compliant date time type.
+"""
+scalar DateTime @specifiedBy(url: "https://www.graphql-scalars.com/date-time")

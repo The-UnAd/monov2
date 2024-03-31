@@ -202,9 +202,9 @@ module "signup-site" {
   cluster_arn                = aws_ecs_cluster.cluster.arn
   cluster_name               = aws_ecs_cluster.cluster.name
   health_check_path          = "/health"
-  task_cpu            = 256
-  task_memory         = 512
-  ssl_certificate_arn = aws_acm_certificate_validation.wildcard.certificate_arn
+  task_cpu                   = 256
+  task_memory                = 512
+  ssl_certificate_arn        = aws_acm_certificate_validation.wildcard.certificate_arn
   container_secrets = [{
     name      = "TWILIO_ACCOUNT_SID"
     valueFrom = "${data.aws_ssm_parameter.twilio_account_sid.arn}"
@@ -282,46 +282,43 @@ resource "aws_route53_record" "signup-site" {
   zone_id         = data.aws_route53_zone.main.zone_id
 }
 
-# module "graphql-gateway" {
-#   source                       = "./ecs"
-#   region                       = data.aws_region.current.name
-#   project_name                 = "graphql-gateway"
-#   container_port               = 3000
-#   task_role_arn                = aws_iam_role.ecs_task_execution_role.arn
-#   execution_role_arn           = aws_iam_role.ecs_task_execution_role.arn
-#   vpc_id                       = aws_vpc.vpc.id
-#   vpc_cidr                     = var.vpc_cidr
-#   private_subnet_ids           = aws_subnet.private_subnet.*.id
-#   public_subnet_ids            = aws_subnet.public_subnet.*.id
-#   service_security_group_ids   = [aws_security_group.ecs_private.id]
-#   desired_count                = 1
-#   cluster_arn                  = aws_ecs_cluster.cluster.arn
-#   task_cpu                     = 256
-#   task_memory                  = 512
-#   health_check_path            = "/health"
-#   enable_service_connect       = true
-#   service_connect_namespace    = aws_service_discovery_private_dns_namespace.this.arn
-#   service_connect_namespace_id = aws_service_discovery_private_dns_namespace.this.id
-#   ssl_certificate_arn          = aws_acm_certificate.wildcard.arn
-#   enable_cognito               = true
-#   cognito_pool_client_id       = aws_cognito_user_pool_client.cognito_client.id
-#   cognito_pool_domain          = aws_cognito_user_pool_domain.main.domain
-#   cognito_pool_arn             = aws_cognito_user_pool.cognito_pool.arn
-#   container_secrets = [{
-#     name      = "REDIS_URL"
-#     valueFrom = "${aws_ssm_parameter.redis_connection_string.arn}"
-#     }, {
-#     name      = "COGNITO_AUTHORITY"
-#     valueFrom = "${aws_ssm_parameter.cognito_pool_endpoint.arn}"
-#   }]
-#   container_environment = [{
-#     name  = "ASPNETCORE_ENVIRONMENT"
-#     value = "Production"
-#     }, {
-#     name  = "ASPNETCORE_URLS"
-#     value = "http://+:3000"
-#   }]
-# }
+module "graphql-gateway" {
+  source                       = "./ecs"
+  region                       = data.aws_region.current.name
+  project_name                 = "graphql-gateway"
+  container_port               = 3000
+  task_role_arn                = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn           = aws_iam_role.ecs_task_execution_role.arn
+  vpc_id                       = aws_vpc.vpc.id
+  vpc_cidr                     = var.vpc_cidr
+  private_subnet_ids           = aws_subnet.private_subnet.*.id
+  public_subnet_ids            = aws_subnet.public_subnet.*.id
+  service_security_group_ids   = [aws_security_group.ecs_private.id]
+  desired_count                = 1
+  cluster_arn                  = aws_ecs_cluster.cluster.arn
+  cluster_name                 = aws_ecs_cluster.cluster.name
+  task_cpu                     = 256
+  task_memory                  = 512
+  health_check_path            = "/health"
+  enable_service_connect       = true
+  service_connect_namespace    = aws_service_discovery_private_dns_namespace.this.arn
+  service_connect_namespace_id = aws_service_discovery_private_dns_namespace.this.id
+  ssl_certificate_arn          = aws_acm_certificate.wildcard.arn
+  container_secrets = [{
+    name      = "REDIS_URL"
+    valueFrom = "${aws_ssm_parameter.redis_connection_string.arn}"
+    }, {
+    name      = "COGNITO_AUTHORITY"
+    valueFrom = "${aws_ssm_parameter.cognito_pool_endpoint.arn}"
+  }]
+  container_environment = [{
+    name  = "ASPNETCORE_ENVIRONMENT"
+    value = "Production"
+    }, {
+    name  = "ASPNETCORE_URLS"
+    value = "http://+:3000"
+  }]
+}
 
 # resource "aws_route53_record" "graphql-api" {
 #   allow_overwrite = true
@@ -332,113 +329,157 @@ resource "aws_route53_record" "signup-site" {
 #   zone_id         = data.aws_route53_zone.main.zone_id
 # }
 
-# module "user-api" {
-#   source                       = "./ecs"
-#   region                       = data.aws_region.current.name
-#   project_name                 = "user-api"
-#   container_port               = 3000
-#   task_role_arn                = aws_iam_role.ecs_task_execution_role.arn
-#   execution_role_arn           = aws_iam_role.ecs_task_execution_role.arn
-#   vpc_id                       = aws_vpc.vpc.id
-#   vpc_cidr                     = var.vpc_cidr
-#   private_subnet_ids           = aws_subnet.private_subnet.*.id
-#   service_security_group_ids   = [aws_security_group.ecs_private.id]
-#   desired_count                = 1
-#   cluster_arn                  = aws_ecs_cluster.cluster.arn
-#   task_cpu                     = 256
-#   task_memory                  = 512
-#   health_check_path            = "/health"
-#   enable_service_connect       = true
-#   service_connect_namespace    = aws_service_discovery_private_dns_namespace.this.arn
-#   service_connect_namespace_id = aws_service_discovery_private_dns_namespace.this.id
-#   container_secrets = [{
-#     name      = "ConnectionStrings__UserDb"
-#     valueFrom = "${aws_ssm_parameter.rds_cluster_userdb_connection_string.arn}"
-#     }, {
-#     name      = "REDIS_URL"
-#     valueFrom = "${aws_ssm_parameter.redis_connection_string.arn}"
-#     }, {
-#     name      = "STRIPE_API_KEY"
-#     valueFrom = "${data.aws_ssm_parameter.stripe_api_key.arn}"
-#     }, {
-#     name      = "TWILIO_ACCOUNT_SID"
-#     valueFrom = "${data.aws_ssm_parameter.twilio_account_sid.arn}"
-#     }, {
-#     name      = "TWILIO_AUTH_TOKEN"
-#     valueFrom = "${data.aws_ssm_parameter.twilio_auth_token.arn}"
-#   }]
-#   container_environment = [{
-#     name  = "ASPNETCORE_ENVIRONMENT"
-#     value = "Production"
-#     }, {
-#     name  = "ASPNETCORE_URLS"
-#     value = "http://+:3000"
-#   }]
-# }
+module "user-api" {
+  source                       = "./ecs"
+  region                       = data.aws_region.current.name
+  project_name                 = "user-api"
+  container_port               = 3000
+  task_role_arn                = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn           = aws_iam_role.ecs_task_execution_role.arn
+  vpc_id                       = aws_vpc.vpc.id
+  vpc_cidr                     = var.vpc_cidr
+  private_subnet_ids           = aws_subnet.private_subnet.*.id
+  service_security_group_ids   = [aws_security_group.ecs_private.id]
+  desired_count                = 1
+  cluster_arn                  = aws_ecs_cluster.cluster.arn
+  cluster_name                 = aws_ecs_cluster.cluster.name
+  task_cpu                     = 256
+  task_memory                  = 512
+  health_check_path            = "/health"
+  enable_service_connect       = true
+  service_connect_namespace    = aws_service_discovery_private_dns_namespace.this.arn
+  service_connect_namespace_id = aws_service_discovery_private_dns_namespace.this.id
+  container_secrets = [{
+    name      = "ConnectionStrings__UserDb"
+    valueFrom = "${aws_ssm_parameter.rds_cluster_userdb_connection_string.arn}"
+    }, {
+    name      = "REDIS_URL"
+    valueFrom = "${aws_ssm_parameter.redis_connection_string.arn}"
+    }, {
+    name      = "STRIPE_API_KEY"
+    valueFrom = "${data.aws_ssm_parameter.stripe_api_key.arn}"
+    }, {
+    name      = "TWILIO_ACCOUNT_SID"
+    valueFrom = "${data.aws_ssm_parameter.twilio_account_sid.arn}"
+    }, {
+    name      = "TWILIO_AUTH_TOKEN"
+    valueFrom = "${data.aws_ssm_parameter.twilio_auth_token.arn}"
+  }]
+  container_environment = [{
+    name  = "ASPNETCORE_ENVIRONMENT"
+    value = "Production"
+    }, {
+    name  = "ASPNETCORE_URLS"
+    value = "http://+:3000"
+    }, {
+    name  = "Cognito__Authority"
+    value = "https://${aws_cognito_user_pool.cognito_pool.endpoint}"
+  }, ]
+}
 
-# resource "random_password" "graph_monitor_api_key" {
-#   length  = 32
-#   special = false
-# }
+module "auth-api" {
+  source                       = "./ecs"
+  region                       = data.aws_region.current.name
+  project_name                 = "auth-api"
+  container_port               = 3000
+  task_role_arn                = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn           = aws_iam_role.ecs_task_execution_role.arn
+  vpc_id                       = aws_vpc.vpc.id
+  vpc_cidr                     = var.vpc_cidr
+  private_subnet_ids           = aws_subnet.private_subnet.*.id
+  service_security_group_ids   = [aws_security_group.ecs_private.id]
+  desired_count                = 1
+  cluster_arn                  = aws_ecs_cluster.cluster.arn
+  cluster_name                 = aws_ecs_cluster.cluster.name
+  task_cpu                     = 256
+  task_memory                  = 512
+  health_check_path            = "/health"
+  enable_service_connect       = true
+  service_connect_namespace    = aws_service_discovery_private_dns_namespace.this.arn
+  service_connect_namespace_id = aws_service_discovery_private_dns_namespace.this.id
+  container_secrets = [{
+    name      = "REDIS_URL"
+    valueFrom = "${aws_ssm_parameter.redis_connection_string.arn}"
+  }]
+  container_environment = [{
+    name  = "ASPNETCORE_ENVIRONMENT"
+    value = "Production"
+    }, {
+    name  = "ASPNETCORE_URLS"
+    value = "http://+:3000"
+    }, {
+    name  = "COGNITO_USER_POOL_ID"
+    value = "${aws_cognito_user_pool.cognito_pool.id}"
+    }, {
+    name  = "COGNITO_CLIENT_ID"
+    value = "${aws_cognito_user_pool_client.cognito_client.id}"
+  }]
+}
 
-# resource "aws_ssm_parameter" "graph_monitor_api_key" {
-#   name  = "/ecs/graph-monitor-api-key"
-#   type  = "SecureString"
-#   value = random_password.graph_monitor_api_key.result
-# }
+resource "random_password" "graph_monitor_api_key" {
+  length  = 32
+  special = false
+}
 
-# output "graph_monitor_api_key" {
-#   value     = random_password.graph_monitor_api_key.result
-#   sensitive = true
-# }
+resource "aws_ssm_parameter" "graph_monitor_api_key" {
+  name  = "/ecs/graph-monitor-api-key"
+  type  = "SecureString"
+  value = random_password.graph_monitor_api_key.result
+}
 
-# module "graph-monitor" {
-#   source                     = "./ecs"
-#   region                     = data.aws_region.current.name
-#   project_name               = "graph-monitor"
-#   container_port             = 3000
-#   task_role_arn              = aws_iam_role.ecs_task_execution_role.arn
-#   execution_role_arn         = aws_iam_role.ecs_task_execution_role.arn
-#   vpc_id                     = aws_vpc.vpc.id
-#   vpc_cidr                   = var.vpc_cidr
-#   private_subnet_ids         = aws_subnet.private_subnet.*.id
-#   public_subnet_ids          = aws_subnet.public_subnet.*.id
-#   service_security_group_ids = [aws_security_group.ecs_private.id]
-#   desired_count              = 1
-#   cluster_arn                = aws_ecs_cluster.cluster.arn
-#   task_cpu                   = 256
-#   task_memory                = 512
-#   health_check_path          = "/health"
-#   ssl_certificate_arn        = aws_acm_certificate_validation.wildcard.certificate_arn
-#   alb_logs_bucket_name        = "${aws_s3_bucket.alb_logs.bucket}"
-#   container_secrets = [{
-#     name      = "REDIS_URL"
-#     valueFrom = "${aws_ssm_parameter.redis_connection_string.arn}"
-#     }, {
-#     name      = "API_KEY"
-#     valueFrom = "${aws_ssm_parameter.graph_monitor_api_key.arn}"
-#   }]
-#   container_environment = [{
-#     name  = "ASPNETCORE_ENVIRONMENT"
-#     value = "Production"
-#     }, {
-#     name  = "HTTP_PORTS"
-#     value = "3000"
-#   }]
-# }
+output "graph_monitor_api_key" {
+  value     = random_password.graph_monitor_api_key.result
+  sensitive = true
+}
 
-# resource "aws_route53_record" "graph-monitor" {
-#   allow_overwrite = true
-#   name            = "monitor.${data.aws_route53_zone.main.name}"
-#   records         = [module.graph-monitor.load_balancer_dns_name]
-#   ttl             = 60
-#   type            = "CNAME"
-#   zone_id         = data.aws_route53_zone.main.zone_id
-# }
+module "graph-monitor" {
+  source                     = "./ecs"
+  region                     = data.aws_region.current.name
+  project_name               = "graph-monitor"
+  container_port             = 3000
+  task_role_arn              = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn         = aws_iam_role.ecs_task_execution_role.arn
+  vpc_id                     = aws_vpc.vpc.id
+  vpc_cidr                   = var.vpc_cidr
+  private_subnet_ids         = aws_subnet.private_subnet.*.id
+  public_subnet_ids          = aws_subnet.public_subnet.*.id
+  service_security_group_ids = [aws_security_group.ecs_private.id]
+  desired_count              = 1
+  cluster_arn                = aws_ecs_cluster.cluster.arn
+  cluster_name               = aws_ecs_cluster.cluster.name
+  task_cpu                   = 256
+  task_memory                = 512
+  # health_check_path          = "/health"
+  ssl_certificate_arn  = aws_acm_certificate_validation.wildcard.certificate_arn
+  alb_logs_bucket_name = aws_s3_bucket.alb_logs.bucket
+  container_secrets = [{
+    name      = "REDIS_URL"
+    valueFrom = "${aws_ssm_parameter.redis_connection_string.arn}"
+    }, {
+    name      = "API_KEY"
+    valueFrom = "${aws_ssm_parameter.graph_monitor_api_key.arn}"
+  }]
+  container_environment = [{
+    name  = "ASPNETCORE_ENVIRONMENT"
+    value = "Production"
+    }, {
+    name  = "HTTP_PORTS"
+    value = "3000"
+  }]
+}
 
-# output "graph_monitor_api_url" {
-#   value = "https://monitor.${data.aws_route53_zone.main.name}"
-# }
+resource "aws_route53_record" "graph-monitor" {
+  allow_overwrite = true
+  name            = "monitor.${data.aws_route53_zone.main.name}"
+  records         = [module.graph-monitor.load_balancer_dns_name]
+  ttl             = 60
+  type            = "CNAME"
+  zone_id         = data.aws_route53_zone.main.zone_id
+}
+
+output "graph_monitor_api_url" {
+  value = "https://monitor.${data.aws_route53_zone.main.name}"
+}
 
 resource "random_password" "unad_functions_api_key" {
   length  = 32
@@ -474,7 +515,7 @@ module "unad-functions" {
   task_cpu                   = 256
   task_memory                = 512
   # health_check_path          = "/health"
-  ssl_certificate_arn        = aws_acm_certificate_validation.wildcard.certificate_arn
+  ssl_certificate_arn = aws_acm_certificate_validation.wildcard.certificate_arn
   container_secrets = [{
     name      = "REDIS_URL"
     valueFrom = "${aws_ssm_parameter.redis_connection_string.arn}"

@@ -12,6 +12,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQLGateway.Tests.Integr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnAd.Auth.Web", "UnAd.Auth.Web\UnAd.Auth.Web.csproj", "{2DEA9A9C-B59D-4161-8B93-EA518B35D56E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnAd.Redis", "UnAd.Redis\UnAd.Redis.csproj", "{CE6003AF-E6DA-42E2-8EB2-07A96E41ECDC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{2DEA9A9C-B59D-4161-8B93-EA518B35D56E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2DEA9A9C-B59D-4161-8B93-EA518B35D56E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2DEA9A9C-B59D-4161-8B93-EA518B35D56E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE6003AF-E6DA-42E2-8EB2-07A96E41ECDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE6003AF-E6DA-42E2-8EB2-07A96E41ECDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE6003AF-E6DA-42E2-8EB2-07A96E41ECDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE6003AF-E6DA-42E2-8EB2-07A96E41ECDC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

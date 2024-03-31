@@ -1,11 +1,5 @@
 import { memo } from 'react';
-import {
-  Route,
-  RouteProps,
-  Router,
-  useParams,
-  type RouterOptions,
-} from 'wouter';
+import { Route, RouteProps, useParams } from 'wouter';
 
 import ErrorBoundary from '../ErrorBoundary';
 import { RelayNavigatorProps } from './withRelay';
@@ -30,24 +24,16 @@ const RelayNavigationRoute = memo(function RelayNavigationScreen({
 
 RelayNavigationRoute.displayName = 'RelayNavigationScreen';
 
-export default function createRouterFactory(
-  options: RouterOptions = {},
-  LayoutComponent: React.ComponentType<any>
-) {
-  return function RouterWrapper({
-    screens,
-    ...wrapperProps
-  }: RelayNavigatorProps) {
+export default function createRouterFactory() {
+  return function RouterWrapper({ screens }: RelayNavigatorProps) {
     return (
-      <Router {...wrapperProps} {...options}>
-        <LayoutComponent>
-          {screens.map(({ path, component, ...r }) => (
-            <Route key={path} path={path}>
-              <RelayNavigationRoute Component={component} path={path} {...r} />
-            </Route>
-          ))}
-        </LayoutComponent>
-      </Router>
+      <>
+        {screens.map(({ path, component, ...r }) => (
+          <Route key={path} path={path}>
+            <RelayNavigationRoute Component={component} path={path} {...r} />
+          </Route>
+        ))}
+      </>
     );
   };
 }

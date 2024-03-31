@@ -11,6 +11,7 @@ public static class Redis {
         public static string ClientLimitsHash(string clientPhone) => $"client:{clientPhone}:limits";
         public static string ProductSet() => "products";
         public static string ProductFeatureFlagsSet(string productId) => $"product:{productId}:featureflags";
+        public static string UserToken(string id) => $"token:{id}";
     }
 
     public static bool IsSubscriberInStopMode(this IDatabase db, string phoneNumber) =>
@@ -64,4 +65,10 @@ public static class Redis {
         db.SetMembers(Keys.ProductFeatureFlagsSet(productId));
     public static bool ProductHasFeatureFlag(this IDatabase db, string productId, string featureFlag) =>
         db.SetContains(Keys.ProductFeatureFlagsSet(productId), featureFlag);
+    public static void StoreUserToken(this IDatabase db, string id, string jwt, int expiresIn) =>
+        db.StringSet(Keys.UserToken(id), jwt, TimeSpan.FromSeconds(expiresIn));
+    public static void DeleteUserToken(this IDatabase db, string id) =>
+        db.KeyDelete(Keys.UserToken(id));
+    public static RedisValue GetUserToken(this IDatabase db, string id) =>
+        db.StringGet(Keys.UserToken(id));
 }
