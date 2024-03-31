@@ -4,11 +4,11 @@ import createRouterFactory from '../Router/createRouterFactory';
 import withRelay, { RouteDefinition } from '../Router/withRelay';
 import { route as ClientRoute } from './Client';
 import { route as HomeRoute } from './Home';
-import { route as TestRoute } from './Test';
+import { route as AnnouncementsRoute } from './Announcements';
 
 const router = withRelay(
   createRouterFactory({}, Layout),
-  [HomeRoute, ClientRoute, TestRoute as RouteDefinition],
+  [HomeRoute, ClientRoute, AnnouncementsRoute as RouteDefinition],
   LoadingScreen
 );
 

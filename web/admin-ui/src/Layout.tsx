@@ -11,7 +11,12 @@ export default function Layout({
       <Tabs value={route}>
         <Tab label="Home" value="/" to="/" component={Link} />
         <Tab label="Other" value="/other" to="/other" component={Link} />
-        <Tab label="Test" value="/test" to="/test" component={Link} />
+        <Tab
+          label="Announcements"
+          value="/announcements"
+          to="/announcements"
+          component={Link}
+        />
       </Tabs>
       <Container maxWidth="lg">
         <Box sx={{ my: 4 }}>{children}</Box>

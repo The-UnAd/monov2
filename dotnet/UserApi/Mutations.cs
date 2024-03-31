@@ -17,7 +17,8 @@ public class Mutation(ILogger<Mutation> logger) {
         return client;
     }
 
-    public async Task<MutationResult<SendMessagePayload>> SendMessage(UserDbContext context, IMessageSender messageSender, SendMessageInput input) {
+
+    public async Task<MutationResult<SendMessagePayload, SendMessageFailed>> SendMessage(UserDbContext context, IMessageSender messageSender, SendMessageInput input) {
 
         var receivers = input.Audience switch {
             Audience.Clients => context.Clients.WithActiveSubscriptions().Select(c => c.PhoneNumber),
@@ -25,7 +26,7 @@ public class Mutation(ILogger<Mutation> logger) {
             _ => Enumerable.Empty<string>()
         };
 
-        var errors = new List<string>();
+        var errors = new List<SendMessageFailed>();
         var sent = 0;
         foreach (var receiver in receivers.ToArray()) {
             try {
@@ -33,21 +34,27 @@ public class Mutation(ILogger<Mutation> logger) {
                 logger.LogMessageSend(result);
                 if (result.ErrorCode is not null) {
                     logger.LogMessageSendError(result.ErrorMessage);
-                    errors.Add(result.ErrorMessage);
+                    errors.Add(new SendMessageFailed(result.ErrorMessage, result.Sid));
                 } else {
                     sent++;
                 }
             } catch (Exception e) {
                 logger.LogException(e);
+                errors.Add(new SendMessageFailed(e.Message));
             }
         }
 
-        return new SendMessagePayload(errors, sent);
+        if (sent == 0) {
+            return new MutationResult<SendMessagePayload, SendMessageFailed>(errors);
+        }
+        return new SendMessagePayload(sent);
+
     }
 }
 
 public record SendMessageInput(Audience Audience, string Message);
-public record SendMessagePayload(IEnumerable<string> Errors, int Sent);
+public record SendMessagePayload(int Sent);
+public record SendMessageFailed(string Message, string? Sid = default);
 
 [Flags]
 public enum Audience {
