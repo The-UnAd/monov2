@@ -282,6 +282,38 @@ resource "aws_route53_record" "signup-site" {
   zone_id         = data.aws_route53_zone.main.zone_id
 }
 
+module "admin-ui" {
+  source                     = "./ecs"
+  region                     = data.aws_region.current.name
+  project_name               = "admin-ui"
+  container_port             = 3000
+  task_role_arn              = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn         = aws_iam_role.ecs_task_execution_role.arn
+  vpc_id                     = aws_vpc.vpc.id
+  vpc_cidr                   = var.vpc_cidr
+  private_subnet_ids         = aws_subnet.private_subnet.*.id
+  public_subnet_ids          = aws_subnet.public_subnet.*.id
+  service_security_group_ids = [aws_security_group.ecs_private.id]
+  desired_count              = 1
+  cluster_arn                = aws_ecs_cluster.cluster.arn
+  cluster_name               = aws_ecs_cluster.cluster.name
+  health_check_path          = "/health"
+  task_cpu                   = 256
+  task_memory                = 512
+  ssl_certificate_arn        = aws_acm_certificate_validation.wildcard.certificate_arn
+  container_secrets = []
+  container_environment = []
+}
+
+resource "aws_route53_record" "admin-ui" {
+  allow_overwrite = true
+  name            = "portal.${data.aws_route53_zone.main.name}"
+  records         = [module.admin-ui.load_balancer_dns_name]
+  ttl             = 60
+  type            = "CNAME"
+  zone_id         = data.aws_route53_zone.main.zone_id
+}
+
 module "graphql-gateway" {
   source                       = "./ecs"
   region                       = data.aws_region.current.name
