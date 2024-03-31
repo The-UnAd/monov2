@@ -265,6 +265,11 @@ type ClientNotFoundError implements Error {
   message: String!
 }
 
+type SendMessageFailed implements Error {
+  message: String!
+  sid: String
+}
+
 input SendMessageInput {
   audience: Audience!
   message: String!
@@ -294,8 +299,8 @@ enum Audience {
 }
 
 type SendMessagePayload {
-  errors: [String!]!
-  sent: Int!
+  sent: Int
+  errors: [SendMessageError!]
 }
 
 input DeleteClientInput {
@@ -308,3 +313,5 @@ type DeleteClientPayload {
   client: Client
   errors: [DeleteClientError!]
 }
+
+union SendMessageError = SendMessageFailed

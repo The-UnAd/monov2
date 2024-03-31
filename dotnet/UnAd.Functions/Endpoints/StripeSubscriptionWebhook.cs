@@ -39,15 +39,15 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
 
         try {
             if (stripeEvent?.Type == Events.CustomerSubscriptionDeleted) {
-                await UpdateClient(stripeEvent, "SubscriptionCancelled");
+                await HandleSubscriptionUpdated(stripeEvent);
             } else if (stripeEvent?.Type == Events.CustomerSubscriptionUpdated) {
+                await HandleSubscriptionUpdated(stripeEvent);
+            } else if (stripeEvent?.Type == Events.CustomerSubscriptionResumed) {
                 await HandleSubscriptionUpdated(stripeEvent);
             } else if (stripeEvent?.Type == Events.CheckoutSessionCompleted) {
                 await HandleCheckoutSessionCompleted(stripeEvent);
             } else if (stripeEvent?.Type == Events.CustomerSubscriptionCreated) {
                 await HandleSubscriptionCreated(stripeEvent);
-            } else if (stripeEvent?.Type == Events.CustomerSubscriptionResumed) {
-                await UpdateClient(stripeEvent, "SubscriptionResumed");
             } else if (stripeEvent?.Type == Events.CustomerSubscriptionTrialWillEnd) {
                 await UpdateClient(stripeEvent, "TrailEndsSoon");
             } else {
@@ -105,6 +105,47 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
         }
         SetThreadCulture(client.Locale);
         client.CustomerId = subscription.CustomerId;
+        client.SubscriptionId = subscription.Id;
+        await context.SaveChangesAsync();
+
+        var productId = subscription.Items.Data[0].Plan.ProductId;
+        var db = redis.GetDatabase();
+        var maxMessages = db.GetProductLimitValue(productId, "maxMessages");
+        db.SetClientProductLimit(client.PhoneNumber, "maxMessages", maxMessages);
+
+        await MessageResource.CreateAsync(new CreateMessageOptions(client.PhoneNumber) {
+            MessagingServiceSid = _messageServiceSid,
+            Body = localizer.GetStringWithReplacements("SubscriptionStartedMessage",
+            new {
+                shareLink = $"{_clientLinkBaseUri}/{client.Id}",
+                subLink = _stripePortalUrl,
+                trialInfo = subscription.TrialEnd.HasValue ?
+                    "\n\n" + localizer.GetStringWithReplacements("TrialInfo",
+                        new {
+                            endDate = $"{subscription.TrialEnd.Value:D}",
+                        })
+                    : string.Empty,
+            })
+        });
+        await mixpanelClient.Track(MixpanelClient.Events.StripeEvent(stripeEvent.Type), new() {
+                { "subscriptionId", subscription.Id},
+            }, client.PhoneNumber);
+    }
+
+    private async Task HandleSubscriptionResumed(Event stripeEvent) {
+        if (stripeEvent.Data.Object is not Subscription subscription) {
+            logger.LogWarning("Could not find subscription in event data");
+            return;
+        }
+        await using var context = await dbFactory.CreateDbContextAsync();
+        var client = context.Clients.FirstOrDefault(c => c.CustomerId == subscription.CustomerId);
+        if (client is null) {
+            logger.LogWarning("Could not find subscription with id {subscriptionId}", subscription.Id);
+            return;
+        }
+        SetThreadCulture(client.Locale);
+        client.CustomerId = subscription.CustomerId;
+        client.SubscriptionId = subscription.Id;
         await context.SaveChangesAsync();
 
         var productId = subscription.Items.Data[0].Plan.ProductId;
@@ -136,17 +177,19 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
             logger.LogWarning("Could not find subscription in event data");
             return;
         }
-        //var db = redis.GetDatabase();
+
         await using var context = await dbFactory.CreateDbContextAsync();
-        var client = context.Clients.FirstOrDefault(c => c.SubscriptionId == subscription.Id);
+        var client = context.Clients.FirstOrDefault(c => c.CustomerId == subscription.CustomerId);
         if (client is null) {
-            logger.LogWarning("Could not find subscription with id {subscriptionId}", subscription.Id);
+            logger.LogWarning("Could not find customer with id {CustomerId}", subscription.CustomerId);
             return;
         }
         SetThreadCulture(client.Locale);
 
         var db = redis.GetDatabase();
         if (subscription.CancellationDetails is not null) {
+            client.SubscriptionId = null;
+            await context.SaveChangesAsync();
             db.SetClientProductLimit(client.PhoneNumber, "maxMessages", 0);
             await MessageResource.CreateAsync(new CreateMessageOptions(client.PhoneNumber) {
                 MessagingServiceSid = _messageServiceSid,
