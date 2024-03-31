@@ -7,6 +7,7 @@ COPY UnAd.Data/*.csproj ./UnAd.Data/
 COPY UnAd.Redis/*.csproj ./UnAd.Redis/
 COPY UnAd.Auth.Web/*.csproj ./UnAd.Auth.Web/
 COPY UserApi/*.csproj ./UserApi/
+COPY UserApi/tests/UserApi.Tests.Integration/*.csproj ./UserApi/tests/UserApi.Tests.Integration/
 
 RUN dotnet restore
 COPY . .
