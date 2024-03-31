@@ -1,8 +1,12 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
+using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using Stripe;
 using Twilio;
+using UnAd.Auth.Web;
 using UnAd.Data.Users;
 using UserApi;
 
@@ -31,6 +35,19 @@ builder.Services.AddSingleton(() => {
 
 builder.Services.AddSingleton<IMessageSender, MessageSender>();
 
+builder.Services.AddAuthentication(options => {
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options => {
+    options.Authority = builder.Configuration["Cognito:Authority"];
+    options.TokenValidationParameters = new TokenValidationParameters {
+        ValidateIssuerSigningKey = true,
+        ValidateAudience = false
+    };
+});
+builder.Services.AddAuthorization();
+
 builder.Services
     .AddGraphQLServer()
     .AddAuthorization()
@@ -56,14 +73,17 @@ var app = builder.Build();
 
 app.UseHealthChecks("/health");
 
-app.MapGraphQL();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapGraphQL()
+    .RequireAuthorization();
+
+IdentityModelEventSource.ShowPII = app.Environment.IsDevelopment();
 
 app.RunWithGraphQLCommands(args);
 
-public partial class Program {
-    private static readonly Action<ILogger, string, Exception?> LogProgramException =
-        LoggerMessage.Define<string>(LogLevel.Error, new EventId(1, nameof(LogProgramException)), "Unexpected Error: {Message}");
-}
+public partial class Program { }
 
 
 

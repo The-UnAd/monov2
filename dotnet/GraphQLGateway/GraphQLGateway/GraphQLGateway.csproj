@@ -9,7 +9,6 @@
   </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Amazon.AspNetCore.Identity.Cognito" Version="3.0.1" />
       <PackageReference Include="HotChocolate.AspNetCore.CommandLine" Version="13.9.0" />
       <PackageReference Include="HotChocolate.Caching" Version="13.9.0" />
       <PackageReference Include="HotChocolate.Fusion" Version="13.9.0" />
@@ -29,6 +28,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\UnAd.Data\UnAd.Data.csproj" />
+      <ProjectReference Include="..\..\UnAd.Redis\UnAd.Redis.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -10,6 +10,7 @@ async function fetchQuery(operation: any, variables: any) {
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
+        Authorization: `Bearer ${sessionStorage.getItem('token')}`,
       },
       body: JSON.stringify({
         query: operation.text,
@@ -24,7 +25,7 @@ async function fetchQuery(operation: any, variables: any) {
     const json = await response.json();
     if (json.errors) {
       console.error('GraphQL Error:', json.errors);
-      throw new GraphQLApiError(json.errors);
+      // throw new GraphQLApiError(json.errors);
     }
     return json;
   } catch (err) {

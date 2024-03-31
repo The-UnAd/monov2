@@ -164,7 +164,10 @@ export default function withRelay<T extends OperationType = OperationType>(
   });
 
   return function RelayContextWrapper(wrapperProps: any) {
-    const [contextValue] = React.useState({ suspenseFallback });
+    const contextValue = React.useMemo(
+      () => ({ suspenseFallback }),
+      [suspenseFallback]
+    );
     return (
       <RelayNavigatorContext.Provider value={contextValue}>
         <WrappedNavigator {...wrapperProps} screens={screens} />

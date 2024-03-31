@@ -49,7 +49,6 @@ resource "github_actions_environment_variable" "db_port" {
 }
 
 resource "github_actions_environment_variable" "graph_monitor_url" {
-  count         = length(var.graph_monitor_url) > 0 ? 1 : 0
   repository    = "monov2"
   environment   = var.environment
   variable_name = "GRAPH_MONITOR_URL"
@@ -64,7 +63,6 @@ resource "github_actions_environment_secret" "db_pass" {
 }
 
 resource "github_actions_environment_secret" "graph_monitor_headers" {
-  count           = length(var.graph_monitor_api_key) > 0 ? 1 : 0
   repository      = "monov2"
   environment     = var.environment
   secret_name     = "GRAPH_MONITOR_HEADERS"
@@ -115,11 +113,9 @@ variable "jumpbox_host" {
 
 variable "graph_monitor_url" {
   type     = string
-  nullable = true
 }
 
 variable "graph_monitor_api_key" {
   type      = string
-  nullable  = true
   sensitive = true
 }

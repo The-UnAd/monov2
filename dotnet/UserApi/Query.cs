@@ -9,12 +9,14 @@ public class Query {
         var user = await context.Clients.FindAsync(id);
         return user;
     }
-
-    // TODO: how do I get just a count of clients?
     public IQueryable<Client> GetClients(UserDbContext context) => context.Clients;
     public Task<int> CountClients(UserDbContext context) => context.Clients.CountAsync();
     public Task<int> CountSubscribers(UserDbContext context) => context.Subscribers.CountAsync();
 }
+
+public record User(string Id);
+
+public class UserType : ObjectType<User> { }
 
 public sealed class QueryType : ObjectType<Query> {
     protected override void Configure(IObjectTypeDescriptor<Query> descriptor) {
@@ -26,6 +28,15 @@ public sealed class QueryType : ObjectType<Query> {
             .UseProjection()
             .UseFiltering()
             .UseSorting();
+        descriptor.Field("viewer")
+            .Type<UserType>()
+            .Resolve(context => {
+                var user = context.GetUser();
+                if (user is null) {
+                    return null;
+                }
+                return new User(user.FindFirst("username")?.Value ?? "anonymous");
+            });
     }
 }
 
