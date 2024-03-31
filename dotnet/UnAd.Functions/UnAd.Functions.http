@@ -1,11 +1,8 @@
 @UnAd.Functions_HostAddress = http://localhost:7071
 
-GET {{UnAd.Functions_HostAddress}}/todos/
+POST {{UnAd.Functions_HostAddress}}/api/MessageHandler?code=ut7NTvdehnwAi5NVqlovNGGuSH0beEeq
 Accept: application/json
+Content-Type: application/x-www-form-urlencoded
 
-###
-
-GET {{UnAd.Functions_HostAddress}}/todos/1
-Accept: application/json
-
+Body=COMMANDS&From=%2B19044389199
 ###

@@ -14,7 +14,7 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
                                        IDbContextFactory<UserDbContext> dbFactory,
                                        ILogger<StripeSubscriptionWebhook> logger,
                                        IStringLocalizer<StripeSubscriptionWebhook> localizer,
-                                       MixpanelClient mixpanelClient,
+                                       IMixpanelClient mixpanelClient,
                                        IConfiguration config) {
 
     private readonly string _messageServiceSid = config.GetTwilioMessageServiceSid();
@@ -27,31 +27,32 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
             = new CultureInfo(culture);
 
     public async Task<IResult> Endpoint(HttpRequest request) {
-        Event? stripeEvent = default;
+        Event stripeEvent = default!;
         using var streamReader = new StreamReader(request.Body);
         var body = await streamReader.ReadToEndAsync();
-        if (request.Headers.TryGetValue("stripe-signature", out var sig) &&
-            !stripeVerifier.TryVerify(sig!, _stripeEndpointSecret, body, out stripeEvent)) {
+        if ((request.Headers.TryGetValue("stripe-signature", out var sig) &&
+            !stripeVerifier.TryVerify(sig!, _stripeEndpointSecret, body, out stripeEvent))
+            || stripeEvent is null) {
             return Results.BadRequest(new {
                 error = "Invalid Stripe signature"
             });
         }
 
         try {
-            if (stripeEvent?.Type == Events.CustomerSubscriptionDeleted) {
+            if (stripeEvent.Type == Events.CustomerSubscriptionDeleted) {
                 await HandleSubscriptionUpdated(stripeEvent);
-            } else if (stripeEvent?.Type == Events.CustomerSubscriptionUpdated) {
+            } else if (stripeEvent.Type == Events.CustomerSubscriptionUpdated) {
                 await HandleSubscriptionUpdated(stripeEvent);
-            } else if (stripeEvent?.Type == Events.CustomerSubscriptionResumed) {
+            } else if (stripeEvent.Type == Events.CustomerSubscriptionResumed) {
                 await HandleSubscriptionUpdated(stripeEvent);
-            } else if (stripeEvent?.Type == Events.CheckoutSessionCompleted) {
+            } else if (stripeEvent.Type == Events.CheckoutSessionCompleted) {
                 await HandleCheckoutSessionCompleted(stripeEvent);
-            } else if (stripeEvent?.Type == Events.CustomerSubscriptionCreated) {
+            } else if (stripeEvent.Type == Events.CustomerSubscriptionCreated) {
                 await HandleSubscriptionCreated(stripeEvent);
-            } else if (stripeEvent?.Type == Events.CustomerSubscriptionTrialWillEnd) {
+            } else if (stripeEvent.Type == Events.CustomerSubscriptionTrialWillEnd) {
                 await UpdateClient(stripeEvent, "TrailEndsSoon");
             } else {
-                logger.LogUnhandledEvent(stripeEvent?.Type ?? "null");
+                logger.LogUnhandledEvent(stripeEvent.Type);
             }
 
             return Results.Ok();

@@ -39,8 +39,9 @@ public class StripePaymentWebhook(IStripeClient stripeClient,
         Event stripeEvent = default!;
         using var streamReader = new StreamReader(request.Body);
         var body = await streamReader.ReadToEndAsync();
-        if (request.Headers.TryGetValue("stripe-signature", out var sig) &&
-            !stripeVerifier.TryVerify(sig!, _stripeEndpointSecret, body, out stripeEvent)) {
+        if ((request.Headers.TryGetValue("stripe-signature", out var sig) &&
+            !stripeVerifier.TryVerify(sig!, _stripeEndpointSecret, body, out stripeEvent))
+            || stripeEvent is null) {
             return Results.BadRequest(new {
                 error = "Invalid Stripe signature"
             });
@@ -48,9 +49,9 @@ public class StripePaymentWebhook(IStripeClient stripeClient,
 
         try {
 
-            if (stripeEvent!.Type == Events.InvoicePaid) {
+            if (stripeEvent.Type == Events.InvoicePaid) {
                 await HandleInvoicePaid(stripeEvent);
-            } else if (stripeEvent!.Type == Events.InvoicePaymentFailed) {
+            } else if (stripeEvent.Type == Events.InvoicePaymentFailed) {
                 await HandleInvoicePaymentFailed(stripeEvent);
             } else {
                 logger.LogUnhandledType(stripeEvent!.Type);
@@ -65,7 +66,7 @@ public class StripePaymentWebhook(IStripeClient stripeClient,
 
     private async Task HandleInvoicePaid(Event stripeEvent) {
         if (stripeEvent.Data.Object is not Invoice invoice) {
-            CouldNotParse(logger, "Invoice", null);
+            logger.LogCouldNotParse(nameof(Invoice));
             return;
         }
 
@@ -104,7 +105,7 @@ public class StripePaymentWebhook(IStripeClient stripeClient,
 
     private async Task HandleInvoicePaymentFailed(Event stripeEvent) {
         if (stripeEvent.Data.Object is not Invoice invoice) {
-            CouldNotParse(logger, "Invoice", null);
+            logger.LogCouldNotParse(nameof(Invoice));
             return;
         }
 
@@ -122,7 +123,4 @@ public class StripePaymentWebhook(IStripeClient stripeClient,
         }));
     }
 
-
-    private static readonly Action<ILogger<StripePaymentWebhook>, string, Exception?> CouldNotParse =
-        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(500, nameof(CouldNotParse)), "No {Type} data found in event.");
 }

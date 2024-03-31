@@ -15,22 +15,24 @@ public class StripeProductWebhook(IConnectionMultiplexer redis,
         Event stripeEvent = default!;
         using var streamReader = new StreamReader(request.Body);
         var body = await streamReader.ReadToEndAsync();
-        if (request.Headers.TryGetValue("stripe-signature", out var sig) &&
-            !stripeVerifier.TryVerify(sig!, _stripeEndpointSecret, body, out stripeEvent)) {
+        if ((request.Headers.TryGetValue("stripe-signature", out var sig) &&
+            !stripeVerifier.TryVerify(sig!, _stripeEndpointSecret, body, out stripeEvent))
+            || stripeEvent is null) {
             return Results.BadRequest(new {
                 error = "Invalid Stripe signature"
             });
         }
+
         try {
 
-            if (stripeEvent?.Type == Events.ProductCreated) {
+            if (stripeEvent.Type == Events.ProductCreated) {
                 HandleProductCreatedEvent(stripeEvent);
-            } else if (stripeEvent?.Type == Events.ProductUpdated) {
+            } else if (stripeEvent.Type == Events.ProductUpdated) {
                 HandleProductUpdatedEvent(stripeEvent);
-            } else if (stripeEvent?.Type == Events.ProductDeleted) {
+            } else if (stripeEvent.Type == Events.ProductDeleted) {
                 HandleProductDeletedEvent(stripeEvent);
             } else {
-                logger.LogWarning($"Unhandled event type: {stripeEvent?.Type}");
+                logger.LogWarning($"Unhandled event type: {stripeEvent.Type}");
             }
 
             return Results.Ok();

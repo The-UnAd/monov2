@@ -3,7 +3,6 @@ using StackExchange.Redis;
 namespace UnAd.Redis;
 public static class Redis {
     private static class Keys {
-        public static string SubscriptionToPhoneNumber(string subscriptionId) => $"subscription:{subscriptionId}";
         public static string SubscriberStopModeHash(string phoneNumber) => $"subscriber:{phoneNumber}:clients:unsub";
         public static string PendingAnnouncement(string phoneNumber) => $"client:{phoneNumber}:announcements:confirm";
         public static string ProductHash(string productId) => $"product:{productId}";
@@ -25,10 +24,10 @@ public static class Redis {
         db.StringGet(Keys.PendingAnnouncement(clientPhone));
     public static void DeletePendingAnnouncement(this IDatabase db, string clientPhone) =>
         db.KeyDelete(Keys.PendingAnnouncement(clientPhone));
-    public static void SetUnsubscribeListEntry(this IDatabase db, string phoneNumber, int index, string id) => 
-        db.HashSet(Keys.SubscriberStopModeHash(phoneNumber), index, id);
-    public static void ExpireUnsubscribeList(this IDatabase db, string phoneNumber) =>
+    public static void StartSubscriberStopMode(this IDatabase db, string phoneNumber, IEnumerable<string> ids) {
+        db.HashSet(Keys.SubscriberStopModeHash(phoneNumber), ids.Select((e, i) => new HashEntry(i + 1, e)).ToArray());
         db.KeyExpire(Keys.SubscriberStopModeHash(phoneNumber), TimeSpan.FromMinutes(5));
+    }
     public static void StoreProduct(this IDatabase db, string productId, string name, string description) {
         db.HashSet(Keys.ProductHash(productId), [
             new HashEntry("name", name),

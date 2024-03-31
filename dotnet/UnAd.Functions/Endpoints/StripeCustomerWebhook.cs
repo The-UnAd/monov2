@@ -13,7 +13,7 @@ public class StripeCustomerWebhook(IConnectionMultiplexer redis,
                                   IMessageSender messageSender,
                                   IDbContextFactory<UserDbContext> dbFactory,
                                   IStringLocalizer<StripeCustomerWebhook> localizer,
-                                  MixpanelClient mixpanelClient,
+                                  IMixpanelClient mixpanelClient,
                                   ILogger<StripeCustomerWebhook> logger) {
 
     private readonly string _stripeEndpointSecret = config.GetStripeCustomerEndpointSecret();
@@ -22,18 +22,19 @@ public class StripeCustomerWebhook(IConnectionMultiplexer redis,
         Event stripeEvent = default!;
         using var streamReader = new StreamReader(request.Body);
         var body = await streamReader.ReadToEndAsync();
-        if (request.Headers.TryGetValue("stripe-signature", out var sig) &&
-            !stripeVerifier.TryVerify(sig!, _stripeEndpointSecret, body, out stripeEvent)) {
+        if ((request.Headers.TryGetValue("stripe-signature", out var sig) &&
+            !stripeVerifier.TryVerify(sig!, _stripeEndpointSecret, body, out stripeEvent))
+            || stripeEvent is null) {
             return Results.BadRequest(new {
                 error = "Invalid Stripe signature"
             });
         }
         try {
 
-            if (stripeEvent?.Type == Events.CustomerDeleted) {
+            if (stripeEvent.Type == Events.CustomerDeleted) {
                 await HandleCustomerDeletedEvent(stripeEvent);
             } else {
-                logger.LogUnhandledEvent(stripeEvent?.Type ?? "null");
+                logger.LogUnhandledEvent(stripeEvent.Type);
             }
 
             return Results.Ok();

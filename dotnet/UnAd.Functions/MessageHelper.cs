@@ -18,7 +18,7 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
                      Stripe.IStripeClient stripe,
                      IStringLocalizer<MessageHelper> localizer,
                      ILogger<MessageHelper> logger,
-                     MixpanelClient mixpanelClient,
+                     IMixpanelClient mixpanelClient,
                      IConfiguration config) {
 
     private readonly Regex _stopRegex = StopRegex();
@@ -192,7 +192,7 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
                     }),
                 });
                 if (resource.ErrorCode.HasValue) {
-                    logger.LogError("Error sending message to {number}: {ErrorMessage}", number, resource.ErrorMessage);
+                    logger.LogSendError(resource.Sid, resource.ErrorMessage);
                     continue;
                 }
 
@@ -205,7 +205,7 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
                 count++;
 
             } catch (Exception ex) {
-                logger.LogError("Error sending message to {number}: {ex}", number, ex);
+                logger.LogSendException(ex);
             }
         }
         context.SaveChanges();
@@ -222,17 +222,21 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
         var db = redis.GetDatabase();
         using var context = dbContextFactory.CreateDbContext();
         if (context.Clients.Any(c => c.PhoneNumber == smsFrom)) {
-            return CreateSmsResponseContent(localizer.GetString("SupportMessage"));
+            return CreateSmsResponseContent(localizer.GetString("UnsubscribeFromClient"));
         }
 
-        var clients = context.Subscribers.Find(smsFrom)?.Clients
+        if (context.Subscribers.Find(smsFrom) is not Subscriber subscriber) {
+            return CreateSmsResponseContent(localizer.GetString("NotSubscriber"));
+        }
+
+        var clients = subscriber.Clients
             .Select((client, index) => (
                 client,
                 index
             ))
             .ToArray();
-        if (clients is null) {
-            return CreateSmsResponseContent(localizer.GetString("NotSubscriber"));
+        if (clients.Length == 0) {
+            return CreateSmsResponseContent(localizer.GetString("NoSubscriptions"));
         }
 
         if (clients?.Length > 1) {
@@ -240,20 +244,19 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
                 var (client, index) = i;
                 sb.Append(localizer.GetStringWithReplacements("UnsubscribeListEntry", new {
                     clientName = client.Name,
-                    index
+                    index = index + 1
                 }));
 
                 return sb;
             });
-            foreach (var (client, index) in clients) {
-                db.SetUnsubscribeListEntry(smsFrom, index + 1, client.Id.ToString());
-            }
+
+            db.StartSubscriberStopMode(smsFrom, clients.Select(c => c.client.Id.ToString()));
+
             return CreateSmsResponseContent(localizer.GetStringWithReplacements("UnsubscribeListTemplate", new {
                 list = message
             }));
 
         } else {
-            db.ExpireUnsubscribeList(smsFrom);
             mixpanelClient.Track(Events.UnsubscribeAll, new() {
                 { "phone", smsFrom },
             }, smsFrom).ConfigureAwait(false).GetAwaiter().GetResult();

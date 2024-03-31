@@ -3,11 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34525.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnAd.Functions", "UnAd.Functions\UnAd.Functions.csproj", "{503BBBCF-AAE6-4999-B470-4E047DA61286}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnAd.Functions", "UnAd.Functions\UnAd.Functions.csproj", "{503BBBCF-AAE6-4999-B470-4E047DA61286}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnAd.Data", ".\UnAd.Data\UnAd.Data.csproj", "{239A9A60-73B1-4B40-9E1F-084207E14092}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnAd.Data", "UnAd.Data\UnAd.Data.csproj", "{239A9A60-73B1-4B40-9E1F-084207E14092}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnAd.Redis", ".\UnAd.Redis\UnAd.Redis.csproj", "{8ACFBC02-0ED9-4D4B-8311-24F86816F8EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnAd.Redis", "UnAd.Redis\UnAd.Redis.csproj", "{8ACFBC02-0ED9-4D4B-8311-24F86816F8EF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnAd.Functions.Tests.Unit", "UnAd.Functions\tests\UnAd.Functions.Tests.Unit\UnAd.Functions.Tests.Unit.csproj", "{19A8636E-DA92-4279-ABED-937009B12932}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnAd.Functions.Tests.Integration", "UnAd.Functions\tests\UnAd.Functions.Tests.Integration\UnAd.Functions.Tests.Integration.csproj", "{BDE683E2-EAEC-421A-9E34-B7C037126746}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +31,14 @@ Global
 		{8ACFBC02-0ED9-4D4B-8311-24F86816F8EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8ACFBC02-0ED9-4D4B-8311-24F86816F8EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8ACFBC02-0ED9-4D4B-8311-24F86816F8EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19A8636E-DA92-4279-ABED-937009B12932}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19A8636E-DA92-4279-ABED-937009B12932}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19A8636E-DA92-4279-ABED-937009B12932}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19A8636E-DA92-4279-ABED-937009B12932}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDE683E2-EAEC-421A-9E34-B7C037126746}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDE683E2-EAEC-421A-9E34-B7C037126746}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDE683E2-EAEC-421A-9E34-B7C037126746}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDE683E2-EAEC-421A-9E34-B7C037126746}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

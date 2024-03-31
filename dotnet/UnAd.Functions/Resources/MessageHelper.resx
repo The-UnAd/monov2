@@ -138,14 +138,17 @@
   <data name="NoPendingAnnouncement" xml:space="preserve">
     <value>You have no announcement to send.</value>
   </data>
+  <data name="NoSubscriptions" xml:space="preserve">
+    <value>You have no active subscriptions.</value>
+  </data>
   <data name="NotCustomer" xml:space="preserve">
-    <value>It seems you're not a customer of Un-Ad. You can sign up at https://unad.dev/</value>
+    <value>It seems you're not a customer of UnAd. You can sign up at https://unad.dev/</value>
   </data>
   <data name="NotInStopMode" xml:space="preserve">
     <value>Text the word UNSUBSCRIBE to unsubscribe from announcements.</value>
   </data>
   <data name="NotSubscriber" xml:space="preserve">
-    <value>It seems you're not a subscriber of Un-Ad.</value>
+    <value>It seems you're not subscribed to any announcements.</value>
   </data>
   <data name="SubscriberHelpMessage" xml:space="preserve">
     <value>You may unsubscribe from announcements by texting UNSUBSCRIBE to this number.</value>
@@ -153,11 +156,11 @@
   <data name="SubscriptionNotActive" xml:space="preserve">
     <value>Your subscription is not active. Please contact support at support@theunad.com</value>
   </data>
-  <data name="SupportMessage" xml:space="preserve">
-    <value>For help, email support@theunad.com</value>
-  </data>
   <data name="UnsubscribeAllSuccess" xml:space="preserve">
     <value>You have been unsubscribed from all announcements.</value>
+  </data>
+  <data name="UnsubscribeFromClient" xml:space="preserve">
+    <value>For help, email support@theunad.com</value>
   </data>
   <data name="UnsubscribeInvalidSelection" xml:space="preserve">
     <value>Invalid selection. Choose from the previous list.</value>

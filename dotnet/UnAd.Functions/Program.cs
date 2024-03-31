@@ -33,7 +33,7 @@ builder.Services.AddExceptionHandler(o => o.ExceptionHandler = context => {
     logger?.LogException(exception);
     return Task.CompletedTask;
 });
-builder.Services.AddTransient<MixpanelClient>();
+builder.Services.AddTransient<IMixpanelClient, MixpanelClient>();
 builder.Services.AddHttpClient(AppConfiguration.Keys.MixpanelHttpClient, (s, c) => {
     c.BaseAddress = new Uri("https://api.mixpanel.com");
     c.DefaultRequestHeaders.Add("Accept", "text/plain");
@@ -50,6 +50,7 @@ builder.Services.AddSingleton<IStripeClient>(s =>
 builder.Services.AddTransient<IStripeVerifier, StripeVerifier>();
 builder.Services.AddTransient<MessageHelper>();
 builder.Services.AddSingleton<IMessageSender, MessageSender>();
+builder.Services.AddSingleton<IRequestAuthorizer, RequestAuthorizer>();
 
 builder.Services.AddPooledDbContextFactory<UserDbContext>((c, o) =>
     o.UseNpgsql(builder.Configuration.GetConnectionString("UserDb"), options =>
@@ -75,8 +76,8 @@ app.Use(async (context, next) => {
         await next.Invoke(context);
         return;
     }
-    if (context.Request.Query.TryGetValue("code", out var value) &&
-        value == context.RequestServices.GetRequiredService<IConfiguration>().GetValue<string>("API_KEY")) {
+    var checker = context.RequestServices.GetRequiredService<IRequestAuthorizer>();
+    if (checker.IsAuthorized(context)) {
         await next.Invoke(context);
         return;
     }
@@ -98,7 +99,7 @@ api.MapPost("/StripeCustomerWebhook", async (StripeCustomerWebhook handler, Http
 
 app.Run();
 
-internal partial class Program { }
+public partial class Program { }
 
 [JsonSerializable(typeof(string))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext { }
