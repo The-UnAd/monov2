@@ -503,7 +503,7 @@ module "graph-monitor" {
   cluster_name               = aws_ecs_cluster.cluster.name
   task_cpu                   = 256
   task_memory                = 512
-  # health_check_path          = "/health" # TODO: figure out why this health check path is not working
+  health_check_path          = "/health"
   ssl_certificate_arns = [aws_acm_certificate_validation.main_wildcard.certificate_arn]
   alb_logs_bucket_name = aws_s3_bucket.alb_logs.bucket
   container_secrets = [{
