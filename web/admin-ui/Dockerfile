@@ -14,6 +14,6 @@ FROM nginx:1.25-alpine AS runner
 
 RUN rm /etc/nginx/conf.d/default.conf
 
-COPY web/admin-ui/admin-ui.nginx.prod.conf /etc/nginx/conf.d/default.conf
+COPY web/admin-ui/admin-ui.nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/web/admin-ui/build /usr/share/nginx/html
 ENTRYPOINT ["nginx", "-g", "daemon off;"]

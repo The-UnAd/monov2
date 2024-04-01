@@ -16,7 +16,8 @@ resource "aws_rds_cluster" "aurora" {
   backup_retention_period = 7
   deletion_protection     = false # TODO: set to false for all but prod
   engine                  = "aurora-postgresql"
-  engine_mode             = "serverless"
+  engine_mode             = "provisioned"
+  engine_version          = "16.1"
   skip_final_snapshot     = true
   apply_immediately       = true
   storage_encrypted       = true
@@ -24,12 +25,9 @@ resource "aws_rds_cluster" "aurora" {
   db_subnet_group_name   = aws_db_subnet_group.db_private_subnet_group.name
   vpc_security_group_ids = [aws_security_group.rds.id]
 
-  scaling_configuration {
-    auto_pause               = true
-    min_capacity             = 2
+  serverlessv2_scaling_configuration  {
+    min_capacity             = 0.5
     max_capacity             = 16
-    seconds_until_auto_pause = 300
-    timeout_action           = "ForceApplyCapacityChange"
   }
 
   tags = {
@@ -40,15 +38,16 @@ resource "aws_rds_cluster" "aurora" {
   }
 }
 
-# resource "aws_rds_cluster_instance" "cluster_instances" {
-#   count               = 1
-#   identifier          = "unad-aurora-${count.index}"
-#   cluster_identifier  = aws_rds_cluster.aurora.id
-#   instance_class      = "db.serverless"
-#   engine              = aws_rds_cluster.aurora.engine
-#   engine_version      = aws_rds_cluster.aurora.engine_version
-#   publicly_accessible = false
-# }
+
+resource "aws_rds_cluster_instance" "aurora" {
+  cluster_identifier         = aws_rds_cluster.aurora.id
+  instance_class             = "db.serverless"
+  engine                     = aws_rds_cluster.aurora.engine
+  engine_version             = aws_rds_cluster.aurora.engine_version
+  publicly_accessible        = false
+  auto_minor_version_upgrade = true
+  db_subnet_group_name       = aws_db_subnet_group.db_private_subnet_group.name
+}
 
 resource "aws_security_group" "rds" {
   name   = "rds-public"

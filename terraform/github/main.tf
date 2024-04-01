@@ -48,6 +48,13 @@ resource "github_actions_environment_variable" "db_port" {
   value         = var.db_port
 }
 
+resource "github_actions_environment_variable" "admin_site_bucket_name" {
+  repository    = "monov2"
+  environment   = var.environment
+  variable_name = "ADMIN_SITE_S3_BUCKET"
+  value         = var.admin_site_bucket_name
+}
+
 resource "github_actions_environment_variable" "graph_monitor_url" {
   repository    = "monov2"
   environment   = var.environment
@@ -112,10 +119,15 @@ variable "jumpbox_host" {
 }
 
 variable "graph_monitor_url" {
-  type     = string
+  type = string
 }
 
 variable "graph_monitor_api_key" {
   type      = string
   sensitive = true
+}
+
+variable "admin_site_bucket_name" {
+  type     = string
+  nullable = false
 }

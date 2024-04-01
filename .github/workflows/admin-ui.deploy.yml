@@ -10,55 +10,33 @@ env:
   PROJECT_PATH: web/admin-ui
   
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     environment: development
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ vars.AWS_REGION }}
+    - name: Set up Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '20'
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+    - name: Install dependencies
+      run: npm install
 
-      # TODO: https://docs.docker.com/build/cache/backends/gha/
-      - name: Build and tag Docker image
-        id: build-image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ${{ env.PROJECT_PATH }}/Dockerfile
-          push: true
-          tags: |
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+    - name: Build
+      run: npm run build
+      working-directory: ${{ env.PROJECT_PATH }}
 
-      - name: Get ECS task definition
-        run: aws ecs describe-task-definition --task $ECS_SERVICE --query 'taskDefinition' > task.json
-          
-      - name: Update ECS task definition
-        id: render-ecs-container
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: task.json
-          container-name: ${{ env.ECS_SERVICE }}
-          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
-  
-      - name: Deploy to ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.render-ecs-container.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
-
-      - name: Wait for deployment to stabilize
-        run: aws ecs wait services-stable --services $ECS_SERVICE --cluster $ECS_CLUSTER
-      
+    - name: Deploy to S3
+      uses: jakejarvis/s3-sync-action@v0.5.1
+      with:
+        args: --acl public-read --delete
+      env:
+        AWS_S3_BUCKET: ${{ env.ADMIN_SITE_S3_BUCKET }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ env.AWS_REGION }}
+        SOURCE_DIR: '${{ env.PROJECT_PATH }}/build'
+    
