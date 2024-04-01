@@ -25,7 +25,7 @@ services:
       - UnAd
     build:
       context: ./
-      dockerfile: ./web/admin-ui/Dockerfile.local
+      dockerfile: ./web/admin-ui/Dockerfile
     ports:
       - "5050:5050"
     environment:

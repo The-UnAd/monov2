@@ -82,20 +82,35 @@ resource "aws_appautoscaling_target" "ecs_target" {
   service_namespace  = "ecs"
 }
 
-resource "aws_appautoscaling_policy" "ecs_policy" {
-  name               = "cpu-utilization"
-  policy_type        = "TargetTrackingScaling"
+resource "aws_appautoscaling_policy" "cpu_scaling_up" {
+  name               = "cpu_autoscale_up"
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
   resource_id        = aws_appautoscaling_target.ecs_target.resource_id
   scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
-  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
-
+  policy_type        = "TargetTrackingScaling"
   target_tracking_scaling_policy_configuration {
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
-    target_value = 75.0
+    target_value = 75.0 # Scale up when CPU usage exceeds 75%
   }
 }
+
+# TODO: figure out how to scale down
+# resource "aws_appautoscaling_policy" "cpu_scaling_down" {
+#   name               = "cpu_autoscale_down"
+#   service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+#   resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+#   scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+#   policy_type        = "TargetTrackingScaling"
+#   target_tracking_scaling_policy_configuration {
+#     predefined_metric_specification {
+#       predefined_metric_type = "ECSServiceAverageCPUUtilization"
+#     }
+#     target_value     = 50.0 # Scale down when CPU usage falls below 75% (adjust threshold)
+#     disable_scale_in = true # Ensures minimum task count of 1
+#   }
+# }
 
 resource "aws_ecs_service" "this" {
   name            = var.project_name
@@ -104,11 +119,7 @@ resource "aws_ecs_service" "this" {
   task_definition = aws_ecs_task_definition.this_task.arn
 
   force_new_deployment = false # set to true for debugging
-  desired_count = 1
-
-  # triggers = {
-  #   redeployment = timestamp()
-  # }
+  desired_count        = 1
 
   network_configuration {
     subnets          = var.private_subnet_ids
@@ -117,9 +128,9 @@ resource "aws_ecs_service" "this" {
   }
 
   dynamic "load_balancer" {
-    for_each = length(var.public_subnet_ids) > 0 ? [1] : []
+    for_each = (length(var.public_subnet_ids) > 0) || var.enable_vpc_link ? [1] : []
     content {
-      target_group_arn = aws_lb_target_group.this_target_group[0].arn
+      target_group_arn = var.enable_vpc_link ?  aws_lb_target_group.this_internal_target_group[0].arn : aws_lb_target_group.this_target_group[0].arn
       container_name   = var.project_name
       container_port   = var.container_port
     }
@@ -156,7 +167,8 @@ resource "aws_ecs_service" "this" {
 
   lifecycle {
     ignore_changes = [
-      task_definition
+      task_definition,
+      desired_count,
     ]
   }
 }
@@ -182,6 +194,63 @@ resource "aws_service_discovery_service" "this" {
   }
 }
 
+resource "aws_lb" "internal_lb" {
+  count              = var.enable_vpc_link ? 1 : 0
+  name               = "${var.project_name}-private-lb"
+  internal           = true
+  load_balancer_type = "network"
+  security_groups    = [aws_security_group.lb[0].id]
+  subnets            = var.private_subnet_ids
+  tags = {
+    Name = "${var.project_name}-private-lb"
+  }
+  enable_deletion_protection = false # TODO: turn on for production
+}
+
+resource "aws_lb_target_group" "this_internal_target_group" {
+  count       = var.enable_vpc_link ? 1 : 0
+  name        = var.project_name
+  port        = var.container_port
+  protocol    = "TCP"
+  vpc_id      = var.vpc_id
+  target_type = "ip"
+
+  dynamic "health_check" {
+    for_each = var.health_check_path != null ? [1] : []
+    content {
+      path = var.health_check_path
+      port = var.container_port
+    }
+  }
+}
+
+resource "aws_lb_listener" "this_internal_listener" {
+  count             = var.enable_vpc_link ? 1 : 0
+  load_balancer_arn = aws_lb.internal_lb[count.index].arn
+  port              = 80
+  protocol          = "TCP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.this_internal_target_group[count.index].arn
+  }
+
+  lifecycle {
+    replace_triggered_by = [aws_lb_target_group.this_internal_target_group[count.index].id]
+  }
+}
+
+resource "aws_api_gateway_vpc_link" "vpc_link" {
+  count       = var.enable_vpc_link ? 1 : 0
+  name        = "vpc_link"
+  description = "VPC link for API Gateway to access ECS"
+  target_arns = [aws_lb.internal_lb[0].arn]
+}
+
+output "vpc_link_id" {
+  value = length(aws_api_gateway_vpc_link.vpc_link) > 0 ? aws_api_gateway_vpc_link.vpc_link[0].id : null
+}
+
 resource "aws_lb" "this_lb" {
   count              = length(var.public_subnet_ids) > 0 ? 1 : 0
   name               = "${var.project_name}-lb"
@@ -196,11 +265,11 @@ resource "aws_lb" "this_lb" {
   dynamic "access_logs" {
     for_each = length(var.alb_logs_bucket_name) > 0 ? [1] : []
     content {
-      bucket = var.alb_logs_bucket_name
-      prefix = "${var.project_name}-lb"
+      bucket  = var.alb_logs_bucket_name
+      prefix  = "${var.project_name}-lb"
       enabled = true
     }
-    
+
   }
 }
 
@@ -216,37 +285,25 @@ resource "aws_lb_listener" "this_listener" {
     target_group_arn = aws_lb_target_group.this_target_group[count.index].arn
   }
 
-  certificate_arn = var.ssl_certificate_arn
-
   lifecycle {
     replace_triggered_by = [aws_lb_target_group.this_target_group[count.index].id]
   }
 }
 
-resource "aws_lb_listener_rule" "cognito" {
-  count        = var.enable_cognito ? 1 : 0
-  listener_arn = aws_lb_listener.this_listener[count.index].arn
+resource "aws_lb_listener_certificate" "ssl_certs" {
+  count        = length(var.ssl_certificate_arns)
+  listener_arn = aws_lb_listener.this_listener[0].arn
 
-  action {
-    type = "authenticate-cognito"
+  certificate_arn = var.ssl_certificate_arns[count.index]
+}
 
-    authenticate_cognito {
-      user_pool_arn       = var.cognito_pool_arn
-      user_pool_client_id = var.cognito_pool_client_id
-      user_pool_domain    = var.cognito_pool_domain
-    }
-  }
 
-  condition {
-    path_pattern {
-      values = ["/graphql"]
-    }
-  }
+output "listener_arn" {
+  value = length(aws_lb_listener.this_listener) > 0 ? aws_lb_listener.this_listener[0].arn : null
+}
 
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.this_target_group[count.index].arn
-  }
+output "alb_target_group_arn" {
+  value = length(aws_lb_target_group.this_target_group) > 0 ? aws_lb_target_group.this_target_group[0].arn : null
 }
 
 resource "aws_lb_target_group" "this_target_group" {
@@ -267,7 +324,7 @@ resource "aws_lb_target_group" "this_target_group" {
 }
 
 resource "aws_security_group" "lb" {
-  count  = length(var.public_subnet_ids) > 0 ? 1 : 0
+  count  = (length(var.public_subnet_ids) > 0) || var.enable_vpc_link ? 1 : 0
   name   = "${var.project_name}-lb-sg"
   vpc_id = var.vpc_id
 
@@ -291,7 +348,7 @@ resource "aws_security_group" "lb" {
 }
 
 resource "aws_security_group" "tasks" {
-  count  = length(var.public_subnet_ids) > 0 ? 1 : 0
+  count  = (length(var.public_subnet_ids) > 0) || var.enable_vpc_link ? 1 : 0
   name   = "${var.project_name}-ecs-sg"
   vpc_id = var.vpc_id
 
@@ -315,8 +372,9 @@ resource "aws_security_group" "tasks" {
 }
 
 output "load_balancer_dns_name" {
-  value = join("", aws_lb.this_lb.*.dns_name)
+  value = var.enable_vpc_link ? join("", aws_lb.internal_lb.*.dns_name) : join("", aws_lb.this_lb.*.dns_name)
 }
 
-
-
+output "load_balancer_zone_id" {
+  value = var.enable_vpc_link ? join("", aws_lb.internal_lb.*.zone_id) : join("", aws_lb.this_lb.*.zone_id)
+}

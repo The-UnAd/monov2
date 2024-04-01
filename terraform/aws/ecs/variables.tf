@@ -74,9 +74,9 @@ variable "service_connect_namespace_id" {
   type = string
   default = null
 }
-variable "ssl_certificate_arn" {
-  type = string
-  default = null
+variable "ssl_certificate_arns" {
+  type = list(string)
+  default = []
 }
 variable "enable_cognito" {
   type = bool
@@ -97,4 +97,8 @@ variable "cognito_pool_domain" {
 variable "alb_logs_bucket_name" {
   type = string
   default = ""
+}
+variable "enable_vpc_link" {
+  type = string
+  default = false
 }

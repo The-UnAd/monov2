@@ -204,7 +204,10 @@ module "signup-site" {
   health_check_path          = "/health"
   task_cpu                   = 256
   task_memory                = 512
-  ssl_certificate_arn        = aws_acm_certificate_validation.wildcard.certificate_arn
+  ssl_certificate_arns = [
+    aws_acm_certificate_validation.main_wildcard.certificate_arn,
+    aws_acm_certificate_validation.subscribe.certificate_arn
+  ]
   container_secrets = [{
     name      = "TWILIO_ACCOUNT_SID"
     valueFrom = "${data.aws_ssm_parameter.twilio_account_sid.arn}"
@@ -254,7 +257,7 @@ module "signup-site" {
     value = "https://${aws_route53_record.signup-site.name}"
     }, {
     name  = "SUBSCRIBE_HOST"
-    value = "https://${aws_route53_record.signup-site.name}/subscribe"
+    value = "https://${aws_route53_record.subscribe-link.name}"
     }, {
     name  = "SITE_HOST"
     value = "https://${aws_route53_record.signup-site.name}"
@@ -282,36 +285,44 @@ resource "aws_route53_record" "signup-site" {
   zone_id         = data.aws_route53_zone.main.zone_id
 }
 
-module "admin-ui" {
-  source                     = "./ecs"
-  region                     = data.aws_region.current.name
-  project_name               = "admin-ui"
-  container_port             = 3000
-  task_role_arn              = aws_iam_role.ecs_task_execution_role.arn
-  execution_role_arn         = aws_iam_role.ecs_task_execution_role.arn
-  vpc_id                     = aws_vpc.vpc.id
-  vpc_cidr                   = var.vpc_cidr
-  private_subnet_ids         = aws_subnet.private_subnet.*.id
-  public_subnet_ids          = aws_subnet.public_subnet.*.id
-  service_security_group_ids = [aws_security_group.ecs_private.id]
-  desired_count              = 1
-  cluster_arn                = aws_ecs_cluster.cluster.arn
-  cluster_name               = aws_ecs_cluster.cluster.name
-  health_check_path          = "/health"
-  task_cpu                   = 256
-  task_memory                = 512
-  ssl_certificate_arn        = aws_acm_certificate_validation.wildcard.certificate_arn
-  container_secrets = []
-  container_environment = []
+resource "aws_route53_record" "subscribe-link" {
+  name    = data.aws_route53_zone.subscribe.name
+  type    = "A"
+  zone_id = data.aws_route53_zone.subscribe.zone_id
+
+  alias {
+    name                   = module.signup-site.load_balancer_dns_name
+    zone_id                = module.signup-site.load_balancer_zone_id
+    evaluate_target_health = false
+  }
 }
 
-resource "aws_route53_record" "admin-ui" {
-  allow_overwrite = true
-  name            = "portal.${data.aws_route53_zone.main.name}"
-  records         = [module.admin-ui.load_balancer_dns_name]
-  ttl             = 60
-  type            = "CNAME"
-  zone_id         = data.aws_route53_zone.main.zone_id
+resource "aws_lb_listener_rule" "subscribe_redirect_rule" {
+  listener_arn = module.signup-site.listener_arn
+  priority     = 100
+  action {
+    type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      host        = "signup.${data.aws_route53_zone.main.name}"
+      path        = "/subscribe/#{path}"
+      query       = "#{query}"
+      status_code = "HTTP_301"
+    }
+  }
+
+  condition {
+    host_header {
+      values = [data.aws_route53_zone.subscribe.name]
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = ["/*"]
+    }
+  }
 }
 
 module "graphql-gateway" {
@@ -324,7 +335,6 @@ module "graphql-gateway" {
   vpc_id                       = aws_vpc.vpc.id
   vpc_cidr                     = var.vpc_cidr
   private_subnet_ids           = aws_subnet.private_subnet.*.id
-  public_subnet_ids            = aws_subnet.public_subnet.*.id
   service_security_group_ids   = [aws_security_group.ecs_private.id]
   desired_count                = 1
   cluster_arn                  = aws_ecs_cluster.cluster.arn
@@ -335,7 +345,7 @@ module "graphql-gateway" {
   enable_service_connect       = true
   service_connect_namespace    = aws_service_discovery_private_dns_namespace.this.arn
   service_connect_namespace_id = aws_service_discovery_private_dns_namespace.this.id
-  ssl_certificate_arn          = aws_acm_certificate.wildcard.arn
+  enable_vpc_link              = true
   container_secrets = [{
     name      = "REDIS_URL"
     valueFrom = "${aws_ssm_parameter.redis_connection_string.arn}"
@@ -352,14 +362,26 @@ module "graphql-gateway" {
   }]
 }
 
-# resource "aws_route53_record" "graphql-api" {
-#   allow_overwrite = true
-#   name            = "api.${data.aws_route53_zone.main.name}"
-#   records         = [module.graphql-gateway.load_balancer_dns_name]
-#   ttl             = 60
-#   type            = "CNAME"
-#   zone_id         = data.aws_route53_zone.main.zone_id
-# }
+resource "aws_api_gateway_integration" "graphql_integeration" {
+  rest_api_id = aws_api_gateway_rest_api.admin_api.id
+  resource_id = aws_api_gateway_resource.graphql_resource.id
+  http_method = aws_api_gateway_method.graphql_method.http_method
+
+  type                    = "HTTP_PROXY"
+  uri                     = "http://${module.graphql-gateway.load_balancer_dns_name}/graphql"
+  integration_http_method = aws_api_gateway_method.graphql_method.http_method
+  connection_type         = "VPC_LINK"
+  connection_id           = module.graphql-gateway.vpc_link_id
+}
+
+resource "aws_api_gateway_deployment" "graphql_deployment" {
+  depends_on = [
+    aws_api_gateway_integration.graphql_integeration
+  ]
+
+  rest_api_id = aws_api_gateway_rest_api.admin_api.id
+  # stage_name  = var.environment
+}
 
 module "user-api" {
   source                       = "./ecs"
@@ -481,8 +503,8 @@ module "graph-monitor" {
   cluster_name               = aws_ecs_cluster.cluster.name
   task_cpu                   = 256
   task_memory                = 512
-  # health_check_path          = "/health"
-  ssl_certificate_arn  = aws_acm_certificate_validation.wildcard.certificate_arn
+  # health_check_path          = "/health" # TODO: figure out why this health check path is not working
+  ssl_certificate_arns = [aws_acm_certificate_validation.main_wildcard.certificate_arn]
   alb_logs_bucket_name = aws_s3_bucket.alb_logs.bucket
   container_secrets = [{
     name      = "REDIS_URL"
@@ -546,8 +568,8 @@ module "unad-functions" {
   cluster_name               = aws_ecs_cluster.cluster.name
   task_cpu                   = 256
   task_memory                = 512
-  # health_check_path          = "/health"
-  ssl_certificate_arn = aws_acm_certificate_validation.wildcard.certificate_arn
+  health_check_path          = "/health"
+  ssl_certificate_arns       = [aws_acm_certificate_validation.main_wildcard.certificate_arn]
   container_secrets = [{
     name      = "REDIS_URL"
     valueFrom = "${aws_ssm_parameter.redis_connection_string.arn}"
@@ -593,7 +615,7 @@ module "unad-functions" {
     value = "3000"
     }, {
     name  = "ClientLinkBaseUri"
-    value = "https://signup.${data.aws_route53_zone.main.name}/subscribe"
+    value = "https://${data.aws_route53_zone.subscribe.name}"
     }, {
     name  = "SMS_LINK_BASE_URL"
     value = "https://signup.${data.aws_route53_zone.main.name}/announcement"
