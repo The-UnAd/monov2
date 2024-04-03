@@ -31,7 +31,7 @@ jobs:
 
           ssh -i ~/.ssh/jumpbox_ed25519 -o StrictHostKeyChecking=no -L 5050:${{ vars.REDIS_HOST }}:${{ vars.REDIS_PORT }} ubuntu@${{ vars.JUMPBOX_HOST }} -N & echo $! > ssh_tunnel.pid
 
-          dotnet run --project dotnet/DbSeeder/DbSeeder.csproj
+          ConnectionStrings__UserDb="Host=localhost;Port=5050;Username=unad;Password=${{ secrets.DB_PASS }};Timeout=60;Database=userdb;" dotnet run --project dotnet/DbSeeder/DbSeeder.csproj
 
           kill -9 $(lsof -t -i :5050)
         env:
