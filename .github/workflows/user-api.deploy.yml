@@ -68,6 +68,6 @@ jobs:
         id: save-url
         run: |
           echo "${{ secrets.GRAPH_MONITOR_HEADERS }}" > headers
-          URL="http://${{ env.ECS_SERVICE }}.unad.local/graphql"
+          URL="http://${{ env.ECS_SERVICE }}.unad.local:3000/graphql"
           curl -s -f -H @headers -d "$URL" ${{ vars.GRAPH_MONITOR_URL }}/user-api
       

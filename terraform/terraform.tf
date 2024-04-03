@@ -32,6 +32,7 @@ module "aws" {
   environment        = var.ENVIRONMENT
   signup_dns_zone    = var.SIGNUP_DNS_ZONE
   subscribe_dns_zone = var.SUBSCRIBE_DNS_ZONE
+  portal_dns_zone    = var.PORTAL_DNS_ZONE
 }
 
 module "github" {

@@ -133,6 +133,8 @@ resource "aws_security_group_rule" "ecs_ingress_http" {
 
 resource "aws_s3_bucket" "alb_logs" {
   bucket = "unad-alb-logs-bucket"
+
+  force_destroy = true
 }
 
 data "aws_elb_service_account" "main" {}
@@ -380,7 +382,13 @@ resource "aws_api_gateway_deployment" "graphql_deployment" {
   ]
 
   rest_api_id = aws_api_gateway_rest_api.admin_api.id
-  # stage_name  = var.environment
+  stage_name  = var.environment
+}
+
+resource "aws_api_gateway_base_path_mapping" "graphql_base_path_mapping" {
+  api_id      = aws_api_gateway_rest_api.admin_api.id
+  stage_name  = aws_api_gateway_deployment.graphql_deployment.stage_name
+  domain_name = aws_api_gateway_domain_name.admin_domain.domain_name
 }
 
 module "user-api" {
@@ -451,6 +459,7 @@ module "auth-api" {
   enable_service_connect       = true
   service_connect_namespace    = aws_service_discovery_private_dns_namespace.this.arn
   service_connect_namespace_id = aws_service_discovery_private_dns_namespace.this.id
+  enable_vpc_link              = true
   container_secrets = [{
     name      = "REDIS_URL"
     valueFrom = "${aws_ssm_parameter.redis_connection_string.arn}"
@@ -469,6 +478,34 @@ module "auth-api" {
     value = "${aws_cognito_user_pool_client.cognito_client.id}"
   }]
 }
+
+resource "aws_api_gateway_integration" "auth_api_integeration" {
+  rest_api_id = aws_api_gateway_rest_api.admin_api.id
+  resource_id = aws_api_gateway_resource.auth_resource.id
+  http_method = aws_api_gateway_method.auth_method.http_method
+
+  type                    = "HTTP_PROXY"
+  uri                     = "http://${module.auth-api.load_balancer_dns_name}/login"
+  integration_http_method = aws_api_gateway_method.auth_method.http_method
+  connection_type         = "VPC_LINK"
+  connection_id           = module.auth-api.vpc_link_id
+}
+
+resource "aws_api_gateway_deployment" "auth_api_deployment" {
+  depends_on = [
+    aws_api_gateway_integration.auth_api_integeration
+  ]
+
+  rest_api_id = aws_api_gateway_rest_api.admin_api.id
+  stage_name  = var.environment
+}
+
+resource "aws_api_gateway_base_path_mapping" "auth_api_base_path_mapping" {
+  api_id      = aws_api_gateway_rest_api.admin_api.id
+  stage_name  = aws_api_gateway_deployment.auth_api_deployment.stage_name
+  domain_name = aws_api_gateway_domain_name.admin_domain.domain_name
+}
+
 
 resource "random_password" "graph_monitor_api_key" {
   length  = 32
@@ -504,8 +541,7 @@ module "graph-monitor" {
   task_cpu                   = 256
   task_memory                = 512
   health_check_path          = "/health"
-  ssl_certificate_arns = [aws_acm_certificate_validation.main_wildcard.certificate_arn]
-  alb_logs_bucket_name = aws_s3_bucket.alb_logs.bucket
+  ssl_certificate_arns       = [aws_acm_certificate_validation.main_wildcard.certificate_arn]
   container_secrets = [{
     name      = "REDIS_URL"
     valueFrom = "${aws_ssm_parameter.redis_connection_string.arn}"

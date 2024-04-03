@@ -194,6 +194,10 @@ resource "aws_service_discovery_service" "this" {
   }
 }
 
+output "service_discovery_service_arn" {
+  value = length(aws_service_discovery_service.this) > 0 ? aws_service_discovery_service.this[0].arn : null
+}
+
 resource "aws_lb" "internal_lb" {
   count              = var.enable_vpc_link ? 1 : 0
   name               = "${var.project_name}-private-lb"
@@ -205,6 +209,15 @@ resource "aws_lb" "internal_lb" {
     Name = "${var.project_name}-private-lb"
   }
   enable_deletion_protection = false # TODO: turn on for production
+  dynamic "access_logs" {
+    for_each = length(var.alb_logs_bucket_name) > 0 ? [1] : []
+    content {
+      bucket  = var.alb_logs_bucket_name
+      prefix  = "${var.project_name}-private-lb"
+      enabled = true
+    }
+
+  }
 }
 
 resource "aws_lb_target_group" "this_internal_target_group" {
@@ -242,8 +255,8 @@ resource "aws_lb_listener" "this_internal_listener" {
 
 resource "aws_api_gateway_vpc_link" "vpc_link" {
   count       = var.enable_vpc_link ? 1 : 0
-  name        = "vpc_link"
-  description = "VPC link for API Gateway to access ECS"
+  name        = var.project_name
+  description = "VPC link for API Gateway to access ${var.project_name} ECS service"
   target_arns = [aws_lb.internal_lb[0].arn]
 }
 
@@ -279,7 +292,7 @@ resource "aws_lb_listener" "this_listener" {
   port              = 443
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
-
+  certificate_arn = var.ssl_certificate_arns[0]
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this_target_group[count.index].arn
@@ -329,8 +342,8 @@ resource "aws_security_group" "lb" {
   vpc_id = var.vpc_id
 
   ingress {
-    from_port   = 443
-    to_port     = 443
+    from_port   = var.enable_vpc_link ? 80 : 443
+    to_port     = var.enable_vpc_link ? 80 : 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
