@@ -69,3 +69,24 @@ resource "aws_api_gateway_method" "auth_method" {
   http_method   = "POST"
   authorization = "NONE" # TODO: look into cognito authorizer for this
 }
+
+resource "aws_api_gateway_domain_name" "admin_domain" {
+  domain_name              = local.admin_site_domain_name
+  regional_certificate_arn = local.admin_site_certificate_arn
+  security_policy          = "TLS_1_2"
+  endpoint_configuration {
+    types = ["REGIONAL"]
+  }
+}
+
+resource "aws_route53_record" "admin_site" {
+  zone_id = data.aws_route53_zone.portal.zone_id
+  name    = local.admin_site_domain_name
+  type    = "A"
+
+  alias {
+    name                   = aws_api_gateway_domain_name.admin_domain.regional_domain_name
+    zone_id                = aws_api_gateway_domain_name.admin_domain.regional_zone_id
+    evaluate_target_health = true
+  }
+}
