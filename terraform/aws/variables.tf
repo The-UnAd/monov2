@@ -11,7 +11,13 @@ variable "signup_dns_zone" {
   type     = string
   nullable = false
 }
+
 variable "subscribe_dns_zone" {
+  type     = string
+  nullable = false
+}
+
+variable "portal_dns_zone" {
   type     = string
   nullable = false
 }

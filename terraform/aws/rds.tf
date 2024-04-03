@@ -4,10 +4,6 @@ resource "random_password" "rds_password" {
   special = false
 }
 
-locals {
-  rds_user = "unad"
-}
-
 resource "aws_rds_cluster" "aurora" {
   cluster_identifier      = "unad-aurora"
   availability_zones      = local.availability_zones
@@ -37,7 +33,6 @@ resource "aws_rds_cluster" "aurora" {
     prevent_destroy = false # TODO: set to false for all but prod
   }
 }
-
 
 resource "aws_rds_cluster_instance" "aurora" {
   cluster_identifier         = aws_rds_cluster.aurora.id

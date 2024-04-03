@@ -26,6 +26,5 @@ data "aws_availability_zones" "available" {}
 
 locals {
   availability_zones = data.aws_availability_zones.available.names
-  region = data.aws_region.current
-  vpc_cidr = var.vpc_cidr
+  rds_user = "unad"
 }

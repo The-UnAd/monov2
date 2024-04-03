@@ -1,7 +1,6 @@
 data "aws_route53_zone" "main" {
   name = var.signup_dns_zone
 }
-
 resource "aws_acm_certificate" "main_wildcard" {
   domain_name       = "*.${data.aws_route53_zone.main.name}"
   validation_method = "DNS"
