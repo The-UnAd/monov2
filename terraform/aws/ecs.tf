@@ -121,6 +121,28 @@ resource "aws_security_group_rule" "ecs_egress_http" {
   security_group_id = aws_security_group.ecs_private.id
 }
 
+# TODO: these ports being exposed are a bit of a hack.
+# We should make the containers listen on 80 instead.
+resource "aws_security_group_rule" "ecs_egress_containers" {
+  # we need this for the ECS service to be able to access other ECS services (Gateways to GraphQL APIs, etc.)
+  type              = "egress"
+  from_port         = 3000
+  to_port           = 3000
+  protocol          = "tcp"
+  cidr_blocks       = [var.vpc_cidr]
+  security_group_id = aws_security_group.ecs_private.id
+}
+
+resource "aws_security_group_rule" "ecs_ingess_containers" {
+  # we need this for the ECS service to be able to access other ECS services (Gateways to GraphQL APIs, etc.)
+  type              = "ingress"
+  from_port         = 3000
+  to_port           = 3000
+  protocol          = "tcp"
+  cidr_blocks       = [var.vpc_cidr]
+  security_group_id = aws_security_group.ecs_private.id
+}
+
 resource "aws_security_group_rule" "ecs_ingress_http" {
   # we need this for the ECS service to be able to access SSM and Secrets Manager
   type              = "ingress"
@@ -426,6 +448,9 @@ module "user-api" {
     }, {
     name      = "TWILIO_AUTH_TOKEN"
     valueFrom = "${data.aws_ssm_parameter.twilio_auth_token.arn}"
+    }, {
+    name      = "TWILIO_MESSAGE_SERVICE_SID"
+    valueFrom = "${data.aws_ssm_parameter.twilio_message_service_sid.arn}"
   }]
   container_environment = [{
     name  = "ASPNETCORE_ENVIRONMENT"
