@@ -45,10 +45,10 @@ builder.Services
     .AddFusionGatewayServer()
     .ConfigureFromFile("./gateway.fgp")
     .CoreBuilder
+    .AddDiagnosticEventListener<LoggerExecutionEventListener>()
     .AddDirectiveType(typeof(DelegateDirectiveType))
     .AddTypeExtension<QueryTypeExtension>()
-    .ModifyRequestOptions(opt =>
-        opt.IncludeExceptionDetails = builder.Environment.IsDevelopment())
+    .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true)
     .InitializeOnStartup();
 
 builder.Services.AddHealthChecks();
@@ -66,6 +66,3 @@ app.MapGraphQL()
     });
 
 app.RunWithGraphQLCommands(args);
-
-
-
