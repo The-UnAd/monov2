@@ -1,8 +1,8 @@
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using StackExchange.Redis;
 using Stripe;
-using System.Globalization;
 using UnAd.Data.Users;
 using UnAd.Redis;
 
@@ -14,6 +14,7 @@ public class StripePaymentWebhook(IStripeClient stripeClient,
                                   IMessageSender messageSender,
                                   IStringLocalizer<StripePaymentWebhook> localizer,
                                   ILogger<StripePaymentWebhook> logger,
+                                  IMixpanelClient mixpanelClient,
                                   IConfiguration config) {
 
     private readonly string _stripePortalUrl = config.GetStripePortalUrl();
@@ -80,10 +81,10 @@ public class StripePaymentWebhook(IStripeClient stripeClient,
         }
 
         await using var context = await dbFactory.CreateDbContextAsync();
-        var client = context.Clients.FirstOrDefault(c => c.SubscriptionId == invoice.SubscriptionId);
+        var client = context.Clients.FirstOrDefault(c => c.CustomerId == invoice.CustomerId);
 
         if (client is null) {
-            logger.LogWarning($"No client found for SubscriptionId {invoice.SubscriptionId}");
+            logger.LogWarning($"No client found for customerId {invoice.CustomerId}");
             return;
         }
 
@@ -100,6 +101,10 @@ public class StripePaymentWebhook(IStripeClient stripeClient,
         await messageSender.Send(client.PhoneNumber, localizer.GetStringWithReplacements("InvoicePaid", new {
             portalUrl = _stripePortalUrl
         }));
+
+        await mixpanelClient.Track(MixpanelClient.Events.StripeEvent(stripeEvent.Type), new() {
+                { "invoiceId", invoice.Id },
+            }, client.PhoneNumber);
     }
 
     private async Task HandleInvoicePaymentFailed(Event stripeEvent) {
@@ -109,10 +114,10 @@ public class StripePaymentWebhook(IStripeClient stripeClient,
         }
 
         await using var context = await dbFactory.CreateDbContextAsync();
-        var client = context.Clients.FirstOrDefault(c => c.SubscriptionId == invoice.SubscriptionId);
+        var client = context.Clients.FirstOrDefault(c => c.CustomerId == invoice.CustomerId);
 
         if (client is null) {
-            logger.LogWarning($"No client found for SubscriptionId {invoice.SubscriptionId}");
+            logger.LogWarning($"No client found for customerId {invoice.CustomerId}");
             return;
         }
 
@@ -120,6 +125,10 @@ public class StripePaymentWebhook(IStripeClient stripeClient,
         await messageSender.Send(client.PhoneNumber, localizer.GetStringWithReplacements("InvoicePaymentFailed", new {
             portalUrl = _stripePortalUrl
         }));
+
+        await mixpanelClient.Track(MixpanelClient.Events.StripeEvent(stripeEvent.Type), new() {
+                { "invoiceId", invoice.Id },
+            }, client.PhoneNumber);
     }
 
 

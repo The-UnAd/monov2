@@ -8,7 +8,11 @@ using Microsoft.Extensions.Options;
 
 namespace UnAd.Functions;
 
-public sealed class MixpanelClient(IHttpClientFactory httpClientFactory, ILogger<MixpanelClient> logger, IOptions<MixpanelOptions> config) {
+public interface IMixpanelClient {
+    Task Track(string eventName, Dictionary<string, string>? properties, string? distinctId = null);
+}
+
+public sealed class MixpanelClient(IHttpClientFactory httpClientFactory, ILogger<MixpanelClient> logger, IOptions<MixpanelOptions> config) : IMixpanelClient {
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
     private readonly ILogger<MixpanelClient> _logger = logger;
     private readonly MixpanelOptions _config = config.Value;

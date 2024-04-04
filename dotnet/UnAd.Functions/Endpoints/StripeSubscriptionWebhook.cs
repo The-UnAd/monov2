@@ -8,13 +8,30 @@ using UnAd.Data.Users;
 using UnAd.Redis;
 
 namespace UnAd.Functions;
+
+/*
+ * When a client sign up, this is the order in which the events occur:
+ * 
+ * customer.created
+ * setup_intent.created
+ * payment_method.attached
+ * customer.updated
+ * invoice.created
+ * invoice.finalized
+ * invoice.paid
+ * invoice.payment_succeeded
+ * customer.subscription.created
+ * checkout.session.completed
+ * customer.updated
+ * invoice.upcoming
+ */
 public class StripeSubscriptionWebhook(IStripeClient stripeClient,
                                        IStripeVerifier stripeVerifier,
                                        IConnectionMultiplexer redis,
                                        IDbContextFactory<UserDbContext> dbFactory,
                                        ILogger<StripeSubscriptionWebhook> logger,
                                        IStringLocalizer<StripeSubscriptionWebhook> localizer,
-                                       MixpanelClient mixpanelClient,
+                                       IMixpanelClient mixpanelClient,
                                        IConfiguration config) {
 
     private readonly string _messageServiceSid = config.GetTwilioMessageServiceSid();
@@ -98,9 +115,9 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
             return;
         }
         await using var context = await dbFactory.CreateDbContextAsync();
-        var client = context.Clients.FirstOrDefault(c => c.SubscriptionId == subscription.Id);
+        var client = context.Clients.FirstOrDefault(c => c.CustomerId == subscription.CustomerId);
         if (client is null) {
-            logger.LogWarning("Could not find subscription with id {subscriptionId}", subscription.Id);
+            logger.LogWarning("Could not find client with customerId {customerId}", subscription.CustomerId);
             return;
         }
         SetThreadCulture(client.Locale);
@@ -140,7 +157,7 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
         await using var context = await dbFactory.CreateDbContextAsync();
         var client = context.Clients.FirstOrDefault(c => c.CustomerId == subscription.CustomerId);
         if (client is null) {
-            logger.LogWarning("Could not find subscription with id {subscriptionId}", subscription.Id);
+            logger.LogWarning("Could not find client with customerId {customerId}", subscription.CustomerId);
             return;
         }
         SetThreadCulture(client.Locale);
@@ -181,7 +198,7 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
         await using var context = await dbFactory.CreateDbContextAsync();
         var client = context.Clients.FirstOrDefault(c => c.CustomerId == subscription.CustomerId);
         if (client is null) {
-            logger.LogWarning("Could not find customer with id {CustomerId}", subscription.CustomerId);
+            logger.LogWarning("Could not find client with id {CustomerId}", subscription.CustomerId);
             return;
         }
         SetThreadCulture(client.Locale);
@@ -235,9 +252,9 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
         }
 
         await using var context = await dbFactory.CreateDbContextAsync();
-        var client = context.Clients.FirstOrDefault(c => c.SubscriptionId == subscription.Id);
+        var client = context.Clients.FirstOrDefault(c => c.CustomerId == subscription.CustomerId);
         if (client is null) {
-            logger.LogWarning("Could not find subscription {subscriptionId}", subscription.Id);
+            logger.LogWarning("Could not find client with customerId {customerId}", subscription.CustomerId);
             return;
         }
         SetThreadCulture(client.Locale);
