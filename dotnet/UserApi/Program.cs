@@ -63,6 +63,7 @@ builder.Services
         }
     })
     .AddQueryType<QueryType>()
+    .AddDiagnosticEventListener<LoggerExecutionEventListener>()
     .AddFiltering()
     .AddProjections()
     .AddSorting()
