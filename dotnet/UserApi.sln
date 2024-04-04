@@ -6,8 +6,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserApi", "UserApi\UserApi.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnAd.Data", "UnAd.Data\UnAd.Data.csproj", "{3BAC9222-68A2-48B2-916E-5E48BA4397E8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnAd.Auth.Web", "UnAd.Auth.Web\UnAd.Auth.Web.csproj", "{AD6E6CD9-4EAF-412B-8CBA-3D2E8B7B5693}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserApi.Tests.Integration", "UserApi\tests\UserApi.Tests.Integration\UserApi.Tests.Integration.csproj", "{BDF0E73A-78EF-4613-A193-056310C406CB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnAd.Redis", "UnAd.Redis\UnAd.Redis.csproj", "{F51AB4A1-430B-443C-917A-CD4FE098B707}"
@@ -26,10 +24,6 @@ Global
 		{3BAC9222-68A2-48B2-916E-5E48BA4397E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BAC9222-68A2-48B2-916E-5E48BA4397E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3BAC9222-68A2-48B2-916E-5E48BA4397E8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AD6E6CD9-4EAF-412B-8CBA-3D2E8B7B5693}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AD6E6CD9-4EAF-412B-8CBA-3D2E8B7B5693}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AD6E6CD9-4EAF-412B-8CBA-3D2E8B7B5693}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AD6E6CD9-4EAF-412B-8CBA-3D2E8B7B5693}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BDF0E73A-78EF-4613-A193-056310C406CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BDF0E73A-78EF-4613-A193-056310C406CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BDF0E73A-78EF-4613-A193-056310C406CB}.Release|Any CPU.ActiveCfg = Release|Any CPU

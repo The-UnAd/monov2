@@ -50,7 +50,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - HTTP_PORTS=5300
     env_file:
-      - ./dotnet/.env.docker
+      - ./dotenv/.env.docker
 
   graphql-gateway:
     networks:
@@ -68,7 +68,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - HTTP_PORTS=5100
     env_file:
-      - ./dotnet/.env.docker
+      - ./dotenv/.env.docker
     depends_on:
       - user-api
 
@@ -84,7 +84,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - HTTP_PORTS=5555
     env_file:
-      - ./dotnet/.env.docker
+      - ./dotenv/.env.docker
+      - ./dotenv/.env.cognito
 
 secrets:
   graphmonitorheaders:

@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Console;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
@@ -12,10 +10,7 @@ using UserApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Logging
-    .ClearProviders()
-    .AddConsole(b => b.FormatterName = ConsoleFormatterNames.Systemd)
-    .AddDebug();
+builder.Logging.AddConsole();
 
 builder.Services.AddTransient<IConnectionMultiplexer>(c =>
     ConnectionMultiplexer.Connect(c.GetRequiredService<IConfiguration>().GetRedisUrl()));
@@ -44,22 +39,20 @@ builder.Services.AddAuthentication(options => {
         ValidateIssuerSigningKey = true,
         ValidateAudience = false
     };
+    options.Events = new JwtBearerEvents {
+        OnAuthenticationFailed = context => {
+            var logger = context.Request.HttpContext.RequestServices.GetRequiredService<ILogger<JwtBearerEvents>>();
+            logger.LogAuthFailure(context.Exception);
+            return Task.CompletedTask;
+        }
+    };
 });
+
 builder.Services.AddAuthorization();
 
 builder.Services
     .AddGraphQLServer()
-    .AddAuthorization(o => {
-        if (!builder.Environment.IsDevelopment()) {
-            o.DefaultPolicy = new AuthorizationPolicyBuilder()
-                .RequireAuthenticatedUser()
-                .Build();
-        } else {
-            o.DefaultPolicy = new AuthorizationPolicyBuilder()
-                .RequireAssertion(_ => true)
-                .Build();
-        }
-    })
+    .AddAuthorization()
     .AddQueryType<QueryType>()
     .AddDiagnosticEventListener<LoggerExecutionEventListener>()
     .AddFiltering()
@@ -82,10 +75,8 @@ var app = builder.Build();
 
 app.UseHealthChecks("/health");
 
-if (!builder.Environment.IsDevelopment()) {
-    app.UseAuthentication();
-    app.UseAuthorization();
-}
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGraphQL()
     .RequireAuthorization();

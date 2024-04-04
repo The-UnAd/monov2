@@ -10,27 +10,26 @@
 
     <ItemGroup>
       <ProjectReference Include="..\UnAd.Data\UnAd.Data.csproj" />
-      <ProjectReference Include="..\UnAd.Auth.Web\UnAd.Auth.Web.csproj" />
       <ProjectReference Include="..\UnAd.Redis\UnAd.Redis.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.3">
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         <PrivateAssets>all</PrivateAssets>
       </PackageReference>
       <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="13.9.0" />
       <PackageReference Include="HotChocolate.AspNetCore.CommandLine" Version="13.9.0" />
-      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.2" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.3" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
       <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
       <PackageReference Include="HotChocolate.AspNetCore" Version="13.9.0" />
       <PackageReference Include="HotChocolate.Data.EntityFramework" Version="13.9.0" />
-      <PackageReference Include="StackExchange.Redis" Version="2.7.20" />
-      <PackageReference Include="Stripe.net" Version="43.17.0" />
-      <PackageReference Include="Twilio" Version="7.0.0" />
+      <PackageReference Include="StackExchange.Redis" Version="2.7.33" />
+      <PackageReference Include="Stripe.net" Version="43.21.0" />
+      <PackageReference Include="Twilio" Version="7.0.4" />
     </ItemGroup>
 
     <ItemGroup>
