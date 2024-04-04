@@ -34,20 +34,18 @@ builder.Services.AddSingleton(() => {
 
 builder.Services.AddSingleton<IMessageSender, MessageSender>();
 
-if (!builder.Environment.IsDevelopment()) {
-    builder.Services.AddAuthentication(options => {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options => {
-        options.Authority = builder.Configuration["Cognito:Authority"];
-        options.TokenValidationParameters = new TokenValidationParameters {
-            ValidateIssuerSigningKey = true,
-            ValidateAudience = false
-        };
-    });
-    builder.Services.AddAuthorization();
-}
+builder.Services.AddAuthentication(options => {
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options => {
+    options.Authority = builder.Configuration["Cognito:Authority"];
+    options.TokenValidationParameters = new TokenValidationParameters {
+        ValidateIssuerSigningKey = true,
+        ValidateAudience = false
+    };
+});
+builder.Services.AddAuthorization();
 
 builder.Services
     .AddGraphQLServer()
