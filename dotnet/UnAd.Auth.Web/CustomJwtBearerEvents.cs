@@ -7,7 +7,7 @@ using StackExchange.Redis;
 namespace UnAd.Auth.Web;
 
 public class CustomJwtBearerEvents : JwtBearerEvents {
-    
+
     public override async Task TokenValidated(TokenValidatedContext context) {
         var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<CustomJwtBearerEvents>>();
         var token = context.Request.Headers["X-Forwarded-Token"]
@@ -19,7 +19,7 @@ public class CustomJwtBearerEvents : JwtBearerEvents {
         // TODO: what do we do if there are no claims?
         context.Principal?.AddIdentity(new ClaimsIdentity(
             claims.Select(c => new Claim(c.Name, c.Value))));
-        logger.LogDebug("Token validated for user {User}", 
+        logger.LogDebug("Token validated for user {User}",
             context.Principal?.FindFirst(c => c.Type == "username")?.Value ?? "anonymous");
         await base.TokenValidated(context);
     }

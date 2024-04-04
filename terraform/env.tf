@@ -53,7 +53,7 @@ resource "local_sensitive_file" "env_cognito" {
     COGNITO_POOL_DOMAIN="${module.aws.cognito_pool_domain}"
     COGNITO_POOL_DOMAIN_ID="${module.aws.cognito_pool_domain_id}"
     COGNITO_POOL_ENDPOINT="${module.aws.cognito_pool_endpoint}"
-    COGNITO_POOL_ID="${module.aws.cognito_pool_id}"
+    COGNITO_USER_POOL_ID="${module.aws.cognito_pool_id}"
     TEST_USER_EMAIL="${module.aws.test_user_credentials.username}"
     TEST_USER_PASSWORD="${module.aws.test_user_credentials.password}"
     TEST_USER_ID="${module.aws.test_user_credentials.userId}"
