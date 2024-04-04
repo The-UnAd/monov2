@@ -47,8 +47,7 @@ builder.Services
     .CoreBuilder
     .AddDirectiveType(typeof(DelegateDirectiveType))
     .AddTypeExtension<QueryTypeExtension>()
-    .ModifyRequestOptions(opt =>
-        opt.IncludeExceptionDetails = builder.Environment.IsDevelopment())
+    .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true)
     .InitializeOnStartup();
 
 builder.Services.AddHealthChecks();
