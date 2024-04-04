@@ -93,7 +93,7 @@ api.MapPost("/StripePaymentWebhook", (StripePaymentWebhook handler, HttpContext 
 api.MapPost("/StripeProductWebhook", async (StripeProductWebhook handler, HttpContext context) =>
     await handler.Endpoint(context.Request));
 api.MapPost("/StripeSubscriptionWebhook", async (StripeSubscriptionWebhook handler, HttpContext context) =>
-    await handler.Endpoint(context.Request));
+    RetryPolicy.ExecuteAsync(() => handler.Endpoint(context.Request)));
 api.MapPost("/StripeCustomerWebhook", async (StripeCustomerWebhook handler, HttpContext context) =>
     await handler.Endpoint(context.Request));
 
