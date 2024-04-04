@@ -1,6 +1,8 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Polly;
+using Polly.Contrib.WaitAndRetry;
 using StackExchange.Redis;
 using Stripe;
 using Twilio;
@@ -86,8 +88,8 @@ app.Use(async (context, next) => {
 var api = app.MapGroup("/api");
 api.MapPost("/MessageHandler", async (MessageHandler handler, HttpContext context) =>
     await handler.Endpoint(context.Request));
-api.MapPost("/StripePaymentWebhook", async (StripePaymentWebhook handler, HttpContext context) =>
-    await handler.Endpoint(context.Request));
+api.MapPost("/StripePaymentWebhook", (StripePaymentWebhook handler, HttpContext context) =>
+    RetryPolicy.ExecuteAsync(() => handler.Endpoint(context.Request)));
 api.MapPost("/StripeProductWebhook", async (StripeProductWebhook handler, HttpContext context) =>
     await handler.Endpoint(context.Request));
 api.MapPost("/StripeSubscriptionWebhook", async (StripeSubscriptionWebhook handler, HttpContext context) =>
@@ -97,7 +99,12 @@ api.MapPost("/StripeCustomerWebhook", async (StripeCustomerWebhook handler, Http
 
 app.Run();
 
-internal partial class Program { }
+internal partial class Program {
+
+    private static readonly AsyncPolicy RetryPolicy = Policy
+        .Handle<Exception>()
+        .WaitAndRetryAsync(Backoff.ExponentialBackoff(TimeSpan.FromSeconds(1), retryCount: 5));
+}
 
 [JsonSerializable(typeof(string))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext { }
