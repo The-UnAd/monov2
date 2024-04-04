@@ -18,7 +18,7 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
                      Stripe.IStripeClient stripe,
                      IStringLocalizer<MessageHelper> localizer,
                      ILogger<MessageHelper> logger,
-                     MixpanelClient mixpanelClient,
+                     IMixpanelClient mixpanelClient,
                      IConfiguration config) {
 
     private readonly Regex _stopRegex = StopRegex();

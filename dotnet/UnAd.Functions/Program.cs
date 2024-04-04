@@ -34,7 +34,7 @@ builder.Services.AddExceptionHandler(o => o.ExceptionHandler = context => {
     logger?.LogException(exception);
     return Task.CompletedTask;
 });
-builder.Services.AddTransient<MixpanelClient>();
+builder.Services.AddTransient<IMixpanelClient, MixpanelClient>();
 builder.Services.AddHttpClient(AppConfiguration.Keys.MixpanelHttpClient, (s, c) => {
     c.BaseAddress = new Uri("https://api.mixpanel.com");
     c.DefaultRequestHeaders.Add("Accept", "text/plain");
@@ -87,15 +87,15 @@ app.Use(async (context, next) => {
 
 var api = app.MapGroup("/api");
 api.MapPost("/MessageHandler", async (MessageHandler handler, HttpContext context) =>
-    await handler.Endpoint(context.Request));
-api.MapPost("/StripePaymentWebhook", (StripePaymentWebhook handler, HttpContext context) =>
-    RetryPolicy.ExecuteAsync(() => handler.Endpoint(context.Request)));
+    await RetryPolicy.ExecuteAsync(() => handler.Endpoint(context.Request)));
+api.MapPost("/StripePaymentWebhook", async (StripePaymentWebhook handler, HttpContext context) =>
+    await RetryPolicy.ExecuteAsync(() => handler.Endpoint(context.Request)));
 api.MapPost("/StripeProductWebhook", async (StripeProductWebhook handler, HttpContext context) =>
-    await handler.Endpoint(context.Request));
+    await RetryPolicy.ExecuteAsync(() => handler.Endpoint(context.Request)));
 api.MapPost("/StripeSubscriptionWebhook", async (StripeSubscriptionWebhook handler, HttpContext context) =>
-    RetryPolicy.ExecuteAsync(() => handler.Endpoint(context.Request)));
+    await RetryPolicy.ExecuteAsync(() => handler.Endpoint(context.Request)));
 api.MapPost("/StripeCustomerWebhook", async (StripeCustomerWebhook handler, HttpContext context) =>
-    await handler.Endpoint(context.Request));
+    await RetryPolicy.ExecuteAsync(() => handler.Endpoint(context.Request)));
 
 app.Run();
 

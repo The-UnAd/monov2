@@ -13,7 +13,7 @@ public class StripeCustomerWebhook(IConnectionMultiplexer redis,
                                   IMessageSender messageSender,
                                   IDbContextFactory<UserDbContext> dbFactory,
                                   IStringLocalizer<StripeCustomerWebhook> localizer,
-                                  MixpanelClient mixpanelClient,
+                                  IMixpanelClient mixpanelClient,
                                   ILogger<StripeCustomerWebhook> logger) {
 
     private readonly string _stripeEndpointSecret = config.GetStripeCustomerEndpointSecret();
@@ -32,6 +32,9 @@ public class StripeCustomerWebhook(IConnectionMultiplexer redis,
 
             if (stripeEvent?.Type == Events.CustomerDeleted) {
                 await HandleCustomerDeletedEvent(stripeEvent);
+            } else
+            if (stripeEvent?.Type == Events.CustomerCreated) {
+                await HandleCustomerCreatedEvent(stripeEvent);
             } else {
                 logger.LogUnhandledEvent(stripeEvent?.Type ?? "null");
             }
@@ -68,5 +71,25 @@ public class StripeCustomerWebhook(IConnectionMultiplexer redis,
             }, client.PhoneNumber);
 
         return;
+    }
+
+    private async Task HandleCustomerCreatedEvent(Event stripeEvent) {
+        if (stripeEvent.Data.Object is not Customer customer) {
+            logger.LogWarning("Could not find customer in event data");
+            return;
+        }
+
+        await using var context = await dbFactory.CreateDbContextAsync();
+        var client = await context.Clients.FirstOrDefaultAsync(c => c.PhoneNumber == customer.Phone);
+        if (client is null) {
+            logger.LogWarning($"Could not find client with phone number {customer.Phone}");
+            return;
+        }
+        client.CustomerId = customer.Id;
+        await context.SaveChangesAsync();
+
+        await mixpanelClient.Track(MixpanelClient.Events.StripeEvent(stripeEvent.Type), new() {
+                { "customerId", customer.Id},
+            }, client.PhoneNumber);
     }
 }
