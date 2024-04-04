@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.IdentityModel.Logging;
@@ -6,7 +7,6 @@ using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using Stripe;
 using Twilio;
-using UnAd.Auth.Web;
 using UnAd.Data.Users;
 using UserApi;
 
@@ -26,7 +26,6 @@ builder.Services.AddPooledDbContextFactory<UserDbContext>((s, o) =>
 builder.Services.AddSingleton<IStripeClient>(s =>
     new StripeClient(s.GetRequiredService<IConfiguration>().GetStripeApiKey()));
 
-;
 builder.Services.AddSingleton(() => {
     TwilioClient.Init(builder.Configuration.GetTwilioAccountSid(),
        builder.Configuration.GetTwilioAuthToken());
@@ -35,22 +34,34 @@ builder.Services.AddSingleton(() => {
 
 builder.Services.AddSingleton<IMessageSender, MessageSender>();
 
-builder.Services.AddAuthentication(options => {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options => {
-    options.Authority = builder.Configuration["Cognito:Authority"];
-    options.TokenValidationParameters = new TokenValidationParameters {
-        ValidateIssuerSigningKey = true,
-        ValidateAudience = false
-    };
-});
-builder.Services.AddAuthorization();
+if (!builder.Environment.IsDevelopment()) {
+    builder.Services.AddAuthentication(options => {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options => {
+        options.Authority = builder.Configuration["Cognito:Authority"];
+        options.TokenValidationParameters = new TokenValidationParameters {
+            ValidateIssuerSigningKey = true,
+            ValidateAudience = false
+        };
+    });
+    builder.Services.AddAuthorization();
+}
 
 builder.Services
     .AddGraphQLServer()
-    .AddAuthorization()
+    .AddAuthorization(o => {
+        if (!builder.Environment.IsDevelopment()) {
+            o.DefaultPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+        } else {
+            o.DefaultPolicy = new AuthorizationPolicyBuilder()
+                .RequireAssertion(_ => true)
+                .Build();
+        }
+    })
     .AddQueryType<QueryType>()
     .AddFiltering()
     .AddProjections()
@@ -63,8 +74,7 @@ builder.Services
     .RegisterService<IConnectionMultiplexer>()
     .RegisterService<IStripeClient>()
     .RegisterService<IMessageSender>()
-    .ModifyRequestOptions(opt =>
-        opt.IncludeExceptionDetails = builder.Environment.IsDevelopment())
+    .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true)
     .InitializeOnStartup();
 
 builder.Services.AddHealthChecks();
@@ -73,8 +83,10 @@ var app = builder.Build();
 
 app.UseHealthChecks("/health");
 
-app.UseAuthentication();
-app.UseAuthorization();
+if (!builder.Environment.IsDevelopment()) {
+    app.UseAuthentication();
+    app.UseAuthorization();
+}
 
 app.MapGraphQL()
     .RequireAuthorization();
