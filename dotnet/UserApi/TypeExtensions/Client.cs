@@ -1,10 +1,9 @@
-using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 using UnAd.Data.Users;
 using UnAd.Data.Users.Models;
 using UserApi.Models;
 
-namespace UserApi;
+namespace UserApi.TypeExtensions;
 
 public class ClientResolvers {
     // TODO: Find out how to make HotChocolate load the SubscripionId when I ask for the subscription field in the client type
@@ -27,10 +26,6 @@ public class ClientResolvers {
 
     public IQueryable<Subscriber> GetSubscribers([Parent] Client client, UserDbContext dbContext) =>
         dbContext.Entry(client).Collection(c => c.SubscriberPhoneNumbers).Query();
-}
-
-public class SubscriberResolvers {
-    public int GetSubscriptionCount([Parent] Subscriber subscriber) => subscriber.Clients.Count;
 }
 
 public class ClientTypeExtensions : ObjectTypeExtension<Client> {
@@ -61,22 +56,6 @@ public class ClientTypeExtensions : ObjectTypeExtension<Client> {
         descriptor.Field("subscriberCount")
             .ResolveWith<ClientResolvers>(r => r.GetSubscribers(default!, default!))
             .Type<NonNullType<IntType>>();
-    }
-}
-
-public class SubscriberTypeExtensions : ObjectTypeExtension<Subscriber> {
-    protected override void Configure(IObjectTypeDescriptor<Subscriber> descriptor) {
-        descriptor
-            .ImplementsNode()
-            .IdField(f => f.PhoneNumber)
-            .ResolveNode(async (context, id) => {
-                var factory = context.Service<IDbContextFactory<UserDbContext>>();
-                await using var dbContext = await factory.CreateDbContextAsync();
-                var result = await dbContext.Subscribers.FindAsync(id);
-                return result;
-            });
-        descriptor.Field("subscriptionCount")
-            .ResolveWith<SubscriberResolvers>(r => r.GetSubscriptionCount(default!));
     }
 }
 

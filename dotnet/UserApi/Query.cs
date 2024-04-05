@@ -11,6 +11,9 @@ public class Query {
     }
     public IQueryable<Client> GetClients(UserDbContext context) => context.Clients;
     public Task<int> CountClients(UserDbContext context) => context.Clients.CountAsync();
+    public async Task<Subscriber?> GetSubscriber(UserDbContext context, string id) =>
+        await context.Subscribers.FindAsync(id);
+    public IQueryable<Subscriber> GetSubscribers(UserDbContext context) => context.Subscribers;
     public Task<int> CountSubscribers(UserDbContext context) => context.Subscribers.CountAsync();
 }
 
@@ -28,6 +31,16 @@ public sealed class QueryType : ObjectType<Query> {
             .UseProjection()
             .UseFiltering()
             .UseSorting();
+
+        descriptor.Field(f => f.GetSubscriber(default!, default!))
+            .Argument("id", a => a.Type<NonNullType<IdType>>().ID(nameof(Subscriber)))
+            .Type<ObjectType<Subscriber>>();
+        descriptor.Field(f => f.GetSubscribers(default!))
+            .UsePaging()
+            .UseProjection()
+            .UseFiltering()
+            .UseSorting();
+
         descriptor.Field("viewer")
             .Type<UserType>()
             .Resolve(context => {

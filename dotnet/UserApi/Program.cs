@@ -8,6 +8,7 @@ using Stripe;
 using Twilio;
 using UnAd.Data.Users;
 using UserApi;
+using UserApi.TypeExtensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
