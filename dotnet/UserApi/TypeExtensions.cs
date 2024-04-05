@@ -1,3 +1,4 @@
+using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 using UnAd.Data.Users;
 using UnAd.Data.Users.Models;
@@ -15,6 +16,21 @@ public class ClientResolvers {
         var stripeSubscription = await service.GetAsync(client.SubscriptionId);
         return stripeSubscription.ToSubscriptionType();
     }
+
+    public string GetSubscribeLink([Parent] Client client, IConfiguration config) {
+        var baseUrl = config.GetSubscribeHost();
+        return $"{baseUrl}/{client.Id}";
+    }
+
+    public int GetSubscriberCount([Parent] Client client) =>
+        client.SubscriberPhoneNumbers.Count;
+
+    public IQueryable<Subscriber> GetSubscribers([Parent] Client client, UserDbContext dbContext) =>
+        dbContext.Entry(client).Collection(c => c.SubscriberPhoneNumbers).Query();
+}
+
+public class SubscriberResolvers {
+    public int GetSubscriptionCount([Parent] Subscriber subscriber) => subscriber.Clients.Count;
 }
 
 public class ClientTypeExtensions : ObjectTypeExtension<Client> {
@@ -29,10 +45,22 @@ public class ClientTypeExtensions : ObjectTypeExtension<Client> {
                 return result;
             });
         descriptor.Field("subscription")
-            .ResolveWith<ClientResolvers>(r => r.GetSubscription(default!, default!))
-            .Type<StripeSubscriptionType>();
-        descriptor.Field(f => f.SubscriberPhoneNumbers)
-            .Name("subscribers");
+            .ResolveWith<ClientResolvers>(r => r.GetSubscription(default!, default!));
+        descriptor.Field(f => f.SubscriberPhoneNumbers).Ignore();
+        descriptor.Field("subscribers")
+            .ResolveWith<ClientResolvers>(r => r.GetSubscribers(default!, default!))
+            .UsePaging()
+            .UseProjection()
+            .UseFiltering()
+            .UseSorting();
+        descriptor.Field("subscribeLink").Resolve(context => {
+            var client = context.Parent<Client>();
+            var baseUrl = context.Service<IConfiguration>().GetSubscribeHost();
+            return $"{baseUrl}/{client.Id}";
+        });
+        descriptor.Field("subscriberCount")
+            .ResolveWith<ClientResolvers>(r => r.GetSubscribers(default!, default!))
+            .Type<NonNullType<IntType>>();
     }
 }
 
@@ -47,6 +75,8 @@ public class SubscriberTypeExtensions : ObjectTypeExtension<Subscriber> {
                 var result = await dbContext.Subscribers.FindAsync(id);
                 return result;
             });
+        descriptor.Field("subscriptionCount")
+            .ResolveWith<SubscriberResolvers>(r => r.GetSubscriptionCount(default!));
     }
 }
 

@@ -54,6 +54,12 @@
         <InternalsVisibleTo Include="UserApi.Tests.Integration" />
     </ItemGroup>
 
+
+
+    <ItemGroup>
+      <Folder Include="NewFolder\" />
+    </ItemGroup>
+
 </Project>
 
 

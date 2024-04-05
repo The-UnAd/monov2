@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<d5a4a034c5514f99578e3d527fca5b0c>>
+ * @generated SignedSource<<d9c2a1eb17d31323f48b7792f3564487>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -17,9 +17,7 @@ export type HomeQuery$data = {
       readonly node: {
         readonly id: string;
         readonly name: string;
-        readonly subscriberPhoneNumbers: ReadonlyArray<{
-          readonly __typename: "Subscriber";
-        }>;
+        readonly subscriberCount: number;
       };
     }> | null | undefined;
   } | null | undefined;
@@ -87,19 +85,8 @@ var v0 = [
               {
                 "alias": null,
                 "args": null,
-                "concreteType": "Subscriber",
-                "kind": "LinkedField",
-                "name": "subscriberPhoneNumbers",
-                "plural": true,
-                "selections": [
-                  {
-                    "alias": null,
-                    "args": null,
-                    "kind": "ScalarField",
-                    "name": "__typename",
-                    "storageKey": null
-                  }
-                ],
+                "kind": "ScalarField",
+                "name": "subscriberCount",
                 "storageKey": null
               }
             ],
@@ -130,16 +117,16 @@ return {
     "selections": (v0/*: any*/)
   },
   "params": {
-    "cacheID": "dc22b5d3e7048a84fec2f8a1802f2539",
+    "cacheID": "15d41701e130abf9f1af4732486ebf2f",
     "id": null,
     "metadata": {},
     "name": "HomeQuery",
     "operationKind": "query",
-    "text": "query HomeQuery {\n  clients(order: {name: ASC}) {\n    edges {\n      cursor\n      node {\n        id\n        name\n        subscriberPhoneNumbers {\n          __typename\n        }\n      }\n    }\n  }\n}\n"
+    "text": "query HomeQuery {\n  clients(order: {name: ASC}) {\n    edges {\n      cursor\n      node {\n        id\n        name\n        subscriberCount\n      }\n    }\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "54cc8361b4479246f3bb617490a2992d";
+(node as any).hash = "41fbf663ee20882641c735ae5bb93d70";
 
 export default node;
