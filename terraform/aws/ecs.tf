@@ -461,7 +461,10 @@ module "user-api" {
     }, {
     name  = "Cognito__Authority"
     value = "https://${aws_cognito_user_pool.cognito_pool.endpoint}"
-  }, ]
+    }, {
+    name  = "SUBSCRIBE_HOST"
+    value = "https://${aws_route53_record.subscribe-link.name}"
+  }]
 }
 
 module "auth-api" {
@@ -501,9 +504,6 @@ module "auth-api" {
     }, {
     name  = "COGNITO_CLIENT_ID"
     value = "${aws_cognito_user_pool_client.cognito_client.id}"
-  }, {
-    name  = "SUBSCRIBE_HOST"
-    value = "https://${aws_route53_record.subscribe-link.name}"
   }]
 }
 
