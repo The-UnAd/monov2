@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -61,11 +62,14 @@ builder.Services
     .AddMutationType<MutationType>()
     .AddMutationConventions()
     .AddTypeExtension<ClientTypeExtensions>()
+    .AddTypeExtension<SubscriberTypeExtensions>()
     .AddGlobalObjectIdentification()
     .RegisterDbContext<UserDbContext>(DbContextKind.Pooled)
     .RegisterService<IConnectionMultiplexer>()
     .RegisterService<IStripeClient>()
     .RegisterService<IMessageSender>()
+    // TODO: this would be nice, but it breaks the stitching
+    //.AddQueryFieldToMutationPayloads()
     .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true)
     .InitializeOnStartup();
 
@@ -75,11 +79,16 @@ var app = builder.Build();
 
 app.UseHealthChecks("/health");
 
-app.UseAuthentication();
-app.UseAuthorization();
+if (!app.Environment.IsDevelopment()) {
+    app.UseAuthentication();
+    app.UseAuthorization();
 
+}
 app.MapGraphQL()
-    .RequireAuthorization();
+    .RequireAuthorization(
+    !builder.Environment.IsDevelopment()
+    ? new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()
+    : new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build());
 
 IdentityModelEventSource.ShowPII = app.Environment.IsDevelopment();
 

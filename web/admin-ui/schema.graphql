@@ -67,8 +67,31 @@ type Client implements Node {
   locale: String!
   name: String!
   phoneNumber: String!
-  subscriberPhoneNumbers: [Subscriber!]!
-  subscribers: [Subscriber!]!
+  subscribeLink: String
+  subscriberCount: Int!
+  subscribers(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+    order: [SubscriberSortInput!]
+    where: SubscriberFilterInput
+  ): SubscribersConnection
   subscription: StripeSubscription
   subscriptionId: String
 }
@@ -158,16 +181,52 @@ type StripeSubscription {
   status: String
 }
 
-type Subscriber {
+type Subscriber implements Node {
   clients: [Client!]!
+  id: ID!
   joinedDate: DateTime
   locale: String!
   phoneNumber: String!
+  subscriptionCount: Int!
+}
+
+"""
+A connection to a list of items.
+"""
+type SubscribersConnection {
+  """
+  A list of edges.
+  """
+  edges: [SubscribersEdge!]
+
+  """
+  A flattened list of the nodes.
+  """
+  nodes: [Subscriber!]
+
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+}
+
+"""
+An edge in a connection.
+"""
+type SubscribersEdge {
+  """
+  A cursor for use in pagination.
+  """
+  cursor: String!
+
+  """
+  The item at the end of the edge.
+  """
+  node: Subscriber!
 }
 
 type User {
   id: String!
-  name: String!
 }
 
 interface Error {
@@ -283,6 +342,12 @@ input SubscriberFilterInput {
   locale: StringOperationFilterInput
   or: [SubscriberFilterInput!]
   phoneNumber: StringOperationFilterInput
+}
+
+input SubscriberSortInput {
+  joinedDate: SortEnumType
+  locale: SortEnumType
+  phoneNumber: SortEnumType
 }
 
 input UuidOperationFilterInput {

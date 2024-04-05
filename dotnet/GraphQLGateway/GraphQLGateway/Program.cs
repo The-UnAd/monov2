@@ -47,7 +47,6 @@ builder.Services
     .CoreBuilder
     .AddDiagnosticEventListener<LoggerExecutionEventListener>()
     .AddDirectiveType(typeof(DelegateDirectiveType))
-    .AddTypeExtension<QueryTypeExtension>()
     .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true)
     .InitializeOnStartup();
 

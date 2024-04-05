@@ -13,9 +13,7 @@ export const HomeQueryDef = graphql`
         node {
           id
           name
-          subscriberPhoneNumbers {
-            __typename
-          }
+          subscriberCount
         }
       }
     }
@@ -30,7 +28,7 @@ export default function HomePage({ data }: Readonly<RelayRoute<HomeQuery>>) {
           <ListItem key={client.id}>
             <span>
               <Link to={`/client/${client.id}`}>{client.name}</Link> has{' '}
-              {client.subscriberPhoneNumbers.length} subscribers
+              {client.subscriberCount} subscribers
             </span>
           </ListItem>
         ))}

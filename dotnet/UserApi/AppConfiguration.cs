@@ -7,6 +7,7 @@ internal static class AppConfiguration {
         public const string TwilioAuthToken = "TWILIO_AUTH_TOKEN";
         public const string TwilioMessageServiceSid = "TWILIO_MESSAGE_SERVICE_SID";
         public const string StripeApiKey = "STRIPE_API_KEY";
+        public const string SubscribeHost = "SUBSCRIBE_HOST";
     }
     public static string GetTwilioAuthToken(this IConfiguration configuration) =>
         configuration[Keys.TwilioAuthToken] ?? throw new ArgumentNullException(nameof(Keys.TwilioAuthToken), $"Value ${Keys.TwilioAuthToken} has no value");
@@ -22,4 +23,7 @@ internal static class AppConfiguration {
 
     public static string GetTwilioMessageServiceSid(this IConfiguration configuration) =>
         configuration[Keys.TwilioMessageServiceSid] ?? throw new ArgumentNullException(nameof(Keys.TwilioMessageServiceSid), $"Value ${Keys.TwilioMessageServiceSid} has no value");
+
+    public static string GetSubscribeHost(this IConfiguration configuration) =>
+         configuration[Keys.SubscribeHost] ?? throw new ArgumentNullException(nameof(Keys.SubscribeHost), $"Value ${Keys.SubscribeHost} has no value");
 }
