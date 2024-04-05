@@ -61,14 +61,14 @@ jobs:
           task-definition: ${{ steps.render-ecs-container.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
-
-      - name: Wait for deployment to stabilize
-        run: aws ecs wait services-stable --services $ECS_SERVICE --cluster $ECS_CLUSTER
   
       - name: Start graph-monitor
         run: |
           aws ecs update-service --cluster $ECS_CLUSTER --service $GRAPH_MONITOR --desired-count 1
 
+      - name: Wait for deployment to stabilize
+        run: aws ecs wait services-stable --services $ECS_SERVICE --cluster $ECS_CLUSTER
+        
       - name: Wait for graph-monitor to be ready
         run: |
           aws ecs wait services-stable --cluster $ECS_CLUSTER --services $GRAPH_MONITOR
@@ -83,4 +83,4 @@ jobs:
       - name: Stop graph-monitor
         run: |
           aws ecs update-service --cluster $ECS_CLUSTER --service $GRAPH_MONITOR --desired-count 0
-      
+
