@@ -7,6 +7,7 @@ env:
   ECR_REPOSITORY: unad/graphql-gateway
   ECS_CLUSTER: unad-cluster
   ECS_SERVICE: graphql-gateway
+  GRAPH_MONITOR: graph-monitor
   CONTEXT_PATH: dotnet
   
 jobs:
@@ -32,6 +33,14 @@ jobs:
       - name: Create Graph Monitor headers file
         run: |
           echo "${{ secrets.GRAPH_MONITOR_HEADERS }}" > ${{ env.CONTEXT_PATH }}/graphmonitorheaders
+  
+      - name: Start graph-monitor
+        run: |
+          aws ecs update-service --cluster $ECS_CLUSTER --service $GRAPH_MONITOR --desired-count 1
+
+      - name: Wait for graph-monitor to be ready
+        run: |
+          aws ecs wait services-stable --cluster $ECS_CLUSTER --services $GRAPH_MONITOR
 
       - name: Build and tag Docker image
         id: build-image
@@ -70,4 +79,9 @@ jobs:
 
       - name: Wait for deployment to stabilize
         run: aws ecs wait services-stable --services $ECS_SERVICE --cluster $ECS_CLUSTER
+  
+      - name: Stop graph-monitor
+        run: |
+          aws ecs update-service --cluster $ECS_CLUSTER --service $GRAPH_MONITOR --desired-count 0
+
       

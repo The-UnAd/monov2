@@ -57,7 +57,7 @@
 
 
     <ItemGroup>
-      <Folder Include="NewFolder\" />
+      <Folder Include="TypeExtensions\" />
     </ItemGroup>
 
 </Project>

@@ -1,10 +1,8 @@
-using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 using UnAd.Data.Users;
 using UnAd.Data.Users.Models;
-using UserApi.Models;
 
-namespace UserApi;
+namespace UserApi.Models;
 
 public class ClientResolvers {
     // TODO: Find out how to make HotChocolate load the SubscripionId when I ask for the subscription field in the client type
@@ -22,19 +20,19 @@ public class ClientResolvers {
         return $"{baseUrl}/{client.Id}";
     }
 
-    public int GetSubscriberCount([Parent] Client client) =>
-        client.SubscriberPhoneNumbers.Count;
+    public async Task<int> GetSubscriberCount([Parent] Client client, UserDbContext dbContext) =>
+        await dbContext.Entry(client).Collection(c => c.SubscriberPhoneNumbers).Query().CountAsync();
 
-    public IQueryable<Subscriber> GetSubscribers([Parent] Client client, UserDbContext dbContext) =>
-        dbContext.Entry(client).Collection(c => c.SubscriberPhoneNumbers).Query();
+    public async Task<IQueryable<Subscriber>> GetSubscribers([Parent] Client client, UserDbContext dbContext) {
+        var collection = dbContext.Entry(client).Collection(c => c.SubscriberPhoneNumbers);
+        await collection.LoadAsync();
+        return collection.Query();
+    }
 }
 
-public class SubscriberResolvers {
-    public int GetSubscriptionCount([Parent] Subscriber subscriber) => subscriber.Clients.Count;
-}
-
-public class ClientTypeExtensions : ObjectTypeExtension<Client> {
+public class ClientType : ObjectType<Client> {
     protected override void Configure(IObjectTypeDescriptor<Client> descriptor) {
+        descriptor.Field(f => f.Id).ID();
         descriptor
             .ImplementsNode()
             .IdField(f => f.Id)
@@ -46,6 +44,8 @@ public class ClientTypeExtensions : ObjectTypeExtension<Client> {
             });
         descriptor.Field("subscription")
             .ResolveWith<ClientResolvers>(r => r.GetSubscription(default!, default!));
+        descriptor.Field("subscriberCount")
+            .ResolveWith<ClientResolvers>(r => r.GetSubscriberCount(default!, default!));
         descriptor.Field(f => f.SubscriberPhoneNumbers).Ignore();
         descriptor.Field("subscribers")
             .ResolveWith<ClientResolvers>(r => r.GetSubscribers(default!, default!))
@@ -58,25 +58,8 @@ public class ClientTypeExtensions : ObjectTypeExtension<Client> {
             var baseUrl = context.Service<IConfiguration>().GetSubscribeHost();
             return $"{baseUrl}/{client.Id}";
         });
-        descriptor.Field("subscriberCount")
-            .ResolveWith<ClientResolvers>(r => r.GetSubscribers(default!, default!))
-            .Type<NonNullType<IntType>>();
-    }
-}
-
-public class SubscriberTypeExtensions : ObjectTypeExtension<Subscriber> {
-    protected override void Configure(IObjectTypeDescriptor<Subscriber> descriptor) {
-        descriptor
-            .ImplementsNode()
-            .IdField(f => f.PhoneNumber)
-            .ResolveNode(async (context, id) => {
-                var factory = context.Service<IDbContextFactory<UserDbContext>>();
-                await using var dbContext = await factory.CreateDbContextAsync();
-                var result = await dbContext.Subscribers.FindAsync(id);
-                return result;
-            });
-        descriptor.Field("subscriptionCount")
-            .ResolveWith<SubscriberResolvers>(r => r.GetSubscriptionCount(default!));
+        descriptor.Field("maskedPhone").Resolve(context =>
+            Util.MaskString(context.Parent<Client>().PhoneNumber, 4));
     }
 }
 

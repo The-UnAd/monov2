@@ -7,6 +7,7 @@ env:
   ECR_REPOSITORY: unad/user-api
   ECS_CLUSTER: unad-cluster
   ECS_SERVICE: user-api
+  GRAPH_MONITOR: graph-monitor
   CONTEXT_PATH: dotnet
   
 jobs:
@@ -60,9 +61,17 @@ jobs:
           task-definition: ${{ steps.render-ecs-container.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
+  
+      - name: Start graph-monitor
+        run: |
+          aws ecs update-service --cluster $ECS_CLUSTER --service $GRAPH_MONITOR --desired-count 1
 
       - name: Wait for deployment to stabilize
         run: aws ecs wait services-stable --services $ECS_SERVICE --cluster $ECS_CLUSTER
+        
+      - name: Wait for graph-monitor to be ready
+        run: |
+          aws ecs wait services-stable --cluster $ECS_CLUSTER --services $GRAPH_MONITOR
 
       - name: Save URL of deployed service
         id: save-url
@@ -70,4 +79,8 @@ jobs:
           echo "${{ secrets.GRAPH_MONITOR_HEADERS }}" > headers
           URL="http://${{ env.ECS_SERVICE }}.unad.local:3000/graphql"
           curl -s -f -H @headers -d "$URL" ${{ vars.GRAPH_MONITOR_URL }}/user-api
-      
+  
+      - name: Stop graph-monitor
+        run: |
+          aws ecs update-service --cluster $ECS_CLUSTER --service $GRAPH_MONITOR --desired-count 0
+
