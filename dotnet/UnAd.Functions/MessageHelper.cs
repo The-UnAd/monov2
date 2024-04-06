@@ -247,11 +247,11 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
         }
 
         if (clients.Length > 1) {
-            var message = clients.Aggregate(new StringBuilder(), (sb, i) => {
-                var (client, index) = i;
-                sb.Append(localizer.GetStringWithReplacements("UnsubscribeListEntry", new {
+            var message = clients.Aggregate(new StringBuilder(), (sb, entry) => {
+                var (client, index) = entry;
+                sb.AppendLine(localizer.GetStringWithReplacements("UnsubscribeListEntry", new {
                     clientName = client.Name,
-                    index
+                    index = index + 1
                 }));
 
                 return sb;
