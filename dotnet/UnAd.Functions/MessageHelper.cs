@@ -89,7 +89,7 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
         if (id.IsNullOrEmpty) {
             return CreateSmsResponseContent(localizer.GetString("UnsubscribeInvalidSelection"));
         }
-        var client = context.Clients.Find(id);
+        var client = context.Clients.Find(id.ToString());
         if (client is null) {
             logger.LogWarning("Client {id} not found", id);
             return CreateSmsResponseContent(localizer.GetString("UnsubscribeInvalidSelection"));
