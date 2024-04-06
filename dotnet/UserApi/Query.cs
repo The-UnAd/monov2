@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using UnAd.Data.Users;
 using UnAd.Data.Users.Models;
+using UserApi.Models;
 
 namespace UserApi;
 
@@ -25,7 +26,7 @@ public sealed class QueryType : ObjectType<Query> {
     protected override void Configure(IObjectTypeDescriptor<Query> descriptor) {
         descriptor.Field(f => f.GetClient(default!, default!))
             .Argument("id", a => a.Type<NonNullType<IdType>>().ID(nameof(Client)))
-            .Type<ObjectType<Client>>();
+            .Type<ClientType>();
         descriptor.Field(f => f.GetClients(default!))
             .UsePaging()
             .UseProjection()
@@ -34,8 +35,9 @@ public sealed class QueryType : ObjectType<Query> {
 
         descriptor.Field(f => f.GetSubscriber(default!, default!))
             .Argument("id", a => a.Type<NonNullType<IdType>>().ID(nameof(Subscriber)))
-            .Type<ObjectType<Subscriber>>();
+            .Type<SubscriberType>();
         descriptor.Field(f => f.GetSubscribers(default!))
+            .Type<SubscriberType>()
             .UsePaging()
             .UseProjection()
             .UseFiltering()

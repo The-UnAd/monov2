@@ -8,7 +8,7 @@ using Stripe;
 using Twilio;
 using UnAd.Data.Users;
 using UserApi;
-using UserApi.TypeExtensions;
+using UserApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,14 +56,14 @@ builder.Services
     .AddGraphQLServer()
     .AddAuthorization()
     .AddQueryType<QueryType>()
+    .AddType<SubscriberType>()
+    .AddType<UserApi.Models.ClientType>()
     .AddDiagnosticEventListener<LoggerExecutionEventListener>()
     .AddFiltering()
     .AddProjections()
     .AddSorting()
     .AddMutationType<MutationType>()
     .AddMutationConventions()
-    .AddTypeExtension<ClientTypeExtensions>()
-    .AddTypeExtension<SubscriberTypeExtensions>()
     .AddGlobalObjectIdentification()
     .RegisterDbContext<UserDbContext>(DbContextKind.Pooled)
     .RegisterService<IConnectionMultiplexer>()
