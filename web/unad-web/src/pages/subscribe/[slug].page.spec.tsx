@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import fetchMock from 'jest-fetch-mock';
 import mockRouter from 'next-router-mock';
 
-import Subscribe from './[clientId].page';
+import Subscribe from './[slug].page';
 
 jest.mock('next/router', () => jest.requireActual('next-router-mock'));
 

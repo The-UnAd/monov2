@@ -23,6 +23,7 @@ model client {
   customer_id       String?             @db.VarChar
   subscription_id   String?             @db.VarChar
   locale            String              @default("en-US") @db.VarChar(5)
+  slug              String              @unique @db.VarChar(12)
   announcement      announcement[]
   client_subscriber client_subscriber[]
 

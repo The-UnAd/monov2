@@ -20,14 +20,14 @@ interface SubscribeProps {
 }
 
 interface ServerProps extends ParsedUrlQuery {
-  clientId: string;
+  slug: string;
 }
 
 function Subscribe({ name, clientId }: Readonly<SubscribeProps>) {
   const [error, setError] = useState('');
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState('');
-  const t = useTranslations('pages/subscribe/[clientId]');
+  const t = useTranslations('pages/subscribe/[slug]');
 
   const clickGetOtp = async ({ phone }: SubscribeData) => {
     const formattedPhone = sanitizePhoneNumber(phone);
@@ -131,11 +131,11 @@ function Subscribe({ name, clientId }: Readonly<SubscribeProps>) {
 export async function getServerSideProps(
   context: GetServerSidePropsContext<ServerProps>
 ) {
-  const { clientId } = context.params as ServerProps;
+  const { slug } = context.params as ServerProps;
   try {
     const client = await prisma.client.findUnique({
-      where: { id: clientId },
-      select: { name: true },
+      where: { slug },
+      select: { name: true, id: true },
     });
 
     if (!client) {
@@ -147,7 +147,7 @@ export async function getServerSideProps(
       props: {
         messages: await importMessages(context.locale),
         name: client.name,
-        clientId,
+        clientId: client.id,
       },
     };
   } catch (error: any) {

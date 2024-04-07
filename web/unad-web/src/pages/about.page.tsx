@@ -70,12 +70,12 @@ function About({ locale, subLink }: { locale: string; subLink: string }) {
 
 export async function getServerSideProps({
   locale,
-  query: { clientId },
+  query: { slug },
 }: GetServerSidePropsContext) {
   return {
     props: {
       locale,
-      subLink: clientId ? `${process.env.SUBSCRIBE_HOST}/${clientId}` : null,
+      subLink: slug ? `${process.env.SUBSCRIBE_HOST}/${slug}` : null,
       messages: await importMessages(locale),
     },
   };

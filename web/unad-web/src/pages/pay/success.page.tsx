@@ -19,9 +19,7 @@ interface ServerProps extends ParsedUrlQuery {
   session_id: string;
 }
 
-// TODO: show subscription link
-
-function Pay({ accountUrl, portalUrl, subscribeUrl }: PageData) {
+function Success({ accountUrl, portalUrl, subscribeUrl }: PageData) {
   const t = useTranslations('pages/pay/success');
   return (
     <section className="app">
@@ -99,7 +97,7 @@ function Pay({ accountUrl, portalUrl, subscribeUrl }: PageData) {
 export async function getServerSideProps(
   context: GetServerSidePropsContext<ServerProps>
 ) {
-  const t = await createTranslator(context.req, 'pages/pay/[clientId]');
+  const t = await createTranslator(context.req, 'pages/pay/success');
   const { session_id } = context.query as ServerProps;
 
   const stripe = new Stripe(process.env.STRIPE_API_KEY as string, {
@@ -140,7 +138,7 @@ export async function getServerSideProps(
         messages: await importMessages(context.locale),
         accountUrl: `${process.env.SITE_HOST}/account`,
         portalUrl: `${process.env.STRIPE_PORTAL_HOST}`,
-        subscribeUrl: `${process.env.SUBSCRIBE_HOST}/${session.client_reference_id}`,
+        subscribeUrl: `${process.env.SUBSCRIBE_HOST}/${client.slug}`,
       },
     };
   } catch (error: any) {
@@ -159,4 +157,4 @@ export async function getServerSideProps(
   }
 }
 
-export default Pay;
+export default Success;

@@ -17,6 +17,10 @@ public partial class Client
 
     public string Locale { get; set; } = null!;
 
+    public string Slug { get; set; } = null!;
+
+    public DateTime? JoinedDate { get; set; }
+
     public virtual ICollection<Announcement> Announcements { get; set; } = new List<Announcement>();
 
     public virtual ICollection<Subscriber> SubscriberPhoneNumbers { get; set; } = new List<Subscriber>();

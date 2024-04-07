@@ -28,6 +28,8 @@ public partial class UserDbContext : DbContext
 
             entity.ToTable("announcement");
 
+            entity.HasIndex(e => e.ClientId, "IX_announcement_client_id");
+
             entity.Property(e => e.MessageSid)
                 .HasMaxLength(34)
                 .IsFixedLength()
@@ -51,7 +53,11 @@ public partial class UserDbContext : DbContext
 
             entity.HasIndex(e => e.PhoneNumber, "client_phone_number_key").IsUnique();
 
+            entity.HasIndex(e => e.Slug, "client_slug_key").IsUnique();
+
             entity.HasIndex(e => e.PhoneNumber, "idx_client_phone_number");
+
+            entity.HasIndex(e => e.Slug, "idx_client_slug");
 
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("uuid_generate_v4()")
@@ -59,6 +65,9 @@ public partial class UserDbContext : DbContext
             entity.Property(e => e.CustomerId)
                 .HasColumnType("character varying")
                 .HasColumnName("customer_id");
+            entity.Property(e => e.JoinedDate)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("joined_date");
             entity.Property(e => e.Locale)
                 .HasMaxLength(5)
                 .HasDefaultValueSql("'en-US'::character varying")
@@ -69,6 +78,9 @@ public partial class UserDbContext : DbContext
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(15)
                 .HasColumnName("phone_number");
+            entity.Property(e => e.Slug)
+                .HasMaxLength(12)
+                .HasColumnName("slug");
             entity.Property(e => e.SubscriptionId)
                 .HasColumnType("character varying")
                 .HasColumnName("subscription_id");
@@ -86,6 +98,7 @@ public partial class UserDbContext : DbContext
                     {
                         j.HasKey("ClientId", "SubscriberPhoneNumber").HasName("client_subscriber_pkey");
                         j.ToTable("client_subscriber");
+                        j.HasIndex(new[] { "SubscriberPhoneNumber" }, "IX_client_subscriber_subscriber_phone_number");
                         j.IndexerProperty<Guid>("ClientId").HasColumnName("client_id");
                         j.IndexerProperty<string>("SubscriberPhoneNumber")
                             .HasMaxLength(15)

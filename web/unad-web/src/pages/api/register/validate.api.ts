@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { generateSlug } from '@/lib/crypto';
 import { prisma } from '@/lib/db';
 import { createTranslator, DefaultLocale, getRequestLocale } from '@/lib/i18n';
 import mixpanel from '@/lib/mixpanel';
@@ -48,6 +49,7 @@ export default async function handler(
         phone_number: phone,
         name,
         locale,
+        slug: generateSlug(phone),
       },
     });
 
@@ -63,7 +65,7 @@ export default async function handler(
       $phone: phone,
     });
 
-    return res.status(200).json({ clientId: client.id as string });
+    return res.status(200).json({ clientId: client.id });
   } catch (error: any) {
     models.rollbackTransaction();
     console.error('error in /api/register/validate', error.stack);

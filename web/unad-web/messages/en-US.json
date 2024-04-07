@@ -307,7 +307,7 @@
       }
     }
   },
-  "pages/share/[clientId]": {
+  "pages/share/[slug]": {
     "page": {
       "title": "UnAd - Marketing Made Simple"
     },
@@ -325,7 +325,7 @@
       "p": "Grow your business easily with text updates, promos & offerings to all customers at once!"
     }
   },
-  "pages/subscribe/[clientId]": {
+  "pages/subscribe/[slug]": {
     "page": {
       "title": "Subscribe to {name} with UnAd",
       "description": "Receive text messages when {name} has new deals."
