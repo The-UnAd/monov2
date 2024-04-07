@@ -23,7 +23,7 @@ function SharePage({ subscribeUrl }: PageData) {
         <title>{t('page.title')}</title>
       </Head>
       <section className="app" data-testid="Subscribe__container">
-        <div className="container-app h100 d-flex align-items-center">
+        <div className="container-app h95 d-flex align-items-center">
           <div className="col-12 text-center">
             <div className="box box-1">
               <div>

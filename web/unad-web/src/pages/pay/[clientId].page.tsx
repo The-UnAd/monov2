@@ -27,7 +27,7 @@ function Pay({ clientId, pricingTableId }: PageData) {
       </Head>
       <Script async src="https://js.stripe.com/v3/pricing-table.js" />
       <section className="app">
-        <div className="container-app h100 d-flex align-items-center">
+        <div className="container-app h95 d-flex align-items-center">
           <div className="col-12 text-center">
             <div className="box box-1">
               <div>

@@ -39,7 +39,7 @@ function Success({ name, locale }: PageData) {
         <meta name="description" content={t('page.description', { name })} />
       </Head>
       <section className="app">
-        <div className="container-app h100 d-flex align-items-center">
+        <div className="container-app h95 d-flex align-items-center">
           <div className="col-12 text-center">
             <div className="box box-1">
               <div>

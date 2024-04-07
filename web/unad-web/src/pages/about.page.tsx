@@ -27,7 +27,7 @@ function About({ locale, subLink }: { locale: string; subLink: string }) {
         <meta name="description" content={t('tagline')} />
       </Head>
       <section className="app">
-        <div className="container-app h100 d-flex align-items-center">
+        <div className="container-app h95 d-flex align-items-center">
           <div className="col-12 text-center">
             <div className="box box-1">
               <div>

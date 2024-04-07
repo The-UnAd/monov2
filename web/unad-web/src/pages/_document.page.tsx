@@ -21,18 +21,6 @@ export default function MyDocument() {
       <body>
         <Main />
         <NextScript />
-
-        <div className="footer text-center">
-          <div className="container-app">
-            <p>
-              &copy; {new Date().getFullYear()} The UnAd, LLC. All rights
-              reserved.
-            </p>
-            <p>
-              <a href="mailto:support@theunad.com">Contact Support</a>
-            </p>
-          </div>
-        </div>
       </body>
     </Html>
   );
