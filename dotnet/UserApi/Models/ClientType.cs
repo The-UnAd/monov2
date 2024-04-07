@@ -56,7 +56,7 @@ public class ClientType : ObjectType<Client> {
         descriptor.Field("subscribeLink").Resolve(context => {
             var client = context.Parent<Client>();
             var baseUrl = context.Service<IConfiguration>().GetSubscribeHost();
-            return $"{baseUrl}/{client.Id}";
+            return $"{baseUrl}/{client.Slug}";
         });
         descriptor.Field("maskedPhone").Resolve(context =>
             Util.MaskString(context.Parent<Client>().PhoneNumber, 4));
