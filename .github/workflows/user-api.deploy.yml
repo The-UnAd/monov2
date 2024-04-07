@@ -13,7 +13,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: github.event.inputs.environment
+    environment: production
 
     steps:
       - name: Checkout code
