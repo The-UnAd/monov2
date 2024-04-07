@@ -12,11 +12,11 @@ interface PageData {
 }
 
 interface ServerProps extends ParsedUrlQuery {
-  clientId: string;
+  slug: string;
 }
 
 function SharePage({ subscribeUrl }: PageData) {
-  const t = useTranslations('pages/share/[clientId]');
+  const t = useTranslations('pages/share/[slug]');
   return (
     <>
       <Head>
@@ -63,9 +63,9 @@ function SharePage({ subscribeUrl }: PageData) {
 export async function getServerSideProps(
   context: GetServerSidePropsContext<ServerProps>
 ) {
-  const { clientId } = context.params as ServerProps;
+  const { slug } = context.params as ServerProps;
   try {
-    const client = await prisma.client.findUnique({ where: { id: clientId } });
+    const client = await prisma.client.findUnique({ where: { slug } });
     if (!client) {
       return {
         notFound: true,
@@ -74,7 +74,7 @@ export async function getServerSideProps(
     return {
       props: {
         messages: await importMessages(context.locale),
-        subscribeUrl: `${process.env.SUBSCRIBE_HOST}/${clientId}`,
+        subscribeUrl: `${process.env.SUBSCRIBE_HOST}/${slug}`,
       },
     };
   } catch (err: any) {

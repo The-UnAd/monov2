@@ -3,11 +3,11 @@
   "isRoot": true,
   "tools": {
     "hotchocolate.fusion.commandline": {
-      "version": "13.8.1",
+      "version": "13.9.0",
       "commands": ["fusion"]
     },
     "dotnet-ef": {
-      "version": "8.0.2",
+      "version": "8.0.3",
       "commands": ["dotnet-ef"]
     }
   }

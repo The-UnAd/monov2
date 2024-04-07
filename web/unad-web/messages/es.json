@@ -249,7 +249,7 @@
       "p": "¡Haga crecer su negocio fácilmente con actualizaciones de texto, promociones y ofertas para todos los clientes a la vez!"
     }
   },
-  "pages/share/[clientId]": {
+  "pages/share/[slug]": {
     "title": "UnAd - Marketing Simplificado",
     "tagline": "Marketing Simplificado",
     "page": {
@@ -268,7 +268,7 @@
       "p": "¡Haga crecer su negocio fácilmente con actualizaciones de texto, promociones y ofertas para todos los clientes a la vez!"
     }
   },
-  "pages/subscribe/[clientId]": {
+  "pages/subscribe/[slug]": {
     "page": {
       "title": "Suscríbase a {name} con UnAd",
       "description": "Reciba mensajes de texto cuando {name} tenga nuevas ofertas."
