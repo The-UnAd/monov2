@@ -395,6 +395,9 @@ select {
   margin: 0 auto 20px auto;
 }
 
+.h5 {
+  height: 5vh;
+}
 .h10 {
   height: 10vh;
 }
@@ -512,11 +515,11 @@ html {
 }
 
 .footer {
-  position: absolute;
+  position: static;
   bottom: 0;
   margin: 0 auto;
   width: 100%;
-  padding: 0 15px 15px;
+  padding: 0 15px 0 15px;
 
   p,
   a.links {
@@ -799,10 +802,6 @@ input[type='range']::-ms-track {
   input {
     margin: 6px auto !important;
     padding: 10px !important;
-  }
-
-  .footer {
-    padding: 0 0 10px;
   }
 
   .footer {

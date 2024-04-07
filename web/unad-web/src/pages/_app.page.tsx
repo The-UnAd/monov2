@@ -47,6 +47,15 @@ function MyApp({ Component, pageProps }: AppProps) {
       timeZone={Intl.DateTimeFormat().resolvedOptions().timeZone}
     >
       <Component {...pageProps} />
+
+      <div className="5vh footer text-center">
+        <p>
+          &copy; {new Date().getFullYear()} The UnAd, LLC. All rights reserved.
+        </p>
+        <p>
+          &emsp;<a href="mailto:support@theunad.com">Contact Support</a>
+        </p>
+      </div>
     </NextIntlClientProvider>
   );
 }

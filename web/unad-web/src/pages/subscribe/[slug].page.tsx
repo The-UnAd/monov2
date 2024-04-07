@@ -67,7 +67,7 @@ function Subscribe({ name, clientId }: Readonly<SubscribeProps>) {
         <meta name="description" content={t('page.title', { name })} />
       </Head>
       <section className="app" data-testid="Subscribe__container">
-        <div className="container-app h100 d-flex align-items-center">
+        <div className="container-app h95 d-flex align-items-center">
           <div className="col-12 text-center">
             <div className="box box-1">
               <div>
