@@ -50,6 +50,14 @@ data "aws_ssm_parameter" "stripe_customer_endpoint_secret" {
   name  = "/stripe/customer_endpoint_secret"
 }
 
+data "aws_ssm_parameter" "stripe_portal_url" {
+  name  = "/stripe/portal_url"
+}
+
+data "aws_ssm_parameter" "stripe_pricing_table" {
+  name  = "/stripe/pricing_table"
+}
+
 output "jwt_public_key" {
   value = tls_private_key.jwt_key.public_key_openssh
 }

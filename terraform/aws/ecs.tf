@@ -256,14 +256,19 @@ module "signup-site" {
     }, {
     name      = "MIXPANEL_TOKEN"
     valueFrom = "${data.aws_ssm_parameter.mixpanel_token.arn}"
-    }
-  ]
+    }, {
+    name      = "STRIPE_PORTAL_HOST"
+    valueFrom = "${data.aws_ssm_parameter.stripe_portal_url.arn}"
+    }, {
+    name      = "STRIPE_PRODUCT_BASIC_PRICING_TABLE"
+    valueFrom = "${data.aws_ssm_parameter.stripe_pricing_table.arn}"
+    }, {
+    name      = "TWILIO_MESSAGE_SERVICE_SID"
+    valueFrom = "${data.aws_ssm_parameter.twilio_message_service_sid.arn}"
+  }]
   container_environment = [{
     name  = "NEXT_PUBLIC_JWT_PUBLIC_KEY"
     value = "${tls_private_key.jwt_key.public_key_openssh}"
-    }, {
-    name  = "TWILIO_MESSAGE_SERVICE_SID"
-    value = "MG286e5e74c953d5720fbc002c41a2bdd6"
     }, {
     name  = "NEXT_PUBLIC_SESSION_LENGTH"
     value = "86400"
@@ -285,12 +290,6 @@ module "signup-site" {
     }, {
     name  = "SITE_HOST"
     value = "https://${aws_route53_record.signup-site.name}"
-    }, {
-    name  = "STRIPE_PORTAL_HOST"
-    value = "https://pay.theunad.com/p/login/test_9AQ8Ag7pwgGg0c84gg" # TODO: put in config somewhere
-    }, {
-    name  = "STRIPE_PRODUCT_BASIC_PRICING_TABLE"
-    value = "prctbl_1N76h5E8A2efFCQS9I8E5lvT" # TODO: put in config somewhere
     }, {
     name  = "PORT"
     value = "3000"
@@ -670,6 +669,9 @@ module "unad-functions" {
     }, {
     name      = "TWILIO_MESSAGE_SERVICE_SID"
     valueFrom = "${data.aws_ssm_parameter.twilio_message_service_sid.arn}"
+    }, {
+    name      = "StripePortalUrl"
+    valueFrom = "${data.aws_ssm_parameter.stripe_portal_url.arn}"
   }]
   container_environment = [{
     name  = "ASPNETCORE_ENVIRONMENT"
@@ -683,9 +685,6 @@ module "unad-functions" {
     }, {
     name  = "SMS_LINK_BASE_URL"
     value = "https://signup.${data.aws_route53_zone.main.name}/announcement"
-    }, {
-    name  = "StripePortalUrl"
-    value = "https://pay.theunad.com/p/login/test_9AQ8Ag7pwgGg0c84gg"
     }, {
     name  = "AccountUrl"
     value = "https://signup.${data.aws_route53_zone.main.name}/account"

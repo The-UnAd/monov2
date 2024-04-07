@@ -139,7 +139,7 @@
     <value>No tienes ningún anuncio para enviar.</value>
   </data>
   <data name="NotCustomer" xml:space="preserve">
-    <value>Parece que no eres cliente de UnAd. Puedes registrarte en https://unad.dev/</value>
+    <value>Parece que no eres cliente de UnAd. Puedes registrarte en https://unad.tech/</value>
   </data>
   <data name="NotInStopMode" xml:space="preserve">
     <value>Envíe un mensaje de texto con la palabra UNSUBSCRIBE para cancelar la suscripción a los anuncios.</value>

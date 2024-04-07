@@ -62,7 +62,7 @@ function Login() {
         <meta property="og:title" content="Log in to your UnAd Account" />
         <meta property="og:locale" content="en_US" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`https://signup.unad.dev/account`} />
+        <meta property="og:url" content={`https://signup.unad.tech/account`} />
         <meta property="og:site_name" content="UnAd" />
         <meta property="og:site_name" content="UnAd" />
         <meta property="og:image" content="https://theunad.com/logo-wide.svg" />
