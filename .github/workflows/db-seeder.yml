@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: dotnet restore dotnet/DbSeeder.sln
     
-      - name: Setup SSH Tunnel and Run Migrations
+      - name: Setup SSH Tunnel and Run Seed Process
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.JUMPBOX_SSH_PRIVATE_KEY }}" > ~/.ssh/jumpbox_ed25519
