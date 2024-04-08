@@ -72,7 +72,7 @@ jobs:
 
   build-prod:
     runs-on: ubuntu-latest
-    environment: production
+    environment: development
 
     steps:
       - name: Checkout code
