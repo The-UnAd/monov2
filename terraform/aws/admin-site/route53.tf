@@ -1,19 +1,19 @@
 data "aws_route53_zone" "portal" {
-  name = var.portal_dns_zone
+  name = var.main_dns_zone
 
   provider = aws.virginia
 }
 
-resource "aws_acm_certificate" "portal_wildcard" {
+resource "aws_acm_certificate" "main_wildcard" {
   domain_name       = "*.${data.aws_route53_zone.portal.name}"
   validation_method = "DNS"
 
   provider = aws.virginia
 }
 
-resource "aws_route53_record" "portal_wildcard" {
+resource "aws_route53_record" "main_wildcard" {
   for_each = {
-    for dvo in aws_acm_certificate.portal_wildcard.domain_validation_options : dvo.domain_name => {
+    for dvo in aws_acm_certificate.main_wildcard.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
       record = dvo.resource_record_value
       type   = dvo.resource_record_type
@@ -30,9 +30,9 @@ resource "aws_route53_record" "portal_wildcard" {
   provider = aws.virginia
 }
 
-resource "aws_acm_certificate_validation" "portal_wildcard" {
+resource "aws_acm_certificate_validation" "main_wildcard" {
   certificate_arn         = local.admin_site_certificate_arn
-  validation_record_fqdns = [for record in aws_route53_record.portal_wildcard : record.fqdn]
+  validation_record_fqdns = [for record in aws_route53_record.main_wildcard : record.fqdn]
 
   provider = aws.virginia
 }

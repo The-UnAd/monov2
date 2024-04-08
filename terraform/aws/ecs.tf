@@ -154,7 +154,7 @@ resource "aws_security_group_rule" "ecs_ingress_http" {
 }
 
 resource "aws_s3_bucket" "alb_logs" {
-  bucket = "unad-alb-logs-bucket"
+  bucket = "unad-alb-logs-bucket${var.postfix}"
 
   force_destroy = true
 }

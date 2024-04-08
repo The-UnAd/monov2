@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    random = {
+      source = "hashicorp/random"
+      version = "~> 3"
+    }
+  }
+}
+
 data "aws_region" "current" {}
 
 resource "aws_ecr_repository" "this" {
@@ -220,9 +229,16 @@ resource "aws_lb" "internal_lb" {
   }
 }
 
+resource "random_pet" "target_group" {
+  keepers = {
+    project_name = var.project_name
+  }
+  length = 1
+}
+
 resource "aws_lb_target_group" "this_internal_target_group" {
   count       = var.enable_vpc_link ? 1 : 0
-  name        = var.project_name
+  name        = "${var.project_name}-${random_pet.target_group.id}"
   port        = var.container_port
   protocol    = "TCP"
   vpc_id      = var.vpc_id

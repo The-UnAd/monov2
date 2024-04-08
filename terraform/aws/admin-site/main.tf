@@ -5,12 +5,12 @@ provider "aws" {
 
 locals {
   admin_site_domain_name     = "portal.${data.aws_route53_zone.portal.name}"
-  admin_site_certificate_arn = aws_acm_certificate.portal_wildcard.arn
+  admin_site_certificate_arn = aws_acm_certificate.main_wildcard.arn
   cloudfront_origin          = "S3-${aws_s3_bucket.admin_site.id}"
 }
 
 resource "aws_s3_bucket" "admin_site" {
-  bucket        = "unad-admin-site"
+  bucket        = "unad-admin-site${var.postfix}"
   force_destroy = var.environment == "production" ? false : true
 }
 

@@ -2,6 +2,11 @@ name: Build and Deploy signup-site to ECS
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to run tests against'
+        type: environment
+        required: true
 
 permissions:
   packages: read
@@ -16,7 +21,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: production
+    environment: development
 
     steps:
       - name: Checkout code

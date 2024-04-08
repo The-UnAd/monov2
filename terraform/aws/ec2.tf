@@ -10,17 +10,25 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-data "aws_secretsmanager_secret" "jumpbox_ssh_keys" {
-  name = "/unad/ec2/jumpbox/ssh-keypair"
+resource "tls_private_key" "jumpbox_private_key" {
+  algorithm = "ED25519"
 }
 
-data "aws_secretsmanager_secret_version" "jumpbox_ssh_keys" {
-  secret_id = data.aws_secretsmanager_secret.jumpbox_ssh_keys.id
+resource "aws_ssm_parameter" "jumpbox_private_key" {
+  name  = "/ec2/jumpbox/private_key"
+  type  = "SecureString"
+  value = tls_private_key.jwt_key.private_key_openssh
+  tags = {
+    managedBy = "terraform"
+  }
 }
 
 resource "aws_key_pair" "jumpbox" {
   key_name   = "jumpbox"
-  public_key = file(pathexpand("~/.ssh/jumpbox_ed25519.pub")) # TODO: this should come from secrets manager
+  public_key = tls_private_key.jumpbox_private_key.public_key_openssh
+  tags = {
+    managedBy = "terraform"
+  }
 }
 
 resource "aws_instance" "jumpbox" {
@@ -35,12 +43,16 @@ resource "aws_instance" "jumpbox" {
   }
   tags = {
     Name = "jumpbox"
+    managedBy = "terraform"
   }
 }
 
 resource "aws_security_group" "jumpbox" {
   name_prefix = "jumpbox-"
   vpc_id      = aws_vpc.vpc.id
+  tags = {
+    managedBy = "terraform"
+  }
 }
 
 resource "aws_security_group_rule" "jumpbox_ingress_ssh" {

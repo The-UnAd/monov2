@@ -1,7 +1,8 @@
 
 resource "aws_vpc" "vpc" {
   tags = {
-    Name = "unad-vpc"
+    Name      = "unad-vpc"
+    managedBy = "terraform"
   }
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true

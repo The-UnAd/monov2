@@ -1,5 +1,5 @@
 resource "aws_cognito_user_pool" "cognito_pool" {
-  name = "unad-cognito-pool"
+  name = "unad-cognito-pool${var.postfix}"
 
   username_attributes      = ["email"]
   auto_verified_attributes = ["email"]
@@ -58,14 +58,14 @@ resource "aws_cognito_user" "test_user" {
 }
 
 resource "aws_cognito_user_pool_client" "cognito_client" {
-  name                                 = "unad-user-pool-client"
+  name                                 = "unad-user-pool-client${var.postfix}"
   user_pool_id                         = aws_cognito_user_pool.cognito_pool.id
   generate_secret                      = false
   explicit_auth_flows                  = ["USER_PASSWORD_AUTH"]
 }
 
 resource "aws_cognito_user_pool_domain" "main" {
-  domain       = "unad"
+  domain       = "unad${var.postfix}"
   user_pool_id = aws_cognito_user_pool.cognito_pool.id
 }
 output "cognito_pool_id" {

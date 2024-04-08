@@ -131,3 +131,9 @@ variable "admin_site_bucket_name" {
   type     = string
   nullable = false
 }
+
+variable "postfix" {
+  description = "Postfix to apply to names that have to be globally unique"
+  type        = string
+  nullable    = false
+}

@@ -1,9 +1,11 @@
-variable "portal_dns_zone" {
-  description = "The domain name of the admin site"
-  type        = string  
-}
 
 variable "environment" {
   description = "The environment to deploy to"
   type        = string 
+}
+
+variable "postfix" {
+  description = "Postfix to apply to names that have to be globally unique"
+  type     = string
+  nullable = false
 }

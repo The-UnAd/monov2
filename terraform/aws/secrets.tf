@@ -3,7 +3,6 @@ resource "tls_private_key" "jwt_key" {
   algorithm = "RSA"
 }
 
-
 resource "aws_ssm_parameter" "jwt_private_key" {
   name  = "/jwt/private_key"
   type  = "SecureString"
