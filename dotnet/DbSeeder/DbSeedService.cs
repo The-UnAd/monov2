@@ -1,23 +1,16 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using StackExchange.Redis;
-using Stripe;
 using UnAd.Data.Users;
 using UnAd.Data.Users.Models;
-using UnAd.Redis;
 
 namespace DbSeeder;
 
 internal class DbSeedService(ILogger<DbSeedService> logger,
-                           IStripeClient stripe,
-                           IConnectionMultiplexer redis,
                            UserDbContext userDbContext,
                            IHostApplicationLifetime appLifetime) : IHostedService {
 
     public async Task StartAsync(CancellationToken cancellationToken) {
         logger.LogServiceStarting();
-
-        await StoreProducts(cancellationToken);
 
         await StoreDefaultClient(cancellationToken);
 
@@ -35,34 +28,6 @@ internal class DbSeedService(ILogger<DbSeedService> logger,
             });
             await userDbContext.SaveChangesAsync(cancellationToken);
             logger.LogStoredDefaultClient(newClient.Entity.Id);
-        }
-    }
-
-    private async Task StoreProducts(CancellationToken cancellationToken) {
-        var productService = new ProductService(stripe);
-        var priceService = new PriceService(stripe);
-
-        try {
-            var products = await productService.ListAsync(new ProductListOptions {
-                Limit = 10, // TODO: how do I decide how many to get?
-                Active = true,
-                Type = "service"
-            }, cancellationToken: cancellationToken);
-
-            var db = redis.GetDatabase();
-            logger.LogConnectedToRedis(redis.GetEndPoints().First());
-            foreach (var product in products) {
-                var prices = await priceService.ListAsync(new PriceListOptions {
-                    Product = product.Id
-                }, cancellationToken: cancellationToken);
-                foreach (var price in prices) {
-                    db.StorePrice(price.Id, product.Name, product.Description ?? string.Empty);
-                    db.SetPriceLimits(price.Id, price.Metadata);
-                    logger.LogStoredPriceLimits(price.Id, product.Name);
-                }
-            }
-        } catch (Exception ex) {
-            logger.LogException(ex);
         }
     }
 

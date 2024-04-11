@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <InvariantGlobalization>true</InvariantGlobalization>
     <UserSecretsId>cb119e69-2e23-4def-84bb-8ea69e0f9305</UserSecretsId>
+    <AssemblyName>seed</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,11 +19,11 @@
     <PackageReference Include="Polly" Version="8.3.1" />
     <PackageReference Include="StackExchange.Redis" Version="2.7.33" />
     <PackageReference Include="Stripe.net" Version="43.16.0" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\UnAd.Data\UnAd.Data.csproj" />
     <ProjectReference Include="..\UnAd.Redis\UnAd.Redis.csproj" />
   </ItemGroup>
-
 </Project>
