@@ -50,7 +50,7 @@ jobs:
           ssh -i ~/.ssh/jumpbox_ed25519 -o StrictHostKeyChecking=no -L 5050:${{ vars.DB_HOST }}:${{ vars.DB_PORT }} ubuntu@${{ vars.JUMPBOX_HOST }} -N & \
           echo $! > ssh_tunnel.pid
 
-          ls
+          ls app
           app/seed redis
 
           kill -9 $(lsof -t -i :5050)
