@@ -23,7 +23,7 @@ jobs:
       
       - name: Build seeder
         run: |
-          dotnet publish dotnet/DbSeeder/DbSeeder.csproj -c Release -o app/ /p:UseAppHost=false
+          dotnet publish dotnet/DbSeeder/DbSeeder.csproj -c Release -o app/ /p:UseAppHost=true
     
       - name: Setup SSH Keys
         run: |
@@ -37,7 +37,7 @@ jobs:
           ssh -i ~/.ssh/jumpbox_ed25519 -o StrictHostKeyChecking=no -L 5050:${{ vars.REDIS_HOST }}:${{ vars.REDIS_PORT }} ubuntu@${{ vars.JUMPBOX_HOST }} -N & \
           echo $! > ssh_tunnel.pid
 
-          app/seed db
+          ./app/seed db
 
           kill -9 $(lsof -t -i :5050)
         env:
@@ -50,8 +50,7 @@ jobs:
           ssh -i ~/.ssh/jumpbox_ed25519 -o StrictHostKeyChecking=no -L 5050:${{ vars.DB_HOST }}:${{ vars.DB_PORT }} ubuntu@${{ vars.JUMPBOX_HOST }} -N & \
           echo $! > ssh_tunnel.pid
 
-          ls app
-          app/seed redis
+          ./app/seed redis
 
           kill -9 $(lsof -t -i :5050)
         env:
