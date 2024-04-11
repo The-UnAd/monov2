@@ -34,7 +34,7 @@ jobs:
       - name: Setup SSH Tunnel and Run DB Seed
         if: github.event.inputs.target == 'db'
         run: |
-          ssh -i ~/.ssh/jumpbox_ed25519 -o StrictHostKeyChecking=no -L 5050:${{ vars.REDIS_HOST }}:${{ vars.REDIS_PORT }} ubuntu@${{ vars.JUMPBOX_HOST }} -N & \
+          ssh -i ~/.ssh/jumpbox_ed25519 -o StrictHostKeyChecking=no -L 5050:${{ vars.DB_HOST }}:${{ vars.DB_PORT }} ubuntu@${{ vars.JUMPBOX_HOST }} -N & \
           echo $! > ssh_tunnel.pid
 
           ./app/seed db
@@ -47,7 +47,7 @@ jobs:
       - name: Setup SSH Tunnel and Run Redis Seed
         if: github.event.inputs.target == 'redis'
         run: |
-          ssh -i ~/.ssh/jumpbox_ed25519 -o StrictHostKeyChecking=no -L 5050:${{ vars.DB_HOST }}:${{ vars.DB_PORT }} ubuntu@${{ vars.JUMPBOX_HOST }} -N & \
+          ssh -i ~/.ssh/jumpbox_ed25519 -o StrictHostKeyChecking=no -L 5050:${{ vars.REDIS_HOST }}:${{ vars.REDIS_PORT }} ubuntu@${{ vars.JUMPBOX_HOST }} -N & \
           echo $! > ssh_tunnel.pid
 
           ./app/seed redis
