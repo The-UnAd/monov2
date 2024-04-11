@@ -374,7 +374,7 @@ module "graphql-gateway" {
     valueFrom = "${aws_ssm_parameter.redis_connection_string.arn}"
     }, {
     name      = "COGNITO_AUTHORITY"
-    valueFrom = "${aws_ssm_parameter.cognito_pool_endpoint.arn}"
+    valueFrom = "${aws_cognito_user_pool.cognito_pool.endpoint}"
   }]
   container_environment = [{
     name  = "ASPNETCORE_ENVIRONMENT"

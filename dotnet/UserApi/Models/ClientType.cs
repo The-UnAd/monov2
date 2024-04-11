@@ -15,11 +15,6 @@ public class ClientResolvers {
         return stripeSubscription.ToSubscriptionType();
     }
 
-    public string GetSubscribeLink([Parent] Client client, IConfiguration config) {
-        var baseUrl = config.GetSubscribeHost();
-        return $"{baseUrl}/{client.Id}";
-    }
-
     public async Task<int> GetSubscriberCount([Parent] Client client, UserDbContext dbContext) =>
         await dbContext.Entry(client).Collection(c => c.SubscriberPhoneNumbers).Query().CountAsync();
 
@@ -58,7 +53,7 @@ public class ClientType : ObjectType<Client> {
             var baseUrl = context.Service<IConfiguration>().GetSubscribeHost();
             return $"{baseUrl}/{client.Slug}";
         });
-        descriptor.Field("maskedPhone").Resolve(context =>
+        descriptor.Field(f => f.PhoneNumber).Resolve(context =>
             Util.MaskString(context.Parent<Client>().PhoneNumber, 4));
     }
 }

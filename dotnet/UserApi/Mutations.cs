@@ -11,7 +11,7 @@ public class Mutation(ILogger<Mutation> logger) {
         if (client is null) {
             return new ClientNotFoundError(id);
         }
-        redis.GetDatabase().DeleteClientProductLimits(client.PhoneNumber);
+        redis.GetDatabase().DeleteClientPriceLimits(client.PhoneNumber);
         context.Clients.Remove(client);
         context.SaveChanges();
         return client;

@@ -4,11 +4,6 @@ locals {
   admin_site_certificate_arn = aws_acm_certificate.main_wildcard.arn
 }
 
-resource "aws_acm_certificate_validation" "main_wildcard" {
-  certificate_arn         = local.admin_site_certificate_arn
-  validation_record_fqdns = [for record in aws_route53_record.main_wildcard : record.fqdn]
-}
-
 resource "aws_s3_bucket" "admin_site" {
   bucket        = "unad-admin-site${var.postfix}"
   force_destroy = var.environment == "production" ? false : true

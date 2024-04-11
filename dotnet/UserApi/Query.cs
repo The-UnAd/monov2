@@ -47,10 +47,10 @@ public sealed class QueryType : ObjectType<Query> {
             .Type<UserType>()
             .Resolve(context => {
                 var user = context.GetUser();
-                if (user is null) {
-                    return null;
+                if (user?.FindFirst("username")?.Value is string userId) {
+                    return new User(userId);
                 }
-                return new User(user.FindFirst("username")?.Value ?? "anonymous");
+                return null;
             });
     }
 }

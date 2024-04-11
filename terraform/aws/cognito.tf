@@ -68,6 +68,7 @@ resource "aws_cognito_user_pool_domain" "main" {
   domain       = "unad${var.postfix}"
   user_pool_id = aws_cognito_user_pool.cognito_pool.id
 }
+
 output "cognito_pool_id" {
   value = aws_cognito_user_pool.cognito_pool.id
 }
@@ -100,7 +101,6 @@ resource "aws_ssm_parameter" "cognito_pool_endpoint" {
   type  = "String"
   value = "https://${aws_cognito_user_pool.cognito_pool.endpoint}"
 }
-
 
 resource "aws_ssm_parameter" "cognito_client_id" {
   name  = "/congito/client_id"

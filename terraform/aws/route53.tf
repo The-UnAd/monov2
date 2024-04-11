@@ -23,6 +23,11 @@ resource "aws_route53_record" "main_wildcard" {
   zone_id         = data.aws_route53_zone.main.zone_id
 }
 
+resource "aws_acm_certificate_validation" "main_wildcard" {
+  certificate_arn         = local.admin_site_certificate_arn
+  validation_record_fqdns = [for record in aws_route53_record.main_wildcard : record.fqdn]
+}
+
 data "aws_route53_zone" "subscribe" {
   name = var.subscribe_dns_zone
 }

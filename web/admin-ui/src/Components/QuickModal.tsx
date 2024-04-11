@@ -17,6 +17,7 @@ type QuickModalProps = {
   title: string;
   children: React.ReactNode;
   open: boolean;
+  allowClose?: boolean;
 } & ModalProps;
 
 const QuickModal = ({
@@ -25,15 +26,19 @@ const QuickModal = ({
   open,
   onClose,
   sx,
+  allowClose = true,
   ...props
 }: QuickModalProps) => {
   const [isOpen, setIsOpen] = useState(open);
   const handleClose = useCallback(
     (event: {}, reason: 'backdropClick' | 'escapeKeyDown') => {
+      if (!allowClose) {
+        return;
+      }
       setIsOpen(false);
       onClose?.(event, reason);
     },
-    [onClose]
+    [onClose, allowClose]
   );
   return (
     <Modal open={isOpen} onClose={handleClose} {...props}>

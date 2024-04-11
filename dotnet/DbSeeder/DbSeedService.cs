@@ -31,6 +31,7 @@ internal class DbSeedService(ILogger<DbSeedService> logger,
                 Locale = "en-US",
                 Name = "UnAd",
                 PhoneNumber = "+15555555555",
+                Slug = "test"
             });
             await userDbContext.SaveChangesAsync(cancellationToken);
             logger.LogStoredDefaultClient(newClient.Entity.Id);
