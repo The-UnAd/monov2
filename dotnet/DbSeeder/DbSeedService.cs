@@ -9,7 +9,7 @@ using UnAd.Redis;
 namespace DbSeeder;
 
 internal class DbSeedService(ILogger<DbSeedService> logger,
-                           StripeClient stripe,
+                           IStripeClient stripe,
                            IConnectionMultiplexer redis,
                            UserDbContext userDbContext,
                            IHostApplicationLifetime appLifetime) : IHostedService {

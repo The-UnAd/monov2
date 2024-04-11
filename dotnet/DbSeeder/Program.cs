@@ -20,7 +20,8 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
             services.AddSingleton<IConnectionMultiplexer>((s) =>
                 ConnectionMultiplexer.Connect(ConfigurationOptions.Parse(
                     config.GetRedisUrl())));
-            services.AddSingleton(s => new StripeClient(config.GetStripeApiKey()));
+            services.AddSingleton<IStripeClient>(s =>
+                new StripeClient(config.GetStripeApiKey()));
             services.AddDbContext<UserDbContext>((c, o) =>
                 o.UseNpgsql(config.GetConnectionString(AppConfiguration.ConnectionStrings.UserDb), o => {
                     o.EnableRetryOnFailure(3);
