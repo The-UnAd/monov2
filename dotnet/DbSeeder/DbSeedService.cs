@@ -56,7 +56,7 @@ internal class DbSeedService(ILogger<DbSeedService> logger,
                     Product = product.Id
                 }, cancellationToken: cancellationToken);
                 foreach (var price in prices) {
-                    db.StorePrice(price.Id, product.Name, product.Description);
+                    db.StorePrice(price.Id, product.Name, product.Description ?? string.Empty);
                     db.SetPriceLimits(price.Id, price.Metadata);
                     logger.LogStoredPriceLimits(price.Id, product.Name);
                 }

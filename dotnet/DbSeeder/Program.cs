@@ -22,7 +22,10 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
                     config.GetRedisUrl())));
             services.AddSingleton(s => new StripeClient(config.GetStripeApiKey()));
             services.AddDbContext<UserDbContext>((c, o) =>
-                o.UseNpgsql(config.GetConnectionString(AppConfiguration.ConnectionStrings.UserDb)));
+                o.UseNpgsql(config.GetConnectionString(AppConfiguration.ConnectionStrings.UserDb), o => {
+                    o.EnableRetryOnFailure(3);
+                    o.CommandTimeout(30);
+                }));
 
             services.AddHostedService<DbSeedService>();
         });
