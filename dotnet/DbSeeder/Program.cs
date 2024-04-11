@@ -9,12 +9,16 @@ using StackExchange.Redis;
 using Stripe;
 using UnAd.Data.Users;
 
-static IHostBuilder CreateDbHostBuilder(string[] args) =>
+static IHostBuilder CreateBaseHost(string[] args) =>
     Host.CreateDefaultBuilder(args)
         .ConfigureAppConfiguration((hostingContext, config) =>
-            config.AddUserSecrets<Program>()
-            .AddEnvironmentVariables())
-        .UseConsoleLifetime()
+            config
+                .AddUserSecrets<Program>()
+                .AddEnvironmentVariables())
+        .UseConsoleLifetime();
+
+static IHostBuilder CreateDbHostBuilder(string[] args) =>
+    CreateBaseHost(args)
         .ConfigureServices((hostContext, services) => {
             var config = hostContext.Configuration;
             services.AddLogging(configure => configure.AddConsole());
@@ -28,17 +32,13 @@ static IHostBuilder CreateDbHostBuilder(string[] args) =>
         });
 
 static IHostBuilder CreateRedisHostBuilder(string[] args) =>
-    Host.CreateDefaultBuilder(args)
-        .ConfigureAppConfiguration((hostingContext, config) =>
-            config.AddUserSecrets<Program>()
-            .AddEnvironmentVariables())
-        .UseConsoleLifetime()
+    CreateBaseHost(args)
         .ConfigureServices((hostContext, services) => {
             var config = hostContext.Configuration;
             services.AddLogging(configure => configure.AddConsole());
             services.AddSingleton<IConnectionMultiplexer>((s) =>
-                ConnectionMultiplexer.Connect(ConfigurationOptions.Parse(
-                    config.GetRedisUrl())));
+                ConnectionMultiplexer.Connect(
+                    ConfigurationOptions.Parse(config.GetRedisUrl())));
             services.AddSingleton<IStripeClient>(s =>
                 new StripeClient(config.GetStripeApiKey()));
 
