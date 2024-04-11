@@ -42,8 +42,6 @@ static IHostBuilder CreateRedisHostBuilder(string[] args) =>
             services.AddSingleton<IStripeClient>(s =>
                 new StripeClient(config.GetStripeApiKey()));
 
-            services.AddHostedService<DbSeedService>();
-
             services.AddHostedService<RedisSeedService>();
         });
 

@@ -17,7 +17,7 @@ jobs:
         with:
           dotnet-version: '8.0'
       
-      - name: Install dependencies
+      - name: Build seeder
         run: dotnet publish dotnet/DbSeeder/DbSeeder.csproj -c Release -o ./publish /p:UseAppHost=false
     
       - name: Setup SSH Keys
