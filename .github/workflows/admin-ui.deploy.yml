@@ -2,6 +2,11 @@ name: Build and Deploy admin-ui to ECS
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        type: environment
+        required: true
 
 env:
   ECR_REPOSITORY: unad/admin-ui
