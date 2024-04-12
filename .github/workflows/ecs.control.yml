@@ -53,7 +53,7 @@ jobs:
           aws ecs update-service --cluster $ECS_CLUSTER --service ${{ github.event.inputs.service }} --desired-count 1
   run-prod:
     runs-on: ubuntu-latest
-    environment: production
+    environment: development
 
     steps:
       - name: Checkout code
