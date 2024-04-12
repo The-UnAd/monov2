@@ -148,7 +148,7 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
             var message = localizer.GetStringWithReplacements("ClientHelpMessage", new {
                 accountUrl = config.GetAccountUrl(),
                 subUrl = config.GetStripePortalUrl(),
-                shareUrl = $"{config.GetClientLinkBaseUri()}/{client.Id}", // TODO: should be short ID
+                shareUrl = $"{config.GetClientLinkBaseUri()}/{client.Slug}", // TODO: should be short ID
             });
             return CreateSmsResponseContent(message);
         }

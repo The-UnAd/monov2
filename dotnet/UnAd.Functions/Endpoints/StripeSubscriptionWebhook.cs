@@ -134,7 +134,7 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
             MessagingServiceSid = _messageServiceSid,
             Body = localizer.GetStringWithReplacements("SubscriptionStartedMessage",
             new {
-                shareLink = $"{_clientLinkBaseUri}/{client.Id}",
+                shareLink = $"{_clientLinkBaseUri}/{client.Slug}",
                 subLink = _stripePortalUrl,
                 trialInfo = subscription.TrialEnd.HasValue ?
                     "\n\n" + localizer.GetStringWithReplacements("TrialInfo",
@@ -174,7 +174,7 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
             MessagingServiceSid = _messageServiceSid,
             Body = localizer.GetStringWithReplacements("SubscriptionStartedMessage",
             new {
-                shareLink = $"{_clientLinkBaseUri}/{client.Id}",
+                shareLink = $"{_clientLinkBaseUri}/{client.Slug}",
                 subLink = _stripePortalUrl,
                 trialInfo = subscription.TrialEnd.HasValue ?
                     "\n\n" + localizer.GetStringWithReplacements("TrialInfo",
@@ -220,7 +220,7 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
             return;
         }
 
-        var priceId = subscription?.Items?.FirstOrDefault()?.Price.Id;
+        var priceId = subscription.Items?.FirstOrDefault()?.Price.Id;
         // TODO: store the product id in the client's subscription data
         // so we don't have to look it up later from Stripe
         var maxMessages = db.GetPriceLimitValue(priceId, "maxMessages");
@@ -230,7 +230,7 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
             MessagingServiceSid = _messageServiceSid,
             Body = localizer.GetStringWithReplacements("SubscriptionStartedMessage",
             new {
-                shareLink = $"{_clientLinkBaseUri}/{client.Id}",
+                shareLink = $"{_clientLinkBaseUri}/{client.Slug}",
                 subLink = _stripePortalUrl,
                 trialInfo = subscription.TrialEnd.HasValue ?
                     "\n\n" + localizer.GetStringWithReplacements("TrialInfo",
