@@ -1,3 +1,4 @@
+using System.Threading;
 using StackExchange.Redis;
 using Stripe;
 using UnAd.Redis;
@@ -6,6 +7,7 @@ namespace UnAd.Functions;
 
 public class StripeProductWebhook(IConnectionMultiplexer redis,
                                   IStripeVerifier stripeVerifier,
+                                  IStripeClient stripeClient,
                                   IConfiguration config,
                                   ILogger<StripeProductWebhook> logger) {
 
@@ -47,9 +49,14 @@ public class StripeProductWebhook(IConnectionMultiplexer redis,
         }
 
         var db = redis.GetDatabase();
-        db.StoreProduct(product.Id, product.Name, product.Description);
-        db.SetProductLimits(product.Id, product.Metadata);
-        return;
+        var priceService = new PriceService(stripeClient);
+        var prices = priceService.List(new PriceListOptions {
+            Product = product.Id
+        });
+        foreach (var price in prices) {
+            db.StorePrice(price.Id, product.Name, product.Description);
+            db.SetPriceLimits(price.Id, price.Metadata);
+        }
     }
 
     private void HandleProductUpdatedEvent(Event stripeEvent) {
@@ -58,9 +65,14 @@ public class StripeProductWebhook(IConnectionMultiplexer redis,
             return;
         }
         var db = redis.GetDatabase();
-        db.StoreProduct(product.Id, product.Name, product.Description);
-        db.SetProductLimits(product.Id, product.Metadata);
-        return;
+        var priceService = new PriceService(stripeClient);
+        var prices = priceService.List(new PriceListOptions {
+            Product = product.Id
+        });
+        foreach (var price in prices) {
+            db.StorePrice(price.Id, product.Name, product.Description);
+            db.SetPriceLimits(price.Id, price.Metadata);
+        }
     }
 
     private void HandleProductDeletedEvent(Event stripeEvent) {

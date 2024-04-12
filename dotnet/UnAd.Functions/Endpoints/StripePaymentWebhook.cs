@@ -91,11 +91,15 @@ public class StripePaymentWebhook(IStripeClient stripeClient,
         // TODO: check if we can get the product ID from the invoice
         var subscription = await new SubscriptionService(stripeClient).GetAsync(invoice.SubscriptionId);
 
-        var productId = subscription.Items.Data[0].Plan.ProductId;
+        var priceId = subscription?.Items?.FirstOrDefault()?.Price.Id;
+        if (priceId is null) {
+            logger.LogWarning($"No price found for subscription {subscription.Id}");
+            return;
+        }
         var db = redis.GetDatabase();
-        var maxMessages = db.GetProductLimitValue(productId, "maxMessages");
+        var maxMessages = db.GetPriceLimitValue(priceId, "maxMessages");
 
-        db.SetClientProductLimit(client.PhoneNumber, "maxMessages", maxMessages);
+        db.SetClientPriceLimit(client.PhoneNumber, "maxMessages", maxMessages);
 
         SetThreadCulture(client.PhoneNumber, client.Locale);
         await messageSender.Send(client.PhoneNumber, localizer.GetStringWithReplacements("InvoicePaid", new {

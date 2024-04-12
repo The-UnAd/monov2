@@ -36,7 +36,7 @@ builder.Services.AddAuthentication(options => {
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options => {
-    options.Authority = builder.Configuration["Cognito:Authority"];
+    options.Authority = builder.Configuration.GetCognitoAuthority();
     options.TokenValidationParameters = new TokenValidationParameters {
         ValidateIssuerSigningKey = true,
         ValidateAudience = false

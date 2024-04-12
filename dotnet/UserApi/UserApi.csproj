@@ -14,21 +14,21 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.3">
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         <PrivateAssets>all</PrivateAssets>
       </PackageReference>
       <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="13.9.0" />
       <PackageReference Include="HotChocolate.AspNetCore.CommandLine" Version="13.9.0" />
-      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.3" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.4" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
       <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
       <PackageReference Include="HotChocolate.AspNetCore" Version="13.9.0" />
       <PackageReference Include="HotChocolate.Data.EntityFramework" Version="13.9.0" />
       <PackageReference Include="StackExchange.Redis" Version="2.7.33" />
-      <PackageReference Include="Stripe.net" Version="43.21.0" />
+      <PackageReference Include="Stripe.net" Version="44.1.0" />
       <PackageReference Include="Twilio" Version="7.0.4" />
     </ItemGroup>
 

@@ -21,7 +21,6 @@ export default function Layout({
       {token && (
         <Tabs value={location}>
           <Tab label="Home" value="/" to="/" component={Link} />
-          <Tab label="Other" value="/other" to="/other" component={Link} />
           <Tab
             label="Announcements"
             value="/announcements"
@@ -33,7 +32,14 @@ export default function Layout({
             value="/logout"
             to="/logout"
             component={Link}
-            style={{ marginLeft: 'auto' }}
+            style={{ marginLeft: 'auto', display: token ? 'initial' : 'none' }}
+          />
+          <Tab
+            label="Login"
+            value="/login"
+            to="/login"
+            component={Link}
+            style={{ marginLeft: 'auto', display: token ? 'none' : 'initial' }}
           />
         </Tabs>
       )}

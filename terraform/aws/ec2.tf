@@ -10,25 +10,9 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-resource "tls_private_key" "jumpbox_private_key" {
-  algorithm = "ED25519"
-}
-
-resource "aws_ssm_parameter" "jumpbox_private_key" {
-  name  = "/ec2/jumpbox/private_key"
-  type  = "SecureString"
-  value = tls_private_key.jwt_key.private_key_openssh
-  tags = {
-    managedBy = "terraform"
-  }
-}
-
 resource "aws_key_pair" "jumpbox" {
   key_name   = "jumpbox"
-  public_key = tls_private_key.jumpbox_private_key.public_key_openssh
-  tags = {
-    managedBy = "terraform"
-  }
+  public_key = file(pathexpand("~/.ssh/jumpbox_ed25519.pub"))
 }
 
 resource "aws_instance" "jumpbox" {

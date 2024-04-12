@@ -177,7 +177,7 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
             return CreateSmsResponseContent(localizer.GetString("NoPendingAnnouncement"));
         }
 
-        var messageMax = db.GetClientProductLimitValue(smsFrom, "maxMessages");
+        var messageMax = db.GetClientPriceLimitValue(smsFrom, "maxMessages");
         if (int.TryParse(messageMax, out var messagesLeft) && messagesLeft == 0) {
             // TODO: flesh out this message
             return CreateSmsResponseContent(localizer.GetString("NoMessagesRemaining"));
@@ -217,7 +217,7 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
         context.SaveChanges();
         db.DeletePendingAnnouncement(smsFrom);
         // TOOD: still need to store these in Redis
-        db.DecrementClientProductLimitValue(smsFrom, "maxMessages", 1);
+        db.DecrementClientPriceLimitValue(smsFrom, "maxMessages", 1);
         mixpanelClient.Track(Events.AnnouncementSent, new() {
             { "count", count.ToString(CultureInfo.InvariantCulture)}
         }, smsFrom).ConfigureAwait(false).GetAwaiter().GetResult();

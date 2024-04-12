@@ -59,7 +59,7 @@ public class StripeCustomerWebhook(IConnectionMultiplexer redis,
             return;
         }
         var db = redis.GetDatabase();
-        db.DeleteClientProductLimits(client.PhoneNumber);
+        db.DeleteClientPriceLimits(client.PhoneNumber);
 
         context.Remove(client);
         await context.SaveChangesAsync();
