@@ -2,6 +2,11 @@ name: Build and Deploy signup-site to ECS
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        type: environment
+        required: true
 
 permissions:
   packages: read
@@ -14,9 +19,9 @@ env:
   CONTEXT_PATH: web/unad-web
   
 jobs:
-  build:
+  deploy-dev:
     runs-on: ubuntu-latest
-    environment: production
+    environment: development
 
     steps:
       - name: Checkout code
@@ -65,4 +70,3 @@ jobs:
 
       - name: Wait for deployment to stabilize
         run: aws ecs wait services-stable --services $ECS_SERVICE --cluster $ECS_CLUSTER
-      

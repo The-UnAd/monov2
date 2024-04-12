@@ -1,42 +1,11 @@
 
 locals {
-  admin_site_domain_name     = "portal.${data.aws_route53_zone.portal.name}"
-  admin_site_certificate_arn = aws_acm_certificate.portal_wildcard.arn
-}
-
-data "aws_route53_zone" "portal" {
-  name = var.portal_dns_zone
-}
-
-resource "aws_acm_certificate" "portal_wildcard" {
-  domain_name       = "*.${data.aws_route53_zone.portal.name}"
-  validation_method = "DNS"
-}
-
-resource "aws_route53_record" "portal_wildcard" {
-  for_each = {
-    for dvo in aws_acm_certificate.portal_wildcard.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
-    }
-  }
-
-  allow_overwrite = true
-  name            = each.value.name
-  records         = [each.value.record]
-  ttl             = 60
-  type            = each.value.type
-  zone_id         = data.aws_route53_zone.portal.zone_id
-}
-
-resource "aws_acm_certificate_validation" "portal_wildcard" {
-  certificate_arn         = local.admin_site_certificate_arn
-  validation_record_fqdns = [for record in aws_route53_record.portal_wildcard : record.fqdn]
+  admin_site_domain_name     = "portal.${data.aws_route53_zone.main.name}"
+  admin_site_certificate_arn = aws_acm_certificate.main_wildcard.arn
 }
 
 resource "aws_s3_bucket" "admin_site" {
-  bucket        = "unad-admin-site"
+  bucket        = "unad-admin-site${var.postfix}"
   force_destroy = var.environment == "production" ? false : true
 }
 

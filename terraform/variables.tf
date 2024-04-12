@@ -6,3 +6,4 @@ variable "SIGNUP_DNS_ZONE" {}
 variable "SUBSCRIBE_DNS_ZONE" {}
 variable "PORTAL_DNS_ZONE" {}
 variable "ENVIRONMENT" {}
+variable "VPC_CIDR" {}

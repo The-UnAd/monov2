@@ -33,9 +33,9 @@ type FormInputs = {
   password: string;
 };
 
-type LoginFormProps = {
+type LoginFormProps = Readonly<{
   onLogin: () => void;
-};
+}>;
 
 export default function LoginForm({ onLogin }: LoginFormProps) {
   const {
@@ -50,10 +50,12 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
   });
 
   const { storeToken } = useAuth();
+  const [loginInFlight, setLoginInFlight] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const login: SubmitHandler<FormInputs> = async ({ username, password }) => {
     try {
+      setLoginInFlight(true);
       const res = await fetch('/auth', {
         method: 'POST',
         headers: {
@@ -71,6 +73,8 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
       onLogin();
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setLoginInFlight(false);
     }
   };
   return (
@@ -97,6 +101,11 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
           open={!!error}
           onClose={() => setError(null)}
         />
+      )}
+      {loginInFlight && (
+        <QuickModal open={loginInFlight} allowClose={false} title="Logging In">
+          <Typography>Please wait...</Typography>
+        </QuickModal>
       )}
     </Box>
   );

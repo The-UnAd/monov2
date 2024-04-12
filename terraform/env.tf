@@ -1,3 +1,13 @@
+terraform {
+  required_providers {
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2"
+    }
+  }
+}
+
+
 resource "local_sensitive_file" "env_ec2" {
   filename = "../dotenv/.env.ec2"
   content  = <<-EOT

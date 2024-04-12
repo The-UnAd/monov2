@@ -23,6 +23,7 @@ export const LoginQueryDef = graphql`
 export default function LoginPage({ data }: Readonly<RelayRoute<LoginQuery>>) {
   const { refresh } = useRelayScreenContext();
   if (data.viewer?.id) {
+    debugger;
     return <Redirect to="/" />;
   }
 

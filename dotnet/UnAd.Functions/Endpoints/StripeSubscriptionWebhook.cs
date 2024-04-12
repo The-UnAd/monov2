@@ -125,16 +125,16 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
         client.SubscriptionId = subscription.Id;
         await context.SaveChangesAsync();
 
-        var productId = subscription.Items.Data[0].Plan.ProductId;
+        var priceId = subscription?.Items?.FirstOrDefault()?.Price.Id;
         var db = redis.GetDatabase();
-        var maxMessages = db.GetProductLimitValue(productId, "maxMessages");
-        db.SetClientProductLimit(client.PhoneNumber, "maxMessages", maxMessages);
+        var maxMessages = db.GetPriceLimitValue(priceId, "maxMessages");
+        db.SetClientPriceLimit(client.PhoneNumber, "maxMessages", maxMessages);
 
         await MessageResource.CreateAsync(new CreateMessageOptions(client.PhoneNumber) {
             MessagingServiceSid = _messageServiceSid,
             Body = localizer.GetStringWithReplacements("SubscriptionStartedMessage",
             new {
-                shareLink = $"{_clientLinkBaseUri}/{client.Id}",
+                shareLink = $"{_clientLinkBaseUri}/{client.Slug}",
                 subLink = _stripePortalUrl,
                 trialInfo = subscription.TrialEnd.HasValue ?
                     "\n\n" + localizer.GetStringWithReplacements("TrialInfo",
@@ -165,16 +165,16 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
         client.SubscriptionId = subscription.Id;
         await context.SaveChangesAsync();
 
-        var productId = subscription.Items.Data[0].Plan.ProductId;
+        var priceId = subscription?.Items?.FirstOrDefault()?.Price.Id;
         var db = redis.GetDatabase();
-        var maxMessages = db.GetProductLimitValue(productId, "maxMessages");
-        db.SetClientProductLimit(client.PhoneNumber, "maxMessages", maxMessages);
+        var maxMessages = db.GetPriceLimitValue(priceId, "maxMessages");
+        db.SetClientPriceLimit(client.PhoneNumber, "maxMessages", maxMessages);
 
         await MessageResource.CreateAsync(new CreateMessageOptions(client.PhoneNumber) {
             MessagingServiceSid = _messageServiceSid,
             Body = localizer.GetStringWithReplacements("SubscriptionStartedMessage",
             new {
-                shareLink = $"{_clientLinkBaseUri}/{client.Id}",
+                shareLink = $"{_clientLinkBaseUri}/{client.Slug}",
                 subLink = _stripePortalUrl,
                 trialInfo = subscription.TrialEnd.HasValue ?
                     "\n\n" + localizer.GetStringWithReplacements("TrialInfo",
@@ -207,7 +207,7 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
         if (subscription.CancellationDetails is not null) {
             client.SubscriptionId = null;
             await context.SaveChangesAsync();
-            db.SetClientProductLimit(client.PhoneNumber, "maxMessages", 0);
+            db.SetClientPriceLimit(client.PhoneNumber, "maxMessages", 0);
             await MessageResource.CreateAsync(new CreateMessageOptions(client.PhoneNumber) {
                 MessagingServiceSid = _messageServiceSid,
                 Body = localizer.GetStringWithReplacements("SubscriptionCanceledMessage", new {
@@ -220,17 +220,17 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
             return;
         }
 
-        var productId = subscription.Items.Data[0].Plan.ProductId;
+        var priceId = subscription.Items?.FirstOrDefault()?.Price.Id;
         // TODO: store the product id in the client's subscription data
         // so we don't have to look it up later from Stripe
-        var maxMessages = db.GetProductLimitValue(productId, "maxMessages");
-        db.SetClientProductLimit(client.PhoneNumber, "maxMessages", maxMessages);
+        var maxMessages = db.GetPriceLimitValue(priceId, "maxMessages");
+        db.SetClientPriceLimit(client.PhoneNumber, "maxMessages", maxMessages);
 
         await MessageResource.CreateAsync(new CreateMessageOptions(client.PhoneNumber) {
             MessagingServiceSid = _messageServiceSid,
             Body = localizer.GetStringWithReplacements("SubscriptionStartedMessage",
             new {
-                shareLink = $"{_clientLinkBaseUri}/{client.Id}",
+                shareLink = $"{_clientLinkBaseUri}/{client.Slug}",
                 subLink = _stripePortalUrl,
                 trialInfo = subscription.TrialEnd.HasValue ?
                     "\n\n" + localizer.GetStringWithReplacements("TrialInfo",

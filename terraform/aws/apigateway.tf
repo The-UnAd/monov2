@@ -80,7 +80,7 @@ resource "aws_api_gateway_domain_name" "admin_domain" {
 }
 
 resource "aws_route53_record" "admin_site" {
-  zone_id = data.aws_route53_zone.portal.zone_id
+  zone_id = data.aws_route53_zone.main.zone_id
   name    = local.admin_site_domain_name
   type    = "A"
 

@@ -1,5 +1,5 @@
 resource "aws_elasticache_subnet_group" "redis" {
-  name       = "unad-elasticache-subnet-group"
+  name       = "unad-elasticache-subnet-group${var.postfix}"
   subnet_ids = tolist(aws_subnet.private_subnet.*.id)
 }
 

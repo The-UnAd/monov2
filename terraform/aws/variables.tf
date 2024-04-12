@@ -4,12 +4,12 @@ variable "region" {
 }
 
 variable "vpc_cidr" {
-  default = "10.0.0.0/16"
+  nullable = false
+  type = string
 }
 
 variable "signup_dns_zone" {
   type     = string
-  nullable = false
 }
 
 variable "subscribe_dns_zone" {
@@ -17,7 +17,8 @@ variable "subscribe_dns_zone" {
   nullable = false
 }
 
-variable "portal_dns_zone" {
+variable "postfix" {
+  description = "Postfix to apply to names that have to be globally unique"
   type     = string
   nullable = false
 }

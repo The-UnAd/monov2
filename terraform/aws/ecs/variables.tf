@@ -1,5 +1,9 @@
 variable "project_name" {
   type = string
+  validation {
+    condition = length(var.project_name) < 20
+      error_message = "The project name must be less than 20 characters"
+  }
 }
 variable "container_port" {
   type = number
