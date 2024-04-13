@@ -12,13 +12,14 @@ export type SubscribeData = {
   terms: NonNullable<boolean | undefined>;
 }; // A bit hacky, but it works
 
-export interface SubscribeFormProps {
+type TFunc = ReturnType<typeof useTranslations<''>>;
+
+export type SubscribeFormProps = Readonly<{
   onSubmit: (data: SubscribeData) => void;
-}
+  tFunc: TFunc;
+}>;
 
-function SubscribeForm({ onSubmit }: SubscribeFormProps) {
-  const t = useTranslations('Components/SubscribeForm');
-
+function SubscribeForm({ onSubmit, tFunc: t }: SubscribeFormProps) {
   const schema = yup
     .object({
       phone: yup.string().matches(PhoneRegex, t('errors.phone')).required(),
@@ -42,7 +43,7 @@ function SubscribeForm({ onSubmit }: SubscribeFormProps) {
             data-testid="SubscribeForm__phone"
             type="tel"
             label={t('inputs.phone.label')}
-            placeholder={t('inputs.phone.placeholder') as string}
+            placeholder={t('inputs.phone.placeholder')}
             name="phone"
             minLength={10}
             maxLength={10}

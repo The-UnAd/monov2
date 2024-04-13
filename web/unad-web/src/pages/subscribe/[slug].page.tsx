@@ -28,14 +28,19 @@ function Subscribe({ name, clientId }: Readonly<SubscribeProps>) {
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState('');
   const t = useTranslations('pages/subscribe/[slug]');
+  const subscribeTFunc = useTranslations('Components/SubscribeForm');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const clickGetOtp = async ({ phone }: SubscribeData) => {
+    setIsSubmitting(true);
     const formattedPhone = sanitizePhoneNumber(phone);
     try {
       setPhoneNumber(formattedPhone);
       await generateOtp(formattedPhone);
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -51,7 +56,6 @@ function Subscribe({ name, clientId }: Readonly<SubscribeProps>) {
     },
     [phoneNumber, clientId, router]
   );
-
   return (
     <>
       <Head>
@@ -99,13 +103,34 @@ function Subscribe({ name, clientId }: Readonly<SubscribeProps>) {
                 </p>
               </div>
 
-              {!phoneNumber && <SubscribeForm onSubmit={clickGetOtp} />}
+              {!phoneNumber && (
+                <SubscribeForm tFunc={subscribeTFunc} onSubmit={clickGetOtp} />
+              )}
 
               {phoneNumber && (
-                <OtpForm
-                  tFunc={(k) => t(`OtpForm.${k}`)}
-                  onSubmit={clickValidate}
-                />
+                <>
+                  <OtpForm
+                    tFunc={(k) => t(`OtpForm.${k}`)}
+                    onSubmit={clickValidate}
+                  />
+                  <p>
+                    {t('missingCode')}&nbsp;
+                    <button
+                      onClick={() =>
+                        void clickGetOtp({
+                          phone: phoneNumber.slice(-10),
+                          terms: true,
+                        })
+                      }
+                      data-testid="Subscribe__resend"
+                      className="links"
+                    >
+                      {isSubmitting
+                        ? t('buttons.resend.loading')
+                        : t('buttons.resend.unpressed')}
+                    </button>
+                  </p>
+                </>
               )}
 
               {error && (

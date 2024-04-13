@@ -113,7 +113,7 @@ describe('Subscribe', () => {
     const otp = screen.getByTestId('OtpForm__otp');
     expect(otp).toBeInTheDocument();
     const otpSubmit = screen.getByTestId('OtpForm__submit');
-    expect(otp).toBeInTheDocument();
+    expect(otpSubmit).toBeInTheDocument();
     await user.type(otp, DefaultOtp);
 
     expect(otp).toHaveValue(DefaultOtp);
@@ -164,6 +164,84 @@ describe('Subscribe', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const error = screen.getByTestId('Subscribe__error');
     expect(error).toHaveTextContent('error');
+  });
+
+  it('renders resend button after submit', async () => {
+    fetchMock.mockOnce('/api/otp', {
+      status: 200,
+    });
+    const { phone, phoneSubmit, terms, user } = setup();
+
+    await user.type(phone, DefaultPhoneNumber);
+    await user.click(terms);
+
+    expect(phone).toHaveValue(DefaultPhoneNumber);
+    expect(phoneSubmit).toBeEnabled();
+
+    await user.click(phoneSubmit);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const resend = screen.getByTestId('Subscribe__resend');
+    expect(resend).toBeInTheDocument();
+  });
+
+  it('resends otp on resend click', async () => {
+    fetchMock.mockOnce('/api/otp', {
+      status: 200,
+    });
+    fetchMock.mockOnce(JSON.stringify({ message: 'error' }), {
+      status: 500,
+      url: '/api/validate',
+    });
+
+    const { phone, phoneSubmit, terms, user } = setup();
+
+    await user.type(phone, DefaultPhoneNumber);
+    await user.click(terms);
+
+    expect(phone).toHaveValue(DefaultPhoneNumber);
+    expect(phoneSubmit).toBeEnabled();
+
+    await user.click(phoneSubmit);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith('/api/otp', {
+      body: JSON.stringify({
+        phone: FormattedPhoneNumber,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+    });
+    const otp = screen.getByTestId('OtpForm__otp');
+    expect(otp).toBeInTheDocument();
+    const otpSubmit = screen.getByTestId('OtpForm__submit');
+    expect(otpSubmit).toBeInTheDocument();
+    const resend = screen.getByTestId('Subscribe__resend');
+    expect(resend).toBeInTheDocument();
+    await user.click(resend);
+    await user.type(otp, DefaultOtp);
+
+    expect(otp).toHaveValue(DefaultOtp);
+    expect(otpSubmit).toBeEnabled();
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    await user.click(otpSubmit);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/validate', {
+      body: JSON.stringify({
+        otp: DefaultOtp,
+        phone: FormattedPhoneNumber,
+        clientId: DefaultClientId,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+    });
   });
 
   it('renders error message after failed OTP entry', async () => {

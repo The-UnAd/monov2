@@ -10,9 +10,9 @@ export type PhoneNumberData = {
   phone: string;
 };
 
-export interface PhoneNumberFormProps {
+export type PhoneNumberFormProps = Readonly<{
   onSubmit: (data: PhoneNumberData) => void;
-}
+}>;
 
 function PhoneNumberForm({ onSubmit }: PhoneNumberFormProps) {
   const t = useTranslations('Components/PhoneNumberForm');
@@ -39,7 +39,7 @@ function PhoneNumberForm({ onSubmit }: PhoneNumberFormProps) {
           data-testid="PhoneNumberForm__phone"
           type="tel"
           label={t('inputs.phone.label')}
-          placeholder={t('inputs.phone.placeholder') as string}
+          placeholder={t('inputs.phone.placeholder')}
           name="phone"
           minLength={10}
           maxLength={10}

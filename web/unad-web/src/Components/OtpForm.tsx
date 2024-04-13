@@ -11,10 +11,10 @@ const schema = yup
   .required();
 export type OtpFormData = yup.InferType<typeof schema>;
 
-export interface OtpFormProps {
+export type OtpFormProps = Readonly<{
   onSubmit: (data: OtpFormData) => void;
   tFunc: (key: string) => string;
-}
+}>;
 
 function OtpForm({ onSubmit, tFunc: t }: OtpFormProps) {
   const methods = useForm<OtpFormData>({
@@ -39,7 +39,7 @@ function OtpForm({ onSubmit, tFunc: t }: OtpFormProps) {
             type="tel"
             label={t('inputs.otp.label')}
             name="otp"
-            placeholder={t('inputs.otp.placeholder') as string}
+            placeholder={t('inputs.otp.placeholder')}
             minLength={6}
             maxLength={6}
           />
