@@ -27,7 +27,7 @@ export default async function handler(
   const { phone, name } = req.body;
 
   try {
-    if (!validatePhone(phone as string)) {
+    if (!validatePhone(phone)) {
       throw new Error(t('errors.invalidPhoneNumber'));
     }
     const client = await prisma.client.findUnique({
@@ -40,7 +40,7 @@ export default async function handler(
     const secret = generateSecret();
     using models = createModelFactory();
     await models.connect();
-    await models.setOtpSecret(phone, secret);
+    await models.setOtpSecret(phone, secret, 0);
     const otp = generateToken(secret);
 
     await twilio.sendSms(phone, t('otpMessage', { otp }));
