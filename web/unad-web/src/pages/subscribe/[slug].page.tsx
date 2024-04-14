@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import type { GetServerSidePropsContext } from 'next/types';
 import { useTranslations } from 'next-intl';
 import type { ParsedUrlQuery } from 'querystring';
-import { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import OtpForm, { OtpFormData } from '@/Components/OtpForm';
 import SubscribeForm, { SubscribeData } from '@/Components/SubscribeForm';
@@ -23,6 +23,36 @@ interface ServerProps extends ParsedUrlQuery {
   slug: string;
 }
 
+export const CountdownSeconds = 30;
+
+function Countdown({
+  seconds,
+  children,
+  message,
+  done,
+}: React.PropsWithChildren<{
+  seconds: number;
+  message: (c: number) => string;
+  done?: () => void;
+}>) {
+  const [count, setCount] = useState(seconds);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCount((c) => c - 1);
+    }, 1000);
+    return () => {
+      setCount(seconds);
+      done?.();
+      clearInterval(interval);
+    };
+  }, [done, seconds]);
+  return (
+    <div data-testid="Subscribe__countdown">
+      {count > 0 ? message(count) : children}
+    </div>
+  );
+}
+
 function Subscribe({ name, clientId }: Readonly<SubscribeProps>) {
   const [error, setError] = useState('');
   const router = useRouter();
@@ -30,6 +60,7 @@ function Subscribe({ name, clientId }: Readonly<SubscribeProps>) {
   const t = useTranslations('pages/subscribe/[slug]');
   const subscribeTFunc = useTranslations('Components/SubscribeForm');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [countdown, setCountdown] = useState(CountdownSeconds);
 
   const clickGetOtp = async ({ phone }: SubscribeData) => {
     setIsSubmitting(true);
@@ -41,6 +72,7 @@ function Subscribe({ name, clientId }: Readonly<SubscribeProps>) {
       setError(err.message);
     } finally {
       setIsSubmitting(false);
+      setCountdown(CountdownSeconds);
     }
   };
 
@@ -104,7 +136,11 @@ function Subscribe({ name, clientId }: Readonly<SubscribeProps>) {
               </div>
 
               {!phoneNumber && (
-                <SubscribeForm tFunc={subscribeTFunc} onSubmit={clickGetOtp} />
+                <SubscribeForm
+                  data-testid="Subscribe__SubscribeForm"
+                  tFunc={subscribeTFunc}
+                  onSubmit={clickGetOtp}
+                />
               )}
 
               {phoneNumber && (
@@ -113,22 +149,30 @@ function Subscribe({ name, clientId }: Readonly<SubscribeProps>) {
                     tFunc={(k) => t(`OtpForm.${k}`)}
                     onSubmit={clickValidate}
                   />
+
                   <p>
                     {t('missingCode')}&nbsp;
-                    <button
-                      onClick={() =>
-                        void clickGetOtp({
-                          phone: phoneNumber.slice(-10),
-                          terms: true,
-                        })
-                      }
-                      data-testid="Subscribe__resend"
-                      className="links"
+                    <Countdown
+                      data-testid="Subscribe__countdown"
+                      seconds={countdown}
+                      message={(time) => t('countdown', { time })}
+                      done={() => setCountdown(0)}
                     >
-                      {isSubmitting
-                        ? t('buttons.resend.loading')
-                        : t('buttons.resend.unpressed')}
-                    </button>
+                      <button
+                        onClick={() =>
+                          void clickGetOtp({
+                            phone: phoneNumber.slice(-10),
+                            terms: true,
+                          })
+                        }
+                        data-testid="Subscribe__resend"
+                        className="links"
+                      >
+                        {isSubmitting
+                          ? t('buttons.resend.loading')
+                          : t('buttons.resend.unpressed')}
+                      </button>
+                    </Countdown>
                   </p>
                 </>
               )}

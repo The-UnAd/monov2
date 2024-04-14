@@ -6,6 +6,7 @@
     "build": "next build",
     "dev": "ts-node --project tsconfig.dev.json src/server.ts",
     "test": "jest",
+    "test:watch": "jest --watchAll=true",
     "test:cypress": "cypress run",
     "cypress": "cypress open",
     "lint": "next lint",

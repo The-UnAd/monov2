@@ -1,16 +1,16 @@
 import { withIntl } from '@t/util';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { IntlProvider, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import SubscribeForm, { SubscribeFormProps } from './SubscribeForm';
 
-const Sut = withIntl(SubscribeForm);
-
 const WrappedWithIntl = (props: Omit<SubscribeFormProps, 'tFunc'>) => {
-  const t = useTranslations('test');
-  return <Sut {...props} tFunc={t} />;
+  const t = useTranslations('Components/SubscribeForm');
+  return <SubscribeForm {...props} tFunc={t} />;
 };
+
+const Sut = withIntl(WrappedWithIntl);
 
 describe('SubscribeForm', () => {
   afterEach(() => {
@@ -18,11 +18,7 @@ describe('SubscribeForm', () => {
   });
 
   const setup = (props: Omit<SubscribeFormProps, 'tFunc'>) => {
-    const utils = render(
-      <IntlProvider locale="en" messages={{ test: {} }}>
-        <WrappedWithIntl {...props} />
-      </IntlProvider>
-    );
+    const utils = render(<Sut {...props} />);
     const phone = screen.getByTestId('SubscribeForm__phone');
     const submit = screen.getByTestId('SubscribeForm__submit');
     const terms = screen.getByTestId('SubscribeForm__terms');

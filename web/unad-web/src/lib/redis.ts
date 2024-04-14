@@ -55,7 +55,7 @@ export function createModelFactory() {
 export interface ModelFactoryInterface extends Disposable {
   createSession(jwt: string): Promise<string>;
   getSession(token: string): Promise<string | null>;
-  setOtpSecret(phone: string, secret: string): Promise<void>;
+  setOtpSecret(phone: string, secret: string, countdown: number): Promise<void>;
   getOtpSecret(phone: string): Promise<string | null>;
   deleteOtpSecret(phone: string): Promise<void>;
   healthCheck(): Promise<boolean>;
@@ -84,9 +84,12 @@ export type TransactionalModelFactoryInterface = ModelFactoryInterface &
  * Represents a ModelFactory that provides methods for interacting with Redis and creating model instances.
  */
 class ModelFactory implements TransactionalModelFactoryInterface {
-  public static keys = {
+  public static readonly keys = {
     otpSecret(phone: string) {
       return `otp:${phone}:secret`;
+    },
+    otpSecretTimeout(phone: string) {
+      return `otp:${phone}:timeout`;
     },
     sessionToken(token: string) {
       return `session:${token}`;
@@ -247,10 +250,29 @@ class ModelFactory implements TransactionalModelFactoryInterface {
    * @param phone Phone number associated with the OTP secret
    * @returns OTP secret
    */
-  public async setOtpSecret(phone: string, secret: string): Promise<void> {
+  public async setOtpSecret(
+    phone: string,
+    secret: string,
+    countdown: number
+  ): Promise<void> {
+    const timeout = await this.redisClient.ttl(
+      ModelFactory.keys.otpSecretTimeout(phone)
+    );
+    if (timeout > 0) {
+      throw new Error(
+        `Please wait ${timeout} seconds before requesting a new OTP`
+      );
+    }
     await this.redisClient.set(ModelFactory.keys.otpSecret(phone), secret, {
       EX: 60 * 5,
     });
+    await this.redisClient.set(
+      ModelFactory.keys.otpSecretTimeout(phone),
+      secret,
+      {
+        EX: countdown,
+      }
+    );
   }
 
   public async getOtpSecret(phone: string): Promise<string | null> {
