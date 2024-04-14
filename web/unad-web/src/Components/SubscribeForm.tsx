@@ -1,5 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 
@@ -12,20 +13,25 @@ export type SubscribeData = {
   terms: NonNullable<boolean | undefined>;
 }; // A bit hacky, but it works
 
-export interface SubscribeFormProps {
+type TFunc = ReturnType<typeof useTranslations<''>>;
+
+export type SubscribeFormProps = Readonly<{
   onSubmit: (data: SubscribeData) => void;
-}
+  tFunc: TFunc;
+}>;
 
-function SubscribeForm({ onSubmit }: SubscribeFormProps) {
-  const t = useTranslations('Components/SubscribeForm');
-
-  const schema = yup
-    .object({
-      phone: yup.string().matches(PhoneRegex, t('errors.phone')).required(),
-      terms: yup.boolean().oneOf([true], t('errors.terms')).required(),
-    })
-    .required();
-  const methods = useForm<SubscribeData>({
+function SubscribeForm({ onSubmit, tFunc: t, ...props }: SubscribeFormProps) {
+  const schema = useMemo(
+    () =>
+      yup
+        .object({
+          phone: yup.string().matches(PhoneRegex, t('errors.phone')).required(),
+          terms: yup.boolean().oneOf([true], t('errors.terms')).required(),
+        })
+        .required(),
+    [t]
+  );
+  const methods = useForm<yup.InferType<typeof schema>>({
     resolver: yupResolver(schema),
     mode: 'onBlur',
   });
@@ -36,13 +42,13 @@ function SubscribeForm({ onSubmit }: SubscribeFormProps) {
 
   return (
     <FormProvider {...methods}>
-      <div className="form my-2">
+      <div className="form my-2" {...props}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <TextInput
             data-testid="SubscribeForm__phone"
             type="tel"
             label={t('inputs.phone.label')}
-            placeholder={t('inputs.phone.placeholder') as string}
+            placeholder={t('inputs.phone.placeholder')}
             name="phone"
             minLength={10}
             maxLength={10}

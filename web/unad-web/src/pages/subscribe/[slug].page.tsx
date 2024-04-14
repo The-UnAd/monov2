@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import type { GetServerSidePropsContext } from 'next/types';
 import { useTranslations } from 'next-intl';
 import type { ParsedUrlQuery } from 'querystring';
-import { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import OtpForm, { OtpFormData } from '@/Components/OtpForm';
 import SubscribeForm, { SubscribeData } from '@/Components/SubscribeForm';
@@ -23,19 +23,56 @@ interface ServerProps extends ParsedUrlQuery {
   slug: string;
 }
 
+export const CountdownSeconds = 30;
+
+function Countdown({
+  seconds,
+  children,
+  message,
+  done,
+}: React.PropsWithChildren<{
+  seconds: number;
+  message: (c: number) => string;
+  done?: () => void;
+}>) {
+  const [count, setCount] = useState(seconds);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCount((c) => c - 1);
+    }, 1000);
+    return () => {
+      setCount(seconds);
+      done?.();
+      clearInterval(interval);
+    };
+  }, [done, seconds]);
+  return (
+    <div data-testid="Subscribe__countdown">
+      {count > 0 ? message(count) : children}
+    </div>
+  );
+}
+
 function Subscribe({ name, clientId }: Readonly<SubscribeProps>) {
   const [error, setError] = useState('');
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState('');
   const t = useTranslations('pages/subscribe/[slug]');
+  const subscribeTFunc = useTranslations('Components/SubscribeForm');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [countdown, setCountdown] = useState(CountdownSeconds);
 
   const clickGetOtp = async ({ phone }: SubscribeData) => {
+    setIsSubmitting(true);
     const formattedPhone = sanitizePhoneNumber(phone);
     try {
       setPhoneNumber(formattedPhone);
       await generateOtp(formattedPhone);
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+      setCountdown(CountdownSeconds);
     }
   };
 
@@ -51,7 +88,6 @@ function Subscribe({ name, clientId }: Readonly<SubscribeProps>) {
     },
     [phoneNumber, clientId, router]
   );
-
   return (
     <>
       <Head>
@@ -99,13 +135,46 @@ function Subscribe({ name, clientId }: Readonly<SubscribeProps>) {
                 </p>
               </div>
 
-              {!phoneNumber && <SubscribeForm onSubmit={clickGetOtp} />}
+              {!phoneNumber && (
+                <SubscribeForm
+                  data-testid="Subscribe__SubscribeForm"
+                  tFunc={subscribeTFunc}
+                  onSubmit={clickGetOtp}
+                />
+              )}
 
               {phoneNumber && (
-                <OtpForm
-                  tFunc={(k) => t(`OtpForm.${k}`)}
-                  onSubmit={clickValidate}
-                />
+                <>
+                  <OtpForm
+                    tFunc={(k) => t(`OtpForm.${k}`)}
+                    onSubmit={clickValidate}
+                  />
+
+                  <p>
+                    {t('missingCode')}&nbsp;
+                    <Countdown
+                      data-testid="Subscribe__countdown"
+                      seconds={countdown}
+                      message={(time) => t('countdown', { time })}
+                      done={() => setCountdown(0)}
+                    >
+                      <button
+                        onClick={() =>
+                          void clickGetOtp({
+                            phone: phoneNumber.slice(-10),
+                            terms: true,
+                          })
+                        }
+                        data-testid="Subscribe__resend"
+                        className="links"
+                      >
+                        {isSubmitting
+                          ? t('buttons.resend.loading')
+                          : t('buttons.resend.unpressed')}
+                      </button>
+                    </Countdown>
+                  </p>
+                </>
               )}
 
               {error && (

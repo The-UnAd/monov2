@@ -1,17 +1,23 @@
 import { withIntl } from '@t/util';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useTranslations } from 'next-intl';
 
 import SubscribeForm, { SubscribeFormProps } from './SubscribeForm';
 
-const Sut = withIntl(SubscribeForm);
+const WrappedWithIntl = (props: Omit<SubscribeFormProps, 'tFunc'>) => {
+  const t = useTranslations('Components/SubscribeForm');
+  return <SubscribeForm {...props} tFunc={t} />;
+};
+
+const Sut = withIntl(WrappedWithIntl);
 
 describe('SubscribeForm', () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  const setup = (props: SubscribeFormProps) => {
+  const setup = (props: Omit<SubscribeFormProps, 'tFunc'>) => {
     const utils = render(<Sut {...props} />);
     const phone = screen.getByTestId('SubscribeForm__phone');
     const submit = screen.getByTestId('SubscribeForm__submit');
@@ -28,7 +34,7 @@ describe('SubscribeForm', () => {
   it('renders in a container', () => {
     const onSubmit = jest.fn();
 
-    render(<Sut onSubmit={onSubmit} />);
+    setup({ onSubmit });
 
     const input = screen.getByTestId('SubscribeForm__phone');
 

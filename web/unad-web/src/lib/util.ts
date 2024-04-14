@@ -1,5 +1,5 @@
 export function sanitizePhoneNumber(phone: string) {
-  return `+1${phone.trim().replace(/([^0-9]{10})$/g, '')}`;
+  return `+1${phone.trim().replace(/(\D{10})$/g, '')}`;
 }
 
 export function validatePhone(phone: string) {

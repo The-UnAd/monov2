@@ -10,10 +10,15 @@
         "placeholder": "000000"
       }
     },
+    "missingCode": "Didn't receive a code?",
     "buttons": {
       "submit": {
         "unpressed": "Register",
         "loading": "Getting Ready..."
+      },
+      "resend": {
+        "unpressed": "Resend Code",
+        "loading": "Please Wait..."
       }
     }
   },
@@ -30,7 +35,7 @@
     },
     "buttons": {
       "submit": {
-        "unpressed": "Log In",
+        "unpressed": "Send code",
         "loading": "Please Wait..."
       }
     }
@@ -54,7 +59,7 @@
     },
     "buttons": {
       "submit": {
-        "unpressed": "Subscribe",
+        "unpressed": "Send Code",
         "loading": "Getting Ready..."
       }
     }
@@ -345,6 +350,14 @@
     "links": {
       "learnMore": "<link>Learn more</link>"
     },
+    "buttons": {
+      "resend": {
+        "unpressed": "Resend Code",
+        "loading": "Please Wait..."
+      }
+    },
+    "missingCode": "Didn't receive a code?",
+    "countdown": "Resend code in {time} seconds",
     "OtpForm": {
       "instructions": "Please enter the one-time code sent to your phone number via text message.",
       "inputs": {
@@ -355,7 +368,7 @@
       },
       "buttons": {
         "submit": {
-          "unpressed": "Log In",
+          "unpressed": "Subscribe",
           "loading": "Please Wait..."
         }
       }

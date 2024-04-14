@@ -26,7 +26,7 @@ export default async function handler(
     await models.connect();
 
     const secret = generateSecret();
-    await models.setOtpSecret(phone, secret);
+    await models.setOtpSecret(phone, secret, 30);
     const otp = generateToken(secret);
 
     await twilio.sendSms(phone, t('sms.otp', { otp }));

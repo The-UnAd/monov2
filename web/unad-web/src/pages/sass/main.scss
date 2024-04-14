@@ -69,6 +69,14 @@ strong {
   font-size: $fs-lg-5;
 }
 
+button.links {
+  background: none;
+  border: none;
+  color: $white;
+  font-family: $secondary-font;
+  font-size: $fs-lg-5;
+}
+
 h1,
 h2,
 h3,
@@ -617,7 +625,6 @@ input[type='range']::-ms-track {
 }
 
 .form .validation {
-
   p,
   i {
     color: $tertiary;
@@ -775,9 +782,7 @@ input[type='range']::-ms-track {
   .app-nav {
     height: 90px;
     padding: $pd-2 $pd-2 0;
-  }
 
-  .app-nav {
     .logo {
       max-width: 120px;
       margin: 0 auto;

@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import fetchMock from 'jest-fetch-mock';
 import mockRouter from 'next-router-mock';
 
-import Subscribe from './[slug].page';
+import Subscribe, { CountdownSeconds } from './[slug].page';
 
 jest.mock('next/router', () => jest.requireActual('next-router-mock'));
 
@@ -20,9 +20,14 @@ describe('Subscribe', () => {
   beforeAll(() => {
     fetchMock.enableMocks();
   });
+  beforeEach(() => {
+    jest.clearAllTimers();
+  });
   afterEach(() => {
     jest.restoreAllMocks();
     fetchMock.resetMocks();
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
   });
   afterAll(() => {
     fetchMock.disableMocks();
@@ -37,7 +42,9 @@ describe('Subscribe', () => {
       phone,
       phoneSubmit,
       terms,
-      user: userEvent.setup(),
+      user: userEvent.setup({
+        advanceTimers: jest.runAllTimers,
+      }),
       ...utils,
     };
   };
@@ -65,11 +72,13 @@ describe('Subscribe', () => {
     expect(phoneSubmit).toBeEnabled();
 
     await user.click(phoneSubmit);
+    jest.advanceTimersByTime(1000);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const otp = screen.getByTestId('OtpForm__otp');
     expect(otp).toBeInTheDocument();
-  });
+    debugger;
+  }, 2000);
 
   it('renders success message after successful OTP entry', async () => {
     fetchMock.mockOnce('/api/otp', {
@@ -113,7 +122,7 @@ describe('Subscribe', () => {
     const otp = screen.getByTestId('OtpForm__otp');
     expect(otp).toBeInTheDocument();
     const otpSubmit = screen.getByTestId('OtpForm__submit');
-    expect(otp).toBeInTheDocument();
+    expect(otpSubmit).toBeInTheDocument();
     await user.type(otp, DefaultOtp);
 
     expect(otp).toHaveValue(DefaultOtp);
@@ -165,6 +174,87 @@ describe('Subscribe', () => {
     const error = screen.getByTestId('Subscribe__error');
     expect(error).toHaveTextContent('error');
   });
+
+  it('renders countdown after submit', async () => {
+    jest.useFakeTimers();
+    const otpMock = fetchMock.mockOnce('/api/otp', {
+      status: 200,
+    });
+    const { phone, phoneSubmit, terms, user } = setup();
+
+    await user.click(terms);
+
+    await user.type(phone, DefaultPhoneNumber);
+
+    await jest.runOnlyPendingTimersAsync();
+    expect(phone).toHaveValue(DefaultPhoneNumber);
+    expect(phoneSubmit).toBeEnabled();
+
+    await user.click(phoneSubmit);
+
+    expect(otpMock).toHaveBeenCalledTimes(1);
+    await jest.runOnlyPendingTimersAsync();
+    const countdown = screen.queryByTestId('Subscribe__countdown');
+    expect(countdown).toBeInTheDocument();
+  }, 1000);
+
+  it('renders resend button after submit', async () => {
+    jest.useFakeTimers();
+    const otpMock = fetchMock.mockOnce('/api/otp', {
+      status: 200,
+    });
+    const { phone, phoneSubmit, terms, user } = setup();
+
+    await user.click(terms);
+
+    await user.type(phone, DefaultPhoneNumber);
+
+    await jest.runOnlyPendingTimersAsync();
+    expect(phone).toHaveValue(DefaultPhoneNumber);
+    expect(phoneSubmit).toBeEnabled();
+
+    await user.click(phoneSubmit);
+
+    expect(otpMock).toHaveBeenCalledTimes(1);
+    await jest.runOnlyPendingTimersAsync();
+    const countdown = screen.queryByTestId('Subscribe__countdown');
+    expect(countdown).toBeInTheDocument();
+
+    await jest.advanceTimersByTimeAsync((CountdownSeconds + 1) * 1000);
+    const resend = screen.queryByTestId('Subscribe__resend');
+    expect(resend).toBeInTheDocument();
+  }, 1000);
+
+  it('resends otp on resend click', async () => {
+    jest.useFakeTimers();
+    const otpMock = fetchMock.mockOnce('/api/otp', {
+      status: 200,
+    });
+    const { phone, phoneSubmit, terms, user } = setup();
+
+    await user.click(terms);
+
+    await user.type(phone, DefaultPhoneNumber);
+
+    await jest.runOnlyPendingTimersAsync();
+    expect(phone).toHaveValue(DefaultPhoneNumber);
+    expect(phoneSubmit).toBeEnabled();
+
+    await user.click(phoneSubmit);
+
+    expect(otpMock).toHaveBeenCalledTimes(1);
+    await jest.runOnlyPendingTimersAsync();
+    const countdown = screen.queryByTestId('Subscribe__countdown');
+    expect(countdown).toBeInTheDocument();
+
+    await jest.advanceTimersByTimeAsync((CountdownSeconds + 1) * 1000);
+    const resend = screen.getByTestId('Subscribe__resend');
+    expect(resend).toBeInTheDocument();
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+    await user.click(resend);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  }, 1000);
 
   it('renders error message after failed OTP entry', async () => {
     fetchMock.mockOnce('/api/otp', {
