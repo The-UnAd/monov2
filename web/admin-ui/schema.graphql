@@ -1,3 +1,9 @@
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: SubscriptionType
+}
+
 type Query {
   client(id: ID!): Client
   clients(
@@ -81,6 +87,11 @@ type Mutation {
   unsubscribeFromClient(
     input: UnsubscribeFromClientInput!
   ): UnsubscribeFromClientPayload!
+}
+
+type SubscriptionType {
+  clientAdded: Client
+  subscriberAdded: Subscriber
 }
 
 type AddSubscriberPayload {

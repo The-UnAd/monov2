@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
@@ -63,6 +64,7 @@ builder.Services
     .AddProjections()
     .AddSorting()
     .AddMutationType<MutationType>()
+    .AddSubscriptionType<SubscriptionType>()
     .AddMutationConventions()
     .AddGlobalObjectIdentification()
     .RegisterDbContext<UserDbContext>(DbContextKind.Pooled)
@@ -72,6 +74,7 @@ builder.Services
     // TODO: this would be nice, but it breaks the stitching
     //.AddQueryFieldToMutationPayloads()
     .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true)
+    .AddRedisSubscriptions((sp) => sp.GetRequiredService<IConnectionMultiplexer>())
     .InitializeOnStartup();
 
 builder.Services.AddHealthChecks();
@@ -80,11 +83,14 @@ var app = builder.Build();
 
 app.UseHealthChecks("/health");
 
+app.UseWebSockets();
+
 if (!app.Environment.IsDevelopment()) {
     app.UseAuthentication();
     app.UseAuthorization();
 
 }
+
 app.MapGraphQL()
     .RequireAuthorization(
     !builder.Environment.IsDevelopment()

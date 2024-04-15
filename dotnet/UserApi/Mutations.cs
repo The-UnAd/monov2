@@ -1,3 +1,4 @@
+using HotChocolate.Subscriptions;
 using StackExchange.Redis;
 using UnAd.Data.Users;
 using UnAd.Data.Users.Models;
@@ -38,7 +39,7 @@ public class Mutation(ILogger<Mutation> logger) {
         return client;
     }
 
-    public MutationResult<Client, ClientNotFoundError, NotSubscribedError> UnsubscribeFromClient(UserDbContext context, Guid clientId, string subscriberId) {
+    public async Task<MutationResult<Client, ClientNotFoundError, NotSubscribedError>> UnsubscribeFromClient(UserDbContext context, Guid clientId, string subscriberId, ITopicEventSender sender) {
         var client = context.Clients.Find(clientId);
         if (client is null) {
             return new ClientNotFoundError(clientId);
@@ -50,8 +51,9 @@ public class Mutation(ILogger<Mutation> logger) {
         }
 
         client.SubscriberPhoneNumbers.Remove(subscriber);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
 
+        await sender.SendAsync(Subscriptions.Events.SubscriberUnsubscribed, subscriber);
         return client;
     }
 
@@ -65,7 +67,7 @@ public class Mutation(ILogger<Mutation> logger) {
         return subscriber;
     }
 
-    public MutationResult<Subscriber, SubscriberExistsError> AddSubscriber(UserDbContext context, AddSubscriberInput input) {
+    public async Task<MutationResult<Subscriber, SubscriberExistsError>> AddSubscriber(UserDbContext context, AddSubscriberInput input, ITopicEventSender sender) {
         var existing = context.Subscribers.Find(input.PhoneNumber);
         if (existing is not null) {
             return new SubscriberExistsError(input.PhoneNumber);
@@ -74,7 +76,8 @@ public class Mutation(ILogger<Mutation> logger) {
             PhoneNumber = input.PhoneNumber,
             Locale = input.Locale
         });
-        context.SaveChanges();
+        await context.SaveChangesAsync();
+        await sender.SendAsync(Subscriptions.Events.SubscriberSubscribed, newRecord.Entity);
         return newRecord.Entity;
     }
 
@@ -182,7 +185,7 @@ public class MutationType : ObjectType<Mutation> {
             .Argument("subscriberId", a => a.Type<NonNullType<IdType>>().ID(nameof(Subscriber)))
             .UseMutationConvention();
         descriptor
-            .Field(f => f.UnsubscribeFromClient(default!, default!, default!))
+            .Field(f => f.UnsubscribeFromClient(default!, default!, default!, default!))
             .Argument("clientId", a => a.Type<NonNullType<IdType>>().ID(nameof(Client)))
             .Argument("subscriberId", a => a.Type<NonNullType<IdType>>().ID(nameof(Subscriber)))
             .UseMutationConvention();

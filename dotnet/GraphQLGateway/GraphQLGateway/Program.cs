@@ -59,6 +59,8 @@ app.UseHeaderPropagation();
 
 app.MapHealthChecks("/health");
 
+app.UseWebSockets();
+
 app.MapGraphQL()
     .WithOptions(new GraphQLServerOptions {
         // Disable GraphQL IDE outside dev
