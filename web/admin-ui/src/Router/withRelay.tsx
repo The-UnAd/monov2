@@ -10,17 +10,14 @@ import type {
   PreloadableConcreteRequest,
 } from 'relay-runtime';
 
-export interface RelayNavigatorContextType {
-  readonly suspenseFallback:
-    | React.ReactNode
-    | JSX.Element
-    | (() => JSX.Element);
-}
-export interface RelayScreenContextType {
+export type RelayNavigatorContextType = Readonly<{
+  suspenseFallback: React.ReactNode | JSX.Element | (() => JSX.Element);
+}>;
+export type RelayScreenContextType = Readonly<{
   readonly queryReference: any;
   readonly refresh: () => void;
   readonly variables: any;
-}
+}>;
 
 const RelayNavigatorContext = React.createContext<RelayNavigatorContextType>(
   {} as RelayNavigatorContextType
@@ -36,15 +33,16 @@ export function useRelayScreenContext() {
   return useContext(RelayScreenContext);
 }
 
-interface ComponentWrapperProps {
-  readonly Component: React.ComponentType<any>;
-  readonly [key: string]: any;
-}
-interface RelayComponentWrapperProps<TQuery extends OperationType> {
-  readonly Component: React.ComponentType<any>;
-  readonly gqlQuery: GraphQLTaggedNode;
-  readonly queryReference: PreloadedQuery<TQuery>;
-}
+type ComponentWrapperProps = Readonly<{
+  Component: React.ComponentType<any>;
+  [key: string]: any;
+}>;
+
+type RelayComponentWrapperProps<TQuery extends OperationType> = Readonly<{
+  Component: React.ComponentType<any>;
+  gqlQuery: GraphQLTaggedNode;
+  queryReference: PreloadedQuery<TQuery>;
+}>;
 
 const ComponentWrapper = React.forwardRef<unknown, ComponentWrapperProps>(
   ({ Component, ...props }, ref) => {
@@ -63,9 +61,10 @@ function RelayComponentWrapper<T extends OperationType>({
   return <Component Component={Component} data={data} {...props} />;
 }
 
-export type RelayRoute<T extends OperationType> = {
-  readonly data: T['response'];
-};
+export type RelayRoute<T extends OperationType> = Readonly<{
+  data: T['response'];
+  params?: T['variables'];
+}>;
 
 type RelayRouteDefinition<T extends OperationType> = {
   query: PreloadableConcreteRequest<T>;
@@ -139,13 +138,14 @@ function RelayScreenWrapper<T extends OperationType>({
   );
 }
 
-export interface RelayWrapperProps {
-  readonly [key: string]: any;
-}
+export type RelayWrapperProps = Readonly<{
+  [key: string]: any;
+}>;
 
-export interface RelayNavigatorProps<T extends OperationType = OperationType> {
-  readonly screens: RouteDefinition<T>[];
-}
+export type RelayNavigatorProps<T extends OperationType = OperationType> =
+  Readonly<{
+    screens: RouteDefinition<T>[];
+  }>;
 
 export default function withRelay<T extends OperationType = OperationType>(
   WrappedNavigator: React.ComponentType<any>,

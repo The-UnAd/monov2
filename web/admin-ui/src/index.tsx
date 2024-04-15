@@ -5,7 +5,7 @@ import {
   StyledEngineProvider,
   ThemeProvider,
 } from '@mui/material/styles';
-import { CssBaseline, darkScrollbar } from '@mui/material';
+import { darkScrollbar } from '@mui/material';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
@@ -42,7 +42,6 @@ root.render(
   <React.StrictMode>
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>
-        <CssBaseline />
         <App />
       </ThemeProvider>
     </StyledEngineProvider>

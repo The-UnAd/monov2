@@ -9,14 +9,14 @@ import Stripe from 'stripe';
 import { prisma } from '@/lib/db';
 import { createTranslator, importMessages } from '@/lib/i18n';
 
-interface PageData {
+type PageData = Readonly<{
   clientId: string;
   pricingTableId: string;
-}
+}>;
 
-interface ServerProps extends ParsedUrlQuery {
+type ServerProps = ParsedUrlQuery & {
   clientId: string;
-}
+};
 
 function Pay({ clientId, pricingTableId }: PageData) {
   const t = useTranslations('pages/pay/[clientId]');

@@ -10,17 +10,17 @@ import { createTranslator, importMessages } from '@/lib/i18n';
 import { verifyJwt } from '@/lib/jwt';
 import { createModelFactory } from '@/lib/redis';
 
-export interface AccountProps {
+export type AccountProps = Readonly<{
   name: string;
   subscribers: number;
   announcementCount: number;
   portalUrl: string;
   subscribeUrl: string;
-}
+}>;
 
-interface ServerProps extends ParsedUrlQuery {
+type ServerProps = ParsedUrlQuery & {
   clientId: string;
-}
+};
 
 // TODO: show subscription link
 

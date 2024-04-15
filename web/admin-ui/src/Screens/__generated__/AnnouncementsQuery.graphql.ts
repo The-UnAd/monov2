@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<a49eb1db606efdd1f8e7efbb577a4077>>
+ * @generated SignedSource<<fc3e6e09c622c39eddb0f27ba0b308d1>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -11,8 +11,8 @@
 import { ConcreteRequest, Query } from 'relay-runtime';
 export type AnnouncementsQuery$variables = Record<PropertyKey, never>;
 export type AnnouncementsQuery$data = {
-  readonly countClients: number;
-  readonly countSubscribers: number;
+  readonly totalClients: number;
+  readonly totalSubscribers: number;
 };
 export type AnnouncementsQuery = {
   response: AnnouncementsQuery$data;
@@ -25,14 +25,14 @@ var v0 = [
     "alias": null,
     "args": null,
     "kind": "ScalarField",
-    "name": "countClients",
+    "name": "totalClients",
     "storageKey": null
   },
   {
     "alias": null,
     "args": null,
     "kind": "ScalarField",
-    "name": "countSubscribers",
+    "name": "totalSubscribers",
     "storageKey": null
   }
 ];
@@ -54,16 +54,16 @@ return {
     "selections": (v0/*: any*/)
   },
   "params": {
-    "cacheID": "d8523fbb86ca4139fdd90516cc294345",
+    "cacheID": "7b02d99a91154233a4479d1c047eddc7",
     "id": null,
     "metadata": {},
     "name": "AnnouncementsQuery",
     "operationKind": "query",
-    "text": "query AnnouncementsQuery {\n  countClients\n  countSubscribers\n}\n"
+    "text": "query AnnouncementsQuery {\n  totalClients\n  totalSubscribers\n}\n"
   }
 };
 })();
 
-(node as any).hash = "e76929cec8c7f0e74bd3b88e125b0b23";
+(node as any).hash = "19f483d74271d5e2dc7a23c5b69c3e33";
 
 export default node;

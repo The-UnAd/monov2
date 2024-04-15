@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<08c364159a4d6209bec2c4153dd5fbb8>>
+ * @generated SignedSource<<cc8b550b9fa92d015684bf105674a1cf>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -9,7 +9,7 @@
 // @ts-nocheck
 
 import { ConcreteRequest, Mutation } from 'relay-runtime';
-export type Audience = "CLIENTS" | "SUBSCRIBERS" | "%future added value";
+export type Audience = "ACTIVE_CLIENTS" | "ACTIVE_CLIENTS_WITHOUT_SUBSCRIBERS" | "ALL_CLIENTS" | "EVERYONE" | "SUBSCRIBERS" | "%future added value";
 export type SendMessageInput = {
   audience: Audience;
   message: string;

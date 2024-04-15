@@ -17,7 +17,7 @@ import { verifyJwt } from '@/lib/jwt';
 import { createModelFactory } from '@/lib/redis';
 import { sanitizePhoneNumber } from '@/lib/util';
 
-interface LoginProps {}
+type LoginProps = {};
 
 function Login() {
   const t = useTranslations('pages/account/index');

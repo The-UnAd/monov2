@@ -23,8 +23,6 @@ type Query {
     order: [ClientSortInput!]
     where: ClientFilterInput
   ): ClientsConnection
-  countClients: Int!
-  countSubscribers: Int!
 
   """
   Fetches an object given its ID.
@@ -45,12 +43,54 @@ type Query {
     """
     ids: [ID!]!
   ): [Node]!
+  subscriber(id: ID!): Subscriber
+  subscribers(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+    order: [SubscriberSortInput!]
+    where: SubscriberFilterInput
+  ): SubscribersConnection
+  totalClients: Int!
+  totalSubscribers: Int!
   viewer: User
 }
 
 type Mutation {
+  addSubscriber(input: AddSubscriberInput!): AddSubscriberPayload!
   deleteClient(input: DeleteClientInput!): DeleteClientPayload!
+  deleteSubscriber(input: DeleteSubscriberInput!): DeleteSubscriberPayload!
   sendMessage(input: SendMessageInput!): SendMessagePayload!
+  subscribeToClient(input: SubscribeToClientInput!): SubscribeToClientPayload!
+  unsubscribeFromClient(
+    input: UnsubscribeFromClientInput!
+  ): UnsubscribeFromClientPayload!
+}
+
+type AddSubscriberPayload {
+  errors: [AddSubscriberError!]
+  subscriber: Subscriber
+}
+
+type AlreadySubscribedError implements Error {
+  message: String!
+  phoneNumber: String!
 }
 
 type Announcement {
@@ -64,10 +104,12 @@ type Client implements Node {
   announcements: [Announcement!]!
   customerId: String
   id: ID!
+  joinedDate: DateTime
   locale: String!
   name: String!
   phoneNumber: String!
-  subscribeLink: String
+  slug: String!
+  subscribeLink: String!
   subscriberCount: Int!
   subscribers(
     """
@@ -141,6 +183,16 @@ type DeleteClientPayload {
   errors: [DeleteClientError!]
 }
 
+type DeleteSubscriberPayload {
+  errors: [DeleteSubscriberError!]
+  subscriber: Subscriber
+}
+
+type NotSubscribedError implements Error {
+  message: String!
+  phoneNumber: String!
+}
+
 """
 Information about pagination in a connection.
 """
@@ -173,6 +225,7 @@ type SendMessageFailed implements Error {
 
 type SendMessagePayload {
   errors: [SendMessageError!]
+  failed: Int
   sent: Int
 }
 
@@ -182,12 +235,44 @@ type StripeSubscription {
 }
 
 type Subscriber implements Node {
-  clients: [Client!]!
+  clients(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+    order: [ClientSortInput!]
+    where: ClientFilterInput
+  ): ClientsConnection
   id: ID!
   joinedDate: DateTime
   locale: String!
-  phoneNumber: String!
+  maskedPhone: String
   subscriptionCount: Int!
+}
+
+type SubscriberExistsError implements Error {
+  message: String!
+  phoneNumber: String!
+}
+
+type SubscriberNotFoundError implements Error {
+  message: String!
+  phoneNumber: String!
 }
 
 """
@@ -225,6 +310,16 @@ type SubscribersEdge {
   node: Subscriber!
 }
 
+type SubscribeToClientPayload {
+  client: Client
+  errors: [SubscribeToClientError!]
+}
+
+type UnsubscribeFromClientPayload {
+  client: Client
+  errors: [UnsubscribeFromClientError!]
+}
+
 type User {
   id: String!
 }
@@ -240,9 +335,25 @@ interface Node {
   id: ID!
 }
 
+union AddSubscriberError = SubscriberExistsError
+
 union DeleteClientError = ClientNotFoundError
 
+union DeleteSubscriberError = SubscriberNotFoundError
+
 union SendMessageError = SendMessageFailed
+
+union SubscribeToClientError =
+  | ClientNotFoundError
+  | SubscriberNotFoundError
+  | AlreadySubscribedError
+
+union UnsubscribeFromClientError = ClientNotFoundError | NotSubscribedError
+
+input AddSubscriberInput {
+  locale: String!
+  phoneNumber: String!
+}
 
 input AnnouncementFilterInput {
   and: [AnnouncementFilterInput!]
@@ -258,10 +369,12 @@ input ClientFilterInput {
   announcements: ListFilterInputTypeOfAnnouncementFilterInput
   customerId: StringOperationFilterInput
   id: UuidOperationFilterInput
+  joinedDate: DateTimeOperationFilterInput
   locale: StringOperationFilterInput
   name: StringOperationFilterInput
   or: [ClientFilterInput!]
   phoneNumber: StringOperationFilterInput
+  slug: StringOperationFilterInput
   subscriberPhoneNumbers: ListFilterInputTypeOfSubscriberFilterInput
   subscriptionId: StringOperationFilterInput
 }
@@ -269,9 +382,11 @@ input ClientFilterInput {
 input ClientSortInput {
   customerId: SortEnumType
   id: SortEnumType
+  joinedDate: SortEnumType
   locale: SortEnumType
   name: SortEnumType
   phoneNumber: SortEnumType
+  slug: SortEnumType
   subscriptionId: SortEnumType
 }
 
@@ -291,6 +406,10 @@ input DateTimeOperationFilterInput {
 }
 
 input DeleteClientInput {
+  id: ID!
+}
+
+input DeleteSubscriberInput {
   id: ID!
 }
 
@@ -350,6 +469,16 @@ input SubscriberSortInput {
   phoneNumber: SortEnumType
 }
 
+input SubscribeToClientInput {
+  clientId: ID!
+  subscriberId: ID!
+}
+
+input UnsubscribeFromClientInput {
+  clientId: ID!
+  subscriberId: ID!
+}
+
 input UuidOperationFilterInput {
   eq: UUID
   gt: UUID
@@ -372,7 +501,10 @@ enum ApplyPolicy {
 }
 
 enum Audience {
-  CLIENTS
+  ACTIVE_CLIENTS
+  ACTIVE_CLIENTS_WITHOUT_SUBSCRIBERS
+  ALL_CLIENTS
+  EVERYONE
   SUBSCRIBERS
 }
 

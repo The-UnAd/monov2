@@ -13,9 +13,9 @@ export type RegisterData = {
   terms: NonNullable<boolean | undefined>;
 }; // A bit hacky, but it works
 
-export interface RegisterFormProps {
+export type RegisterFormProps = Readonly<{
   onSubmit: (data: RegisterData) => void;
-}
+}>;
 
 function RegisterForm({ onSubmit }: RegisterFormProps) {
   const t = useTranslations('Components/RegisterForm');

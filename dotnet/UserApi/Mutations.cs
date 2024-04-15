@@ -6,6 +6,7 @@ using UnAd.Redis;
 namespace UserApi;
 
 public class Mutation(ILogger<Mutation> logger) {
+    // TODO: look into whether making these all async actually makes a real difference
     public MutationResult<Client, ClientNotFoundError> DeleteClient(UserDbContext context, IConnectionMultiplexer redis, Guid id) {
         var client = context.Clients.Find(id);
         if (client is null) {
@@ -17,12 +18,88 @@ public class Mutation(ILogger<Mutation> logger) {
         return client;
     }
 
+    public MutationResult<Client, ClientNotFoundError, SubscriberNotFoundError, AlreadySubscribedError> SubscribeToClient(UserDbContext context, Guid clientId, string subscriberId) {
+        var client = context.Clients.Find(clientId);
+        if (client is null) {
+            return new ClientNotFoundError(clientId);
+        }
+        var subscriber = context.Subscribers.Find(subscriberId);
+        if (subscriber is null) {
+            return new SubscriberNotFoundError(subscriberId);
+        }
+
+        if (client.SubscriberPhoneNumbers.Contains(subscriber)) {
+            return new AlreadySubscribedError(subscriberId);
+        }
+
+        client.SubscriberPhoneNumbers.Add(subscriber);
+        context.SaveChanges();
+
+        return client;
+    }
+
+    public MutationResult<Client, ClientNotFoundError, NotSubscribedError> UnsubscribeFromClient(UserDbContext context, Guid clientId, string subscriberId) {
+        var client = context.Clients.Find(clientId);
+        if (client is null) {
+            return new ClientNotFoundError(clientId);
+        }
+        context.Entry(client).Collection(c => c.SubscriberPhoneNumbers).Load();
+        var subscriber = client.SubscriberPhoneNumbers.FirstOrDefault(s => s.PhoneNumber == subscriberId);
+        if (subscriber is null) {
+            return new NotSubscribedError(subscriberId);
+        }
+
+        client.SubscriberPhoneNumbers.Remove(subscriber);
+        context.SaveChanges();
+
+        return client;
+    }
+
+    public MutationResult<Subscriber, SubscriberNotFoundError> DeleteSubscriber(UserDbContext context, string id) {
+        var subscriber = context.Subscribers.Find(id);
+        if (subscriber is null) {
+            return new SubscriberNotFoundError(id);
+        }
+        context.Subscribers.Remove(subscriber);
+        context.SaveChanges();
+        return subscriber;
+    }
+
+    public MutationResult<Subscriber, SubscriberExistsError> AddSubscriber(UserDbContext context, AddSubscriberInput input) {
+        var existing = context.Subscribers.Find(input.PhoneNumber);
+        if (existing is not null) {
+            return new SubscriberExistsError(input.PhoneNumber);
+        }
+        var newRecord = context.Subscribers.Add(new Subscriber {
+            PhoneNumber = input.PhoneNumber,
+            Locale = input.Locale
+        });
+        context.SaveChanges();
+        return newRecord.Entity;
+    }
 
     public async Task<MutationResult<SendMessagePayload, SendMessageFailed>> SendMessage(UserDbContext context, IMessageSender messageSender, SendMessageInput input) {
 
         var receivers = input.Audience switch {
-            Audience.Clients => context.Clients.WithActiveSubscriptions().Select(c => c.PhoneNumber),
-            Audience.Subscribers => context.Subscribers.Select(s => s.PhoneNumber),
+            Audience.AllClients =>
+                context.Clients
+                    .Select(c => c.PhoneNumber),
+            Audience.ActiveClients =>
+                context.Clients
+                    .WithActiveSubscriptions()
+                    .Select(c => c.PhoneNumber),
+            Audience.Subscribers =>
+                context.Subscribers
+                    .Select(s => s.PhoneNumber),
+            Audience.ActiveClientsWithoutSubscribers =>
+                context.Clients
+                    .WithActiveSubscriptions()
+                    .WithNoSubscribers()
+                    .Select(c => c.PhoneNumber),
+            Audience.Everyone =>
+                context.Clients
+                    .Select(c => c.PhoneNumber)
+                    .Union(context.Subscribers.Select(s => s.PhoneNumber)),
             _ => Enumerable.Empty<string>()
         };
 
@@ -47,19 +124,24 @@ public class Mutation(ILogger<Mutation> logger) {
         if (sent == 0) {
             return new MutationResult<SendMessagePayload, SendMessageFailed>(errors);
         }
-        return new SendMessagePayload(sent);
+        return new SendMessagePayload(sent, errors.Count);
 
     }
 }
 
 public record SendMessageInput(Audience Audience, string Message);
-public record SendMessagePayload(int Sent);
+
+public record AddSubscriberInput(string PhoneNumber, string Locale);
+public record SendMessagePayload(int Sent, int Failed);
 public record SendMessageFailed(string Message, string? Sid = default);
 
 [Flags]
 public enum Audience {
-    Clients = 1 << 0,
-    Subscribers = 1 << 1
+    AllClients = 1 << 0,
+    ActiveClients = 1 << 1,
+    Subscribers = 1 << 2,
+    ActiveClientsWithoutSubscribers = 1 << 3,
+    Everyone = AllClients | Subscribers
 }
 
 
@@ -68,10 +150,41 @@ public record ClientNotFoundError(Guid ClientId) {
     public string Message => $"Client with ID {ClientId} not found";
 }
 
+public record SubscriberNotFoundError(string PhoneNumber) {
+    public string Message => $"Subscriber with phone number {PhoneNumber} not found";
+}
+
+public record SubscriberExistsError(string PhoneNumber) {
+    public string Message => $"Subscriber with phone number {PhoneNumber} already exists";
+}
+
+public record AlreadySubscribedError(string PhoneNumber) {
+    public string Message => $"Subscriber with phone number {PhoneNumber} is already subscribed to client";
+}
+
+public record NotSubscribedError(string PhoneNumber) {
+    public string Message => $"Subscriber with phone number {PhoneNumber} is not subscribed to client";
+}
+
 public class MutationType : ObjectType<Mutation> {
-    protected override void Configure(IObjectTypeDescriptor<Mutation> descriptor) =>
+    protected override void Configure(IObjectTypeDescriptor<Mutation> descriptor) {
         descriptor
-            .Field(f => f.DeleteClient(default, default, default))
+            .Field(f => f.DeleteClient(default!, default!, default!))
             .Argument("id", a => a.Type<NonNullType<IdType>>().ID(nameof(Client)))
             .UseMutationConvention();
+        descriptor
+            .Field(f => f.DeleteSubscriber(default!, default!))
+            .Argument("id", a => a.Type<NonNullType<IdType>>().ID(nameof(Subscriber)))
+            .UseMutationConvention();
+        descriptor
+            .Field(f => f.SubscribeToClient(default!, default!, default!))
+            .Argument("clientId", a => a.Type<NonNullType<IdType>>().ID(nameof(Client)))
+            .Argument("subscriberId", a => a.Type<NonNullType<IdType>>().ID(nameof(Subscriber)))
+            .UseMutationConvention();
+        descriptor
+            .Field(f => f.UnsubscribeFromClient(default!, default!, default!))
+            .Argument("clientId", a => a.Type<NonNullType<IdType>>().ID(nameof(Client)))
+            .Argument("subscriberId", a => a.Type<NonNullType<IdType>>().ID(nameof(Subscriber)))
+            .UseMutationConvention();
+    }
 }
