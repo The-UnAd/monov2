@@ -24,7 +24,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\GraphQLGateway\GraphQLGateway.csproj" />
-      <ProjectReference Include="..\..\UnAd.Data\UnAd.Data.csproj" />
     </ItemGroup>
 
 </Project>

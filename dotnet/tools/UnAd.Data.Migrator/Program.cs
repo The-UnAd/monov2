@@ -13,8 +13,12 @@ public class Program {
         => Host.CreateDefaultBuilder(args)
         .ConfigureAppConfiguration(c => c.AddEnvironmentVariables())
         .ConfigureServices((context, services) =>
+        {
             services.AddDbContext<Users.UserDbContext>(o =>
-                o.UseNpgsql(context.Configuration.GetConnectionString("UserDb"))));
+                o.UseNpgsql(context.Configuration.GetConnectionString("UserDb")));
+            services.AddDbContext<Products.ProductDbContext>(o =>
+                o.UseNpgsql(context.Configuration.GetConnectionString("ProductDb")));
+        });
 }
 
 

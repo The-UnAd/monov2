@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 as build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 WORKDIR /src
 
@@ -8,7 +8,7 @@ COPY ./UnAd.Data/ ./UnAd.Data/
 
 RUN dotnet restore
 
-COPY ./tools/.config/ ./.config
+COPY .config/ ./.config
 
 RUN dotnet tool restore
 
@@ -19,7 +19,11 @@ RUN dotnet ef migrations bundle \
 
 RUN chmod +x ./efbundle
 
-FROM mcr.microsoft.com/dotnet/runtime:8.0 as exec
+FROM mcr.microsoft.com/dotnet/runtime:8.0 AS exec
+
+ARG ConnectionStrings__UserDb
+ENV ConnectionStrings__UserDb=$ConnectionStrings__UserDb
+
 WORKDIR /app
 COPY --from=build /src/efbundle efbundle
-ENTRYPOINT /app/efbundle --connection $DB_CONNECTIONSTRING
+ENTRYPOINT /app/efbundle

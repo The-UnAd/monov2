@@ -5,15 +5,6 @@ using UnAd.Data.Users.Models;
 namespace UserApi.Models;
 
 public class ClientResolvers {
-    // TODO: Find out how to make HotChocolate load the SubscripionId when I ask for the subscription field in the client type
-    public async Task<StripeSubscription?> GetSubscription([Parent] Client client, Stripe.IStripeClient stripeClient) {
-        var service = new Stripe.SubscriptionService(stripeClient);
-        if (client.SubscriptionId is null) {
-            return null;
-        }
-        var stripeSubscription = await service.GetAsync(client.SubscriptionId);
-        return stripeSubscription.ToSubscriptionType();
-    }
 
     public async Task<int> GetSubscriberCount([Parent] Client client, UserDbContext dbContext) =>
         await dbContext.Entry(client).Collection(c => c.SubscriberPhoneNumbers).Query().CountAsync();
@@ -37,8 +28,6 @@ public class ClientType : ObjectType<Client> {
                 var result = await dbContext.Clients.FindAsync(id.ToString());
                 return result;
             });
-        descriptor.Field("subscription")
-            .ResolveWith<ClientResolvers>(r => r.GetSubscription(default!, default!));
         descriptor.Field("subscriberCount")
             .ResolveWith<ClientResolvers>(r => r.GetSubscriberCount(default!, default!));
         descriptor.Field(f => f.SubscriberPhoneNumbers).Ignore();

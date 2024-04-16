@@ -2,8 +2,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34525.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnAd.Data", "UnAd.Data\UnAd.Data.csproj", "{49EC733C-7013-4F03-8DEE-06B05BF3F7E3}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQLGateway", "GraphQLGateway\GraphQLGateway\GraphQLGateway.csproj", "{566057E2-B8BA-41C3-BED3-EDB8089AF596}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQLGateway.Tests.Unit", "GraphQLGateway\GraphQLGateway.Tests.Integration\GraphQLGateway.Tests.Unit.csproj", "{CD3A1145-A7F4-4412-8E34-70E96DEC959C}"
@@ -20,10 +18,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{49EC733C-7013-4F03-8DEE-06B05BF3F7E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{49EC733C-7013-4F03-8DEE-06B05BF3F7E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{49EC733C-7013-4F03-8DEE-06B05BF3F7E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{49EC733C-7013-4F03-8DEE-06B05BF3F7E3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{566057E2-B8BA-41C3-BED3-EDB8089AF596}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{566057E2-B8BA-41C3-BED3-EDB8089AF596}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{566057E2-B8BA-41C3-BED3-EDB8089AF596}.Release|Any CPU.ActiveCfg = Release|Any CPU
