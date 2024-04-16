@@ -1,10 +1,11 @@
-namespace ProductApi;
+namespace PaymentApi;
 
-internal static class AppConfiguration {
-    public static class Keys {
+internal static class AppConfiguration
+{
+    public static class Keys
+    {
         public const string RedisUrl = "REDIS_URL";
         public const string CognitoAuthority = "Cognito:Authority";
-        public const string KafkaBrokerList = "KAFKA_BROKER_LIST";
     }
 
     public static string GetRedisUrl(this IConfiguration configuration) =>
@@ -12,9 +13,6 @@ internal static class AppConfiguration {
 
     public static string GetCognitoAuthority(this IConfiguration configuration) =>
          configuration[Keys.CognitoAuthority] ?? throw new MissingConfigException(Keys.CognitoAuthority);
-
-    public static string GetKafkaBrokerList(this IConfiguration configuration) =>
-        configuration[Keys.KafkaBrokerList] ?? throw new MissingConfigException(Keys.KafkaBrokerList);
 }
 
 

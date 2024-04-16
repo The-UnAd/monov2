@@ -12,7 +12,7 @@ module.exports = function (app) {
   app.use(
     '/graphql',
     createProxyMiddleware({
-      target: 'http://localhost:5100/graphql',
+      target: 'http://localhost:5900/graphql',
       changeOrigin: true,
     })
   );

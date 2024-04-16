@@ -4,8 +4,8 @@ using UnAd.Data.Products.Models;
 
 namespace ProductApi.Models;
 
-public class SubscriptionType : ObjectType<PlanSubscription> {
-    protected override void Configure(IObjectTypeDescriptor<PlanSubscription> descriptor) {
+public class PriceTierType : ObjectType<PriceTier> {
+    protected override void Configure(IObjectTypeDescriptor<PriceTier> descriptor) {
         descriptor.Field(f => f.Id).ID();
         descriptor
             .ImplementsNode()
@@ -13,7 +13,7 @@ public class SubscriptionType : ObjectType<PlanSubscription> {
             .ResolveNode(async (context, id) => {
                 var factory = context.Service<IDbContextFactory<ProductDbContext>>();
                 await using var dbContext = await factory.CreateDbContextAsync();
-                var result = await dbContext.PlanSubscriptions.FindAsync(id);
+                var result = await dbContext.PriceTiers.FindAsync(id);
                 return result;
             });
     }

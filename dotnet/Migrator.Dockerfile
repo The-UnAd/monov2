@@ -27,3 +27,5 @@ ENV ConnectionStrings__UserDb=$ConnectionStrings__UserDb
 WORKDIR /app
 COPY --from=build /src/efbundle efbundle
 ENTRYPOINT /app/efbundle
+
+# TODO: figure out an elegant way to build this for each context

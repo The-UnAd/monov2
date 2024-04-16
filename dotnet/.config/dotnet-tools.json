@@ -4,11 +4,21 @@
   "tools": {
     "hotchocolate.fusion.commandline": {
       "version": "13.9.0",
-      "commands": ["fusion"]
+      "commands": [
+        "fusion"
+      ]
     },
     "dotnet-ef": {
       "version": "8.0.4",
-      "commands": ["dotnet-ef"]
+      "commands": [
+        "dotnet-ef"
+      ]
+    },
+    "strawberryshake.tools": {
+      "version": "13.9.0",
+      "commands": [
+        "dotnet-graphql"
+      ]
     }
   }
 }

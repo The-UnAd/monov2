@@ -52,6 +52,42 @@ services:
     env_file:
       - ./dotenv/.env.docker
 
+  product-api:
+    networks:
+      - UnAd
+    build:
+      context: ./dotnet
+      dockerfile: ./ProductApi.Dockerfile
+      secrets:
+        - graphmonitorheaders
+      args:
+        - GRAPH_MONITOR_URL=http://host.docker.internal:5145
+    ports:
+      - "5200:5200"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - HTTP_PORTS=5200
+    env_file:
+      - ./dotenv/.env.docker
+
+  payment-api:
+    networks:
+      - UnAd
+    build:
+      context: ./dotnet
+      dockerfile: ./PaymentApi.Dockerfile
+      secrets:
+        - graphmonitorheaders
+      args:
+        - GRAPH_MONITOR_URL=http://host.docker.internal:5145
+    ports:
+      - "5100:5100"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - HTTP_PORTS=5100
+    env_file:
+      - ./dotenv/.env.docker
+
   graphql-gateway:
     networks:
       - UnAd
@@ -63,10 +99,10 @@ services:
       args:
         - GRAPH_MONITOR_URL=http://host.docker.internal:5145
     ports:
-      - "5100:5100"
+      - "5900:5900"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - HTTP_PORTS=5100
+      - HTTP_PORTS=5900
     env_file:
       - ./dotenv/.env.docker
     depends_on:

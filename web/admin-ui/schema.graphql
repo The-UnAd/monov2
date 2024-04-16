@@ -1,7 +1,7 @@
 schema {
   query: Query
   mutation: Mutation
-  subscription: SubscriptionType
+  subscription: Subscriptions
 }
 
 type Query {
@@ -49,6 +49,32 @@ type Query {
     """
     ids: [ID!]!
   ): [Node]!
+  plan(id: ID!): Plan
+  plans(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+    order: [PlanSortInput!]
+    where: PlanFilterInput
+  ): PlansConnection
+  planSubcriptions: [PlanSubscription!]!
+  priceTiers: [PriceTier!]!
   subscriber(id: ID!): Subscriber
   subscribers(
     """
@@ -74,6 +100,7 @@ type Query {
     where: SubscriberFilterInput
   ): SubscribersConnection
   totalClients: Int!
+  totalPlans: Int!
   totalSubscribers: Int!
   viewer: User
 }
@@ -81,6 +108,7 @@ type Query {
 type Mutation {
   addSubscriber(input: AddSubscriberInput!): AddSubscriberPayload!
   deleteClient(input: DeleteClientInput!): DeleteClientPayload!
+  deletePriceTier(input: DeletePriceTierInput!): DeletePriceTierPayload!
   deleteSubscriber(input: DeleteSubscriberInput!): DeleteSubscriberPayload!
   sendMessage(input: SendMessageInput!): SendMessagePayload!
   subscribeToClient(input: SubscribeToClientInput!): SubscribeToClientPayload!
@@ -89,9 +117,10 @@ type Mutation {
   ): UnsubscribeFromClientPayload!
 }
 
-type SubscriptionType {
-  clientAdded: Client
-  subscriberAdded: Subscriber
+type Subscriptions {
+  ClientAdded: Client
+  subscriberAdded: Subscriber!
+  SubscriberUnsubscribed: Subscriber
 }
 
 type AddSubscriberPayload {
@@ -145,7 +174,6 @@ type Client implements Node {
     order: [SubscriberSortInput!]
     where: SubscriberFilterInput
   ): SubscribersConnection
-  subscription: StripeSubscription
   subscriptionId: String
 }
 
@@ -194,9 +222,37 @@ type DeleteClientPayload {
   errors: [DeleteClientError!]
 }
 
+type DeletePriceTierPayload {
+  errors: [DeletePriceTierError!]
+  priceTier: PriceTier
+}
+
 type DeleteSubscriberPayload {
   errors: [DeleteSubscriberError!]
   subscriber: Subscriber
+}
+
+type Discount {
+  createdAt: DateTime
+  discountCode: DiscountCode
+  discountCodeId: Int
+  id: Int!
+  planSubscription: PlanSubscription
+  planSubscriptionId: UUID
+}
+
+type DiscountCode {
+  code: String!
+  createdAt: DateTime
+  description: String
+  discount: Decimal!
+  discounts: [Discount!]!
+  duration: TimeSpan
+  expiryDate: DateTime
+  id: Int!
+  name: String!
+  priceTier: PriceTier
+  priceTierId: Int
 }
 
 type NotSubscribedError implements Error {
@@ -229,6 +285,96 @@ type PageInfo {
   startCursor: String
 }
 
+type Plan implements Node {
+  createdAt: DateTime
+  description: String
+  iconUrl: String
+  id: ID!
+  isActive: Boolean
+  name: String!
+  priceTiers: [PriceTier!]!
+}
+
+"""
+A connection to a list of items.
+"""
+type PlansConnection {
+  """
+  A list of edges.
+  """
+  edges: [PlansEdge!]
+
+  """
+  A flattened list of the nodes.
+  """
+  nodes: [Plan!]
+
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+}
+
+"""
+An edge in a connection.
+"""
+type PlansEdge {
+  """
+  A cursor for use in pagination.
+  """
+  cursor: String!
+
+  """
+  The item at the end of the edge.
+  """
+  node: Plan!
+}
+
+type PlanSubscription implements Node {
+  client: Client!
+  clientId: UUID!
+  createdAt: DateTime
+  discounts: [Discount!]!
+  endDate: DateTime!
+  id: ID!
+  paymentConfirmationId: UUID!
+  priceTier: PriceTier
+  priceTierId: Int
+  startDate: DateTime!
+  status: String
+  trials: [Trial!]!
+}
+
+type PriceTier {
+  createdAt: DateTime
+  description: String
+  discountCodes: [DiscountCode!]!
+  duration: TimeSpan!
+  iconUrl: String
+  id: Int!
+  name: String!
+  plan: Plan
+  planId: Int
+  planSubscriptions: [PlanSubscription!]!
+  price: Decimal!
+  priceTierFeatures: [PriceTierFeature!]!
+  trialOffers: [TrialOffer!]!
+}
+
+type PriceTierFeature {
+  aiSupport: Boolean
+  id: Int!
+  maxMessages: Int
+  priceTier: PriceTier
+  priceTierId: Int
+  supportTier: String
+}
+
+type PriceTierNotFoundError implements Error {
+  message: String!
+  priceTierId: Int!
+}
+
 type SendMessageFailed implements Error {
   message: String!
   sid: String
@@ -238,11 +384,6 @@ type SendMessagePayload {
   errors: [SendMessageError!]
   failed: Int
   sent: Int
-}
-
-type StripeSubscription {
-  id: String
-  status: String
 }
 
 type Subscriber implements Node {
@@ -326,6 +467,27 @@ type SubscribeToClientPayload {
   errors: [SubscribeToClientError!]
 }
 
+type Trial {
+  createdAt: DateTime
+  id: Int!
+  planSubscription: PlanSubscription
+  planSubscriptionId: UUID
+  trailOffer: TrialOffer
+  trailOfferId: Int
+}
+
+type TrialOffer {
+  createdAt: DateTime
+  description: String
+  duration: TimeSpan!
+  expiryDate: DateTime
+  id: Int!
+  name: String!
+  priceTier: PriceTier
+  priceTierId: Int
+  trials: [Trial!]!
+}
+
 type UnsubscribeFromClientPayload {
   client: Client
   errors: [UnsubscribeFromClientError!]
@@ -350,6 +512,8 @@ union AddSubscriberError = SubscriberExistsError
 
 union DeleteClientError = ClientNotFoundError
 
+union DeletePriceTierError = PriceTierNotFoundError
+
 union DeleteSubscriberError = SubscriberNotFoundError
 
 union SendMessageError = SendMessageFailed
@@ -373,6 +537,11 @@ input AnnouncementFilterInput {
   messageSid: StringOperationFilterInput
   or: [AnnouncementFilterInput!]
   sentOn: DateTimeOperationFilterInput
+}
+
+input BooleanOperationFilterInput {
+  eq: Boolean
+  neq: Boolean
 }
 
 input ClientFilterInput {
@@ -416,12 +585,73 @@ input DateTimeOperationFilterInput {
   nlte: DateTime
 }
 
+input DecimalOperationFilterInput {
+  eq: Decimal
+  gt: Decimal
+  gte: Decimal
+  in: [Decimal]
+  lt: Decimal
+  lte: Decimal
+  neq: Decimal
+  ngt: Decimal
+  ngte: Decimal
+  nin: [Decimal]
+  nlt: Decimal
+  nlte: Decimal
+}
+
 input DeleteClientInput {
+  id: ID!
+}
+
+input DeletePriceTierInput {
   id: ID!
 }
 
 input DeleteSubscriberInput {
   id: ID!
+}
+
+input DiscountCodeFilterInput {
+  and: [DiscountCodeFilterInput!]
+  code: StringOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  description: StringOperationFilterInput
+  discount: DecimalOperationFilterInput
+  discounts: ListFilterInputTypeOfDiscountFilterInput
+  duration: TimeSpanOperationFilterInput
+  expiryDate: DateTimeOperationFilterInput
+  id: IntOperationFilterInput
+  name: StringOperationFilterInput
+  or: [DiscountCodeFilterInput!]
+  priceTier: PriceTierFilterInput
+  priceTierId: IntOperationFilterInput
+}
+
+input DiscountFilterInput {
+  and: [DiscountFilterInput!]
+  createdAt: DateTimeOperationFilterInput
+  discountCode: DiscountCodeFilterInput
+  discountCodeId: IntOperationFilterInput
+  id: IntOperationFilterInput
+  or: [DiscountFilterInput!]
+  planSubscription: PlanSubscriptionFilterInput
+  planSubscriptionId: UuidOperationFilterInput
+}
+
+input IntOperationFilterInput {
+  eq: Int
+  gt: Int
+  gte: Int
+  in: [Int]
+  lt: Int
+  lte: Int
+  neq: Int
+  ngt: Int
+  ngte: Int
+  nin: [Int]
+  nlt: Int
+  nlte: Int
 }
 
 input ListFilterInputTypeOfAnnouncementFilterInput {
@@ -438,11 +668,126 @@ input ListFilterInputTypeOfClientFilterInput {
   some: ClientFilterInput
 }
 
+input ListFilterInputTypeOfDiscountCodeFilterInput {
+  all: DiscountCodeFilterInput
+  any: Boolean
+  none: DiscountCodeFilterInput
+  some: DiscountCodeFilterInput
+}
+
+input ListFilterInputTypeOfDiscountFilterInput {
+  all: DiscountFilterInput
+  any: Boolean
+  none: DiscountFilterInput
+  some: DiscountFilterInput
+}
+
+input ListFilterInputTypeOfPlanSubscriptionFilterInput {
+  all: PlanSubscriptionFilterInput
+  any: Boolean
+  none: PlanSubscriptionFilterInput
+  some: PlanSubscriptionFilterInput
+}
+
+input ListFilterInputTypeOfPriceTierFeatureFilterInput {
+  all: PriceTierFeatureFilterInput
+  any: Boolean
+  none: PriceTierFeatureFilterInput
+  some: PriceTierFeatureFilterInput
+}
+
+input ListFilterInputTypeOfPriceTierFilterInput {
+  all: PriceTierFilterInput
+  any: Boolean
+  none: PriceTierFilterInput
+  some: PriceTierFilterInput
+}
+
 input ListFilterInputTypeOfSubscriberFilterInput {
   all: SubscriberFilterInput
   any: Boolean
   none: SubscriberFilterInput
   some: SubscriberFilterInput
+}
+
+input ListFilterInputTypeOfTrialFilterInput {
+  all: TrialFilterInput
+  any: Boolean
+  none: TrialFilterInput
+  some: TrialFilterInput
+}
+
+input ListFilterInputTypeOfTrialOfferFilterInput {
+  all: TrialOfferFilterInput
+  any: Boolean
+  none: TrialOfferFilterInput
+  some: TrialOfferFilterInput
+}
+
+input PlanFilterInput {
+  and: [PlanFilterInput!]
+  createdAt: DateTimeOperationFilterInput
+  description: StringOperationFilterInput
+  iconUrl: StringOperationFilterInput
+  id: IntOperationFilterInput
+  isActive: BooleanOperationFilterInput
+  name: StringOperationFilterInput
+  or: [PlanFilterInput!]
+  priceTiers: ListFilterInputTypeOfPriceTierFilterInput
+}
+
+input PlanSortInput {
+  createdAt: SortEnumType
+  description: SortEnumType
+  iconUrl: SortEnumType
+  id: SortEnumType
+  isActive: SortEnumType
+  name: SortEnumType
+}
+
+input PlanSubscriptionFilterInput {
+  and: [PlanSubscriptionFilterInput!]
+  clientId: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  discounts: ListFilterInputTypeOfDiscountFilterInput
+  endDate: DateTimeOperationFilterInput
+  id: UuidOperationFilterInput
+  or: [PlanSubscriptionFilterInput!]
+  paymentConfirmationId: UuidOperationFilterInput
+  priceTier: PriceTierFilterInput
+  priceTierId: IntOperationFilterInput
+  startDate: DateTimeOperationFilterInput
+  status: StringOperationFilterInput
+  trials: ListFilterInputTypeOfTrialFilterInput
+}
+
+input PriceTierFeatureFilterInput {
+  aiSupport: BooleanOperationFilterInput
+  and: [PriceTierFeatureFilterInput!]
+  id: IntOperationFilterInput
+  maxMessages: IntOperationFilterInput
+  or: [PriceTierFeatureFilterInput!]
+  priceTier: PriceTierFilterInput
+  priceTierId: IntOperationFilterInput
+  supportTier: StringOperationFilterInput
+}
+
+input PriceTierFilterInput {
+  and: [PriceTierFilterInput!]
+  createdAt: DateTimeOperationFilterInput
+  description: StringOperationFilterInput
+  discountCodes: ListFilterInputTypeOfDiscountCodeFilterInput
+  duration: TimeSpanOperationFilterInput
+  iconUrl: StringOperationFilterInput
+  id: IntOperationFilterInput
+  name: StringOperationFilterInput
+  or: [PriceTierFilterInput!]
+  plan: PlanFilterInput
+  planId: IntOperationFilterInput
+  planSubscriptions: ListFilterInputTypeOfPlanSubscriptionFilterInput
+  price: DecimalOperationFilterInput
+  priceTierFeatures: ListFilterInputTypeOfPriceTierFeatureFilterInput
+  trialOffers: ListFilterInputTypeOfTrialOfferFilterInput
 }
 
 input SendMessageInput {
@@ -483,6 +828,46 @@ input SubscriberSortInput {
 input SubscribeToClientInput {
   clientId: ID!
   subscriberId: ID!
+}
+
+input TimeSpanOperationFilterInput {
+  eq: TimeSpan
+  gt: TimeSpan
+  gte: TimeSpan
+  in: [TimeSpan]
+  lt: TimeSpan
+  lte: TimeSpan
+  neq: TimeSpan
+  ngt: TimeSpan
+  ngte: TimeSpan
+  nin: [TimeSpan]
+  nlt: TimeSpan
+  nlte: TimeSpan
+}
+
+input TrialFilterInput {
+  and: [TrialFilterInput!]
+  createdAt: DateTimeOperationFilterInput
+  id: IntOperationFilterInput
+  or: [TrialFilterInput!]
+  planSubscription: PlanSubscriptionFilterInput
+  planSubscriptionId: UuidOperationFilterInput
+  trailOffer: TrialOfferFilterInput
+  trailOfferId: IntOperationFilterInput
+}
+
+input TrialOfferFilterInput {
+  and: [TrialOfferFilterInput!]
+  createdAt: DateTimeOperationFilterInput
+  description: StringOperationFilterInput
+  duration: TimeSpanOperationFilterInput
+  expiryDate: DateTimeOperationFilterInput
+  id: IntOperationFilterInput
+  name: StringOperationFilterInput
+  or: [TrialOfferFilterInput!]
+  priceTier: PriceTierFilterInput
+  priceTierId: IntOperationFilterInput
+  trials: ListFilterInputTypeOfTrialFilterInput
 }
 
 input UnsubscribeFromClientInput {
@@ -530,3 +915,13 @@ scalar UUID @specifiedBy(url: "https://tools.ietf.org/html/rfc4122")
 The `DateTime` scalar represents an ISO-8601 compliant date time type.
 """
 scalar DateTime @specifiedBy(url: "https://www.graphql-scalars.com/date-time")
+
+"""
+The built-in `Decimal` scalar type.
+"""
+scalar Decimal
+
+"""
+The `TimeSpan` scalar represents an ISO-8601 compliant duration type.
+"""
+scalar TimeSpan

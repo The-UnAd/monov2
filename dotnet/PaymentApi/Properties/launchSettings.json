@@ -2,22 +2,30 @@
   "profiles": {
     "http": {
       "commandName": "Project",
-      "launchUrl": "graphql",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://::5200",
+      "launchUrl": "http://localhost:5200/graphql",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5900"
+      }
     },
     "export": {
       "commandName": "Project",
       "commandLineArgs": "schema export --output schema.graphql",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "REDIS_URL": "redis://localhost"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true
     }
-  },
-  "$schema": "https://json.schemastore.org/launchsettings.json"
+  }
 }
+
+
+
+
+
+
+
+
+

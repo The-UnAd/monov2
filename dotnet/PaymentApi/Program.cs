@@ -4,10 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
-using ProductApi;
+using PaymentApi;
 using UnAd.Data.Products;
-using ProductApi.Models;
-using Confluent.Kafka;
+using PaymentApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,31 +18,29 @@ builder.Services.AddTransient<IConnectionMultiplexer>(c =>
 builder.Services.AddPooledDbContextFactory<ProductDbContext>((s, o) =>
     o.UseNpgsql(s.GetRequiredService<IConfiguration>().GetConnectionString("ProductDb")));
 
-builder.Services.AddAuthentication(options => {
+builder.Services.AddAuthentication(options =>
+{
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddJwtBearer(options => {
+.AddJwtBearer(options =>
+{
     options.Authority = builder.Configuration.GetCognitoAuthority();
-    options.TokenValidationParameters = new TokenValidationParameters {
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
         ValidateIssuerSigningKey = true,
         ValidateAudience = false
     };
-    options.Events = new JwtBearerEvents {
-        OnAuthenticationFailed = context => {
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
             var logger = context.Request.HttpContext.RequestServices.GetRequiredService<ILogger<JwtBearerEvents>>();
             logger.LogAuthFailure(context.Exception);
             return Task.CompletedTask;
         }
     };
 });
-
-builder.Services.AddSingleton(sp =>
-    new ProducerBuilder<string, string>(
-        new ProducerConfig {
-            BootstrapServers = sp.GetRequiredService<IConfiguration>().GetKafkaBrokerList(),
-            Debug = "broker,topic,msg"
-        }).Build());
 
 builder.Services.AddAuthorization();
 
@@ -55,16 +52,14 @@ builder.Services
     .AddSorting()
     .AddMutationConventions()
     .AddGlobalObjectIdentification()
+    //.AddDirectiveType(typeof(DelegateDirectiveType))
     .AddQueryType<QueryType>()
     .AddMutationType<MutationType>()
     .AddTypeExtension<PlanType>()
-    .AddTypeExtension<PriceTierType>()
-    .AddTypeExtension<PlanSubscriptionType>()
+    .AddTypeExtension<SubscriptionType>()
     .AddDiagnosticEventListener<LoggerExecutionEventListener>()
     .RegisterDbContext<ProductDbContext>(DbContextKind.Pooled)
     .RegisterService<IConnectionMultiplexer>()
-    .RegisterService<IProducer<string, string>>()
-    .RegisterService<IIdSerializer>()
     .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true)
     .InitializeOnStartup();
 
@@ -74,7 +69,8 @@ var app = builder.Build();
 
 app.UseHealthChecks("/health");
 
-if (!app.Environment.IsDevelopment()) {
+if (!app.Environment.IsDevelopment())
+{
     app.UseAuthentication();
     app.UseAuthorization();
 
