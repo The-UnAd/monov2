@@ -45,6 +45,7 @@ builder.Services
     .AddFusionGatewayServer()
     .ConfigureFromFile("./gateway.fgp")
     .CoreBuilder
+    //.AddQueryFieldToMutationPayloads() // TODO: Look into making this actually work
     .AddDiagnosticEventListener<LoggerExecutionEventListener>()
     .AddDirectiveType(typeof(DelegateDirectiveType))
     .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true)
@@ -57,6 +58,8 @@ var app = builder.Build();
 app.UseHeaderPropagation();
 
 app.MapHealthChecks("/health");
+
+app.UseWebSockets();
 
 app.MapGraphQL()
     .WithOptions(new GraphQLServerOptions {

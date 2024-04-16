@@ -1,8 +1,8 @@
-import { Box, Container, Tab, Tabs } from '@mui/material';
-import Link from './Components/Link';
+import { Box, Container, CssBaseline } from '@mui/material';
 import { useLocation } from 'wouter';
 import { useAuth } from './AuthProvider';
 import { useEffect } from 'react';
+import AppMenu from './Components/AppMenu';
 
 export default function Layout({
   children,
@@ -17,35 +17,11 @@ export default function Layout({
   }, [token, location, setLocation]);
 
   return (
-    <>
-      {token && (
-        <Tabs value={location}>
-          <Tab label="Home" value="/" to="/" component={Link} />
-          <Tab
-            label="Announcements"
-            value="/announcements"
-            to="/announcements"
-            component={Link}
-          />
-          <Tab
-            label="Logout"
-            value="/logout"
-            to="/logout"
-            component={Link}
-            style={{ marginLeft: 'auto', display: token ? 'initial' : 'none' }}
-          />
-          <Tab
-            label="Login"
-            value="/login"
-            to="/login"
-            component={Link}
-            style={{ marginLeft: 'auto', display: token ? 'none' : 'initial' }}
-          />
-        </Tabs>
-      )}
-      <Container maxWidth="lg">
-        <Box sx={{ my: 4 }}>{children}</Box>
-      </Container>
-    </>
+    <Box sx={{ flexGrow: 1 }}>
+      <CssBaseline />
+
+      <AppMenu />
+      <Container maxWidth="lg">{children}</Container>
+    </Box>
   );
 }

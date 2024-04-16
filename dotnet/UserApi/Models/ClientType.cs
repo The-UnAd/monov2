@@ -48,13 +48,17 @@ public class ClientType : ObjectType<Client> {
             .UseProjection()
             .UseFiltering()
             .UseSorting();
-        descriptor.Field("subscribeLink").Resolve(context => {
-            var client = context.Parent<Client>();
-            var baseUrl = context.Service<IConfiguration>().GetSubscribeHost();
-            return $"{baseUrl}/{client.Slug}";
-        });
-        descriptor.Field(f => f.PhoneNumber).Resolve(context =>
-            Util.MaskString(context.Parent<Client>().PhoneNumber, 4));
+        descriptor.Field("subscribeLink")
+            .Type<NonNullType<StringType>>()
+            .Resolve(context => {
+                var client = context.Parent<Client>();
+                var baseUrl = context.Service<IConfiguration>().GetSubscribeHost();
+                return $"{baseUrl}/{client.Slug}";
+            });
+        descriptor.Field(f => f.PhoneNumber)
+            .Type<NonNullType<StringType>>()
+            .Resolve(context =>
+                Util.MaskString(context.Parent<Client>().PhoneNumber, 4));
     }
 }
 

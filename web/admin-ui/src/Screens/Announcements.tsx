@@ -21,13 +21,12 @@ import SelectInput from '../Components/SelectInput';
 import QuickModal from '../Components/QuickModal';
 import { useState } from 'react';
 import { pluralize } from '../util';
-import CodeBlock from '../Components/CodeBlock';
 import ErrorModal from '../Components/ErrorModal';
 
 export const AnnouncementsQueryDef = graphql`
   query AnnouncementsQuery {
-    countClients
-    countSubscribers
+    totalClients
+    totalSubscribers
   }
 `;
 
@@ -67,7 +66,7 @@ export default function AnnouncementsPage({
     formState: { errors },
   } = useForm<FormInputs>({
     defaultValues: {
-      audience: 'CLIENTS',
+      audience: 'ACTIVE_CLIENTS',
       message: 'Testing 123...',
     },
   });
@@ -114,8 +113,8 @@ export default function AnnouncementsPage({
   return (
     <Box>
       <h1>Announcements</h1>
-      <p>Number of clients: {data.countClients}</p>
-      <p>Number of subscribers: {data.countSubscribers}</p>
+      <p>Number of clients: {data.totalClients}</p>
+      <p>Number of subscribers: {data.totalSubscribers}</p>
       <form onSubmit={handleSubmit(sendMessage)}>
         <TextInput
           control={control}
@@ -125,7 +124,12 @@ export default function AnnouncementsPage({
         />
         {errors.message && <span>This field is required</span>}
         <SelectInput control={control} variant="outlined" name="audience">
-          <MenuItem value="CLIENTS">All Clients</MenuItem>
+          <MenuItem value="ACTIVE_CLIENTS">Active Clients</MenuItem>
+          <MenuItem value="ACTIVE_CLIENTS_WITHOUT_SUBSCRIBERS">
+            Active Clients Without Subscribers
+          </MenuItem>
+          <MenuItem value="ALL_CLIENTS">All Clients</MenuItem>
+          <MenuItem value="EVERYONE">Everyone</MenuItem>
           <MenuItem value="SUBSCRIBERS">All Subscribers</MenuItem>
         </SelectInput>
         <Button type="submit" disabled={sendMessageInFlight}>
