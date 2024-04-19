@@ -41,6 +41,7 @@ export default async function handler(
     if (!success) {
       throw new Error(t('errors.invalidOtp'));
     }
+    await models.deleteOtpSecret(phone);
 
     const locale = getRequestLocale(req) ?? DefaultLocale;
 
@@ -53,7 +54,6 @@ export default async function handler(
       },
     });
 
-    await models.deleteOtpSecret(phone);
     mixpanel.people.set(phone, {
       $phone: phone,
       $name: name,
@@ -67,7 +67,6 @@ export default async function handler(
 
     return res.status(200).json({ clientId: client.id });
   } catch (error: any) {
-    models.rollbackTransaction();
     console.error('error in /api/register/validate', error.stack);
     return res.status(500).json({
       message:

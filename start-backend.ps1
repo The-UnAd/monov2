@@ -2,9 +2,6 @@ $env:HOST_IP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddre
 
 docker-compose --file .\docker-compose.backend.yml up -d redis
 docker-compose --file .\docker-compose.backend.yml up -d postgres
-docker-compose --file .\docker-compose.backend.yml up -d zookeeper
-docker-compose --file .\docker-compose.backend.yml up -d kafka
-docker-compose --file .\docker-compose.backend.yml up -d kafka-ui
 # docker-compose --file .\docker-compose.backend.yml up -d graph-monitor
 # docker-compose --file .\docker-compose.backend.yml up -d unad-functions
 # docker-compose --file .\docker-compose.backend.yml run --rm db-migrator

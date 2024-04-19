@@ -3,5 +3,6 @@ $privateIP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.Interface
 
 $env:HOST_IP = $privateIP
 Write-Host "HOST_IP: $env:HOST_IP"
-docker-compose --file docker-compose.kafka.yml up -d
-docker-compose --file docker-compose.kafka.yml run --rm kafka-init-topics
+docker-compose --file docker-compose.kafka.yml up -d zookeeper
+docker-compose --file docker-compose.kafka.yml up -d kafka
+docker-compose --file docker-compose.kafka.yml run --rm kafka-init-topics 

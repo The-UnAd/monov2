@@ -1,5 +1,6 @@
 using GraphQLGateway;
 using HotChocolate.AspNetCore;
+using HotChocolate.Language;
 using HotChocolate.Stitching;
 using Polly;
 using StackExchange.Redis;
@@ -48,6 +49,7 @@ builder.Services
     //.AddQueryFieldToMutationPayloads() // TODO: Look into making this actually work
     .AddDiagnosticEventListener<LoggerExecutionEventListener>()
     .AddDirectiveType(typeof(DelegateDirectiveType))
+    //.AddTypeExtension<PlanSubscriptionTypeExtension>()
     .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true)
     .InitializeOnStartup();
 
@@ -68,3 +70,17 @@ app.MapGraphQL()
     });
 
 app.RunWithGraphQLCommands(args);
+
+
+
+
+public class PlanSubscriptionTypeExtension : ObjectTypeExtension {
+    protected override void Configure(IObjectTypeDescriptor descriptor) {
+        descriptor.Name("PlanSubscription");
+        descriptor.Field("client")
+            .Directive("delegate",
+                new ArgumentNode("schema", "UserApi"),
+                new ArgumentNode("path", "node(id: $fields.clientId)"))
+            .Type("Client!");
+    }
+}

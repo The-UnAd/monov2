@@ -9,6 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{98A21168
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProductApi.Tests.Integration", "tests\ProductApi.Tests.Integration\ProductApi.Tests.Integration.csproj", "{C8BAB6B0-8D59-419E-BA37-6BB0F9038C66}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnAd.Kafka", "..\UnAd.Kafka\UnAd.Kafka.csproj", "{A6571E14-9F8E-47CD-B641-1FD2CCBCCBF2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,10 @@ Global
 		{C8BAB6B0-8D59-419E-BA37-6BB0F9038C66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C8BAB6B0-8D59-419E-BA37-6BB0F9038C66}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C8BAB6B0-8D59-419E-BA37-6BB0F9038C66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6571E14-9F8E-47CD-B641-1FD2CCBCCBF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6571E14-9F8E-47CD-B641-1FD2CCBCCBF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6571E14-9F8E-47CD-B641-1FD2CCBCCBF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6571E14-9F8E-47CD-B641-1FD2CCBCCBF2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

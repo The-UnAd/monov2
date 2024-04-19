@@ -1,6 +1,7 @@
 using Confluent.Kafka;
 using UnAd.Data.Products;
 using UnAd.Data.Products.Models;
+using UnAd.Kafka;
 
 namespace ProductApi;
 
@@ -25,7 +26,7 @@ public class Mutation(ILogger<Mutation> logger) {
         return newTier.Entity;
     }
 
-    public async Task<MutationResult<PlanSubscription, KafkaProduceError>> SubscribeToPlan(ProductDbContext context, IProducer<string, string> producer, SubscribeToPlanInput input, IIdSerializer idSerializer, CancellationToken cancellationToken) {
+    public async Task<MutationResult<PlanSubscription>> SubscribeToPlan(ProductDbContext context, SubscribeToPlanInput input, CancellationToken cancellationToken) {
         var newTier = context.PlanSubscriptions.Add(new PlanSubscription {
             PriceTierId = input.PriceTierId,
             ClientId = input.ClientId, // TODO: validate client ID somehow
@@ -33,15 +34,27 @@ public class Mutation(ILogger<Mutation> logger) {
             StartDate = DateTime.UtcNow.AddDays(1),
         });
         await context.SaveChangesAsync(cancellationToken);
+        return newTier.Entity;
+    }
+
+    public async Task<MutationResult<PlanSubscription, KafkaProduceError, PlanSubscriptionNotFoundError>> EndSubscription(EndSubscriptionInput input,
+                                                                                                                          ProductDbContext context,
+                                                                                                                          IIdSerializer idSerializer,
+                                                                                                                          INotificationProducer notificationProducer,
+                                                                                                                          CancellationToken cancellationToken) {
+        var planSubscription = await context.PlanSubscriptions.FindAsync([input.Id], cancellationToken);
+        if (planSubscription is null) {
+            return new PlanSubscriptionNotFoundError(input.Id);
+        }
+        // TODO: additional validation?  Maybe check if it's already ended?
+        planSubscription.EndDate = DateTime.UtcNow;
+        planSubscription.Status = "ENDED";
+        await context.SaveChangesAsync(cancellationToken);
 
         try {
-            var id = idSerializer.Serialize(null, nameof(PlanSubscription), newTier.Entity.Id)
-                ?? throw new InvalidOperationException("Failed to serialize ID");
-            await producer.ProduceAsync("subscriptions", new Message<string, string> {
-                Key = id,
-                Value = newTier.Entity.EndDate.ToString("u")
-            }, cancellationToken);
-            logger.LogKafkaMessageSent(id, "subcriptions");
+            var id = idSerializer.Serialize(null, nameof(PlanSubscription), planSubscription.Id)
+                ?? throw new InvalidOperationException("Failed to serialize node ID");
+            await notificationProducer.ProduceEndSubscriptionNotification(id, cancellationToken);
         } catch (ProduceException<string, string> e) {
             logger.LogException(e);
             return new KafkaProduceError(e.Message);
@@ -49,7 +62,7 @@ public class Mutation(ILogger<Mutation> logger) {
             logger.LogException(e);
         }
 
-        return newTier.Entity;
+        return planSubscription;
     }
     public MutationResult<PriceTier, PriceTierNotFoundError> DeletePriceTier(ProductDbContext context, int id) {
         var priceTier = context.PriceTiers.Find(id);
@@ -66,7 +79,14 @@ public record KafkaProduceError(string Message) {
     public string Type => "KafkaProduceError";
 }
 
-public record SubscribeToPlanInput(int PriceTierId, Guid ClientId);
+public record SubscribeToPlanInput(int PriceTierId, Guid ClientId, Guid PaymentConfirmationId);
+
+public record EndSubscriptionInput(Guid Id);
+public class EndSubscriptionInputType : InputObjectType<EndSubscriptionInput> {
+    protected override void Configure(IInputObjectTypeDescriptor<EndSubscriptionInput> descriptor) {
+        descriptor.Field(f => f.Id).Type<NonNullType<IdType>>().ID(nameof(PlanSubscription));
+    }
+}
 
 public class SubscribeToPlanInputType : InputObjectType<SubscribeToPlanInput> {
     protected override void Configure(IInputObjectTypeDescriptor<SubscribeToPlanInput> descriptor) {
@@ -88,6 +108,10 @@ public record PriceTierNotFoundError(int PriceTierId) {
     public string Message => $"Price Tier with ID {PriceTierId} not found";
 }
 
+public record PlanSubscriptionNotFoundError(Guid Id) {
+    public string Message => $"Plan Subscription with ID {Id} not found";
+}
+
 public class MutationType : ObjectType<Mutation> {
     protected override void Configure(IObjectTypeDescriptor<Mutation> descriptor) {
         descriptor
@@ -95,8 +119,11 @@ public class MutationType : ObjectType<Mutation> {
             .Argument("id", a => a.Type<NonNullType<IdType>>().ID(nameof(PriceTier)))
             .UseMutationConvention();
         descriptor
-            .Field(f => f.SubscribeToPlan(default!, default!, default!, default!, default!))
+            .Field(f => f.SubscribeToPlan(default!, default!, default!))
             .Argument("input", a => a.Type<NonNullType<SubscribeToPlanInputType>>());
+        descriptor
+            .Field(f => f.EndSubscription(default!, default!, default!, default!, default!))
+            .Argument("input", a => a.Type<NonNullType<EndSubscriptionInputType>>());
         descriptor
             .Field(f => f.CreatePriceTier(default!, default!))
             .Argument("input", a => a.Type<NonNullType<CreatePriceTierInputType>>());

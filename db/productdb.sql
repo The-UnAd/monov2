@@ -78,7 +78,7 @@ CREATE TABLE discount_code (
     id SERIAL PRIMARY KEY,
     price_tier_id INT REFERENCES price_tier(id) ON DELETE CASCADE,
     code VARCHAR(100) NOT NULL,
-    discount NUMERIC(10, 2) NOT NULL,
+    value NUMERIC(10, 2) NOT NULL,
     duration INTERVAL,
     name VARCHAR(100) NOT NULL,
     description TEXT,
@@ -94,17 +94,3 @@ CREATE TABLE discount (
     
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
-CREATE OR REPLACE FUNCTION calculate_end_date_trigger_function() RETURNS TRIGGER AS $$
-BEGIN
-    NEW.end_date := NEW.start_date + (
-        SELECT duration FROM price_tier WHERE id = NEW.price_tier_id
-    );
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER calculate_end_date_trigger
-BEFORE INSERT ON plan_subscription
-FOR EACH ROW
-EXECUTE FUNCTION calculate_end_date_trigger_function();

@@ -1,8 +1,9 @@
+using System.Text.Json;
 using Confluent.Kafka;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace KafkaConsumer;
+namespace KafkaConsumer.Handlers;
 
 internal class SubscriptionHandler(ILogger<SubscriptionHandler> logger,
                                    IConsumer<string, string> consumer,
@@ -18,20 +19,26 @@ internal class SubscriptionHandler(ILogger<SubscriptionHandler> logger,
             while (!cancellationToken.IsCancellationRequested) {
                 try {
                     var cr = consumer.Consume(cancellationToken);
-                    var planSubscription = await unAdClient.GetPlanSubscription.ExecuteAsync(cr.Message.Key, cancellationToken);
-                    if (planSubscription?.Data?.PlanSubcription is not null) {
-                        logger.LogAction($"Found Plan Subscription with End Date {planSubscription.Data.PlanSubcription.EndDate}");
-                    } else {
-                        logger.LogAction("No Plan Subscription found");
+                    var input = JsonSerializer.Deserialize<SubscribeToPlanInput>(cr.Message.Value);
+                    if (input is null) {
+                        logger.LogAction("Could not parse message value.");
+                        consumer.Commit(cr);
+                        continue;
                     }
-                    logger.LogAction($"Message {cr.Message.Key} Handled");
-                    consumer.Commit(cr);
+                    var result = await unAdClient.SubscribeToPlan.ExecuteAsync(input, cancellationToken);
+                    if (result?.Data?.SubscribeToPlan.PlanSubscription is ISubscribeToPlan_SubscribeToPlan_PlanSubscription subscription) {
+                        logger.LogAction($"Created Plan Subscription for client {subscription.ClientId}");
+                        consumer.Commit(cr);
+                        logger.LogAction($"Message {cr.Message.Key} handled successfully! 🎉");
+                    } else {
+                        logger.LogAction("No Plan Subscription created");
+                    }
                 } catch (ConsumeException e) {
                     logger.LogException(e);
                 }
             }
         } catch (OperationCanceledException e) {
-            logger.LogException(e);
+            logger.LogAction(e.Message);
             appLifetime.StopApplication();
         }
 

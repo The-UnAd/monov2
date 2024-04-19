@@ -1,8 +1,8 @@
 {
   "profiles": {
-    "listen subscriptions": {
+    "listen notifications": {
       "commandName": "Project",
-      "commandLineArgs": "subscriptions",
+      "commandLineArgs": "notifications",
       "environmentVariables": {
         "KAFKA_BROKER_LIST": "localhost:9092",
         "GRAPHQL_API_URL": "http://localhost:5900/graphql",

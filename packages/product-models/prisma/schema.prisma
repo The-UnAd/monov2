@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../build"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model discount {
+  id                   Int                @id @default(autoincrement())
+  discount_code_id     Int?
+  plan_subscription_id String?            @db.Uuid
+  created_at           DateTime?          @default(now()) @db.Timestamptz(6)
+  discount_code        discount_code?     @relation(fields: [discount_code_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  plan_subscription    plan_subscription? @relation(fields: [plan_subscription_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model discount_code {
+  id            Int                      @id @default(autoincrement())
+  price_tier_id Int?
+  code          String                   @db.VarChar(100)
+  value      Decimal                  @db.Decimal(10, 2)
+  duration      Unsupported("interval")?
+  name          String                   @db.VarChar(100)
+  description   String?
+  expiry_date   DateTime?                @db.Timestamptz(6)
+  created_at    DateTime?                @default(now()) @db.Timestamptz(6)
+  discount      discount[]
+  price_tier    price_tier?              @relation(fields: [price_tier_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model plan {
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(100)
+  description String?
+  icon_url    String?      @db.VarChar(1000)
+  is_active   Boolean?     @default(true)
+  created_at  DateTime?    @default(now()) @db.Timestamptz(6)
+  price_tier  price_tier[]
+}
+
+model plan_subscription {
+  id                      String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  price_tier_id           Int?
+  start_date              DateTime    @db.Timestamptz(6)
+  end_date                DateTime    @db.Timestamptz(6)
+  status                  String?     @default("inactive") @db.VarChar(20)
+  client_id               String      @db.Uuid
+  payment_confirmation_id String      @db.Uuid
+  created_at              DateTime?   @default(now()) @db.Timestamptz(6)
+  discount                discount[]
+  price_tier              price_tier? @relation(fields: [price_tier_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  trial                   trial[]
+}
+
+model price_tier {
+  id                  Int                     @id @default(autoincrement())
+  plan_id             Int?
+  price               Decimal                 @db.Decimal(10, 2)
+  duration            Unsupported("interval")
+  name                String                  @db.VarChar(100)
+  description         String?
+  icon_url            String?                 @db.VarChar(1000)
+  created_at          DateTime?               @default(now()) @db.Timestamptz(6)
+  discount_code       discount_code[]
+  plan_subscription   plan_subscription[]
+  plan                plan?                   @relation(fields: [plan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  price_tier_features price_tier_features[]
+  trial_offer         trial_offer[]
+}
+
+model price_tier_features {
+  id            Int         @id @default(autoincrement())
+  price_tier_id Int?
+  max_messages  Int?
+  support_tier  String?     @db.VarChar(100)
+  ai_support    Boolean?    @default(false)
+  price_tier    price_tier? @relation(fields: [price_tier_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model trial {
+  id                   Int                @id @default(autoincrement())
+  trail_offer_id       Int?
+  plan_subscription_id String?            @db.Uuid
+  created_at           DateTime?          @default(now()) @db.Timestamptz(6)
+  plan_subscription    plan_subscription? @relation(fields: [plan_subscription_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  trial_offer          trial_offer?       @relation(fields: [trail_offer_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model trial_offer {
+  id            Int                     @id @default(autoincrement())
+  price_tier_id Int?
+  duration      Unsupported("interval")
+  name          String                  @db.VarChar(100)
+  description   String?
+  expiry_date   DateTime?               @db.Timestamptz(6)
+  created_at    DateTime?               @default(now()) @db.Timestamptz(6)
+  trial         trial[]
+  price_tier    price_tier?             @relation(fields: [price_tier_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}

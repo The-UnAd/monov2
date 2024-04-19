@@ -7,94 +7,57 @@ schema {
 type Query {
   client(id: ID!): Client
   clients(
-    """
-    Returns the elements in the list that come after the specified cursor.
-    """
+    "Returns the elements in the list that come after the specified cursor."
     after: String
-
-    """
-    Returns the elements in the list that come before the specified cursor.
-    """
+    "Returns the elements in the list that come before the specified cursor."
     before: String
-
-    """
-    Returns the first _n_ elements from the list.
-    """
+    "Returns the first _n_ elements from the list."
     first: Int
-
-    """
-    Returns the last _n_ elements from the list.
-    """
+    "Returns the last _n_ elements from the list."
     last: Int
     order: [ClientSortInput!]
     where: ClientFilterInput
   ): ClientsConnection
-
-  """
-  Fetches an object given its ID.
-  """
-  node(
-    """
-    ID of the object.
-    """
-    id: ID!
-  ): Node
-
-  """
-  Lookup nodes by a list of IDs.
-  """
-  nodes(
-    """
-    The list of node IDs.
-    """
-    ids: [ID!]!
-  ): [Node]!
+  "Fetches an object given its ID."
+  node("ID of the object." id: ID!): Node
+  "Lookup nodes by a list of IDs."
+  nodes("The list of node IDs." ids: [ID!]!): [Node]!
   plan(id: ID!): Plan
   plans(
-    """
-    Returns the elements in the list that come after the specified cursor.
-    """
+    "Returns the elements in the list that come after the specified cursor."
     after: String
-
-    """
-    Returns the elements in the list that come before the specified cursor.
-    """
+    "Returns the elements in the list that come before the specified cursor."
     before: String
-
-    """
-    Returns the first _n_ elements from the list.
-    """
+    "Returns the first _n_ elements from the list."
     first: Int
-
-    """
-    Returns the last _n_ elements from the list.
-    """
+    "Returns the last _n_ elements from the list."
     last: Int
     order: [PlanSortInput!]
     where: PlanFilterInput
   ): PlansConnection
-  planSubcriptions: [PlanSubscription!]!
+  planSubcription(id: ID!): PlanSubscription
+  planSubcriptions(
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+    "Returns the first _n_ elements from the list."
+    first: Int
+    "Returns the last _n_ elements from the list."
+    last: Int
+    order: [PlanSubscriptionSortInput!]
+    where: PlanSubscriptionFilterInput
+  ): PlanSubcriptionsConnection
   priceTiers: [PriceTier!]!
   subscriber(id: ID!): Subscriber
   subscribers(
-    """
-    Returns the elements in the list that come after the specified cursor.
-    """
+    "Returns the elements in the list that come after the specified cursor."
     after: String
-
-    """
-    Returns the elements in the list that come before the specified cursor.
-    """
+    "Returns the elements in the list that come before the specified cursor."
     before: String
-
-    """
-    Returns the first _n_ elements from the list.
-    """
+    "Returns the first _n_ elements from the list."
     first: Int
-
-    """
-    Returns the last _n_ elements from the list.
-    """
+    "Returns the last _n_ elements from the list."
     last: Int
     order: [SubscriberSortInput!]
     where: SubscriberFilterInput
@@ -107,11 +70,14 @@ type Query {
 
 type Mutation {
   addSubscriber(input: AddSubscriberInput!): AddSubscriberPayload!
+  createPlan(input: CreatePlanInput!): CreatePlanPayload!
+  createPriceTier(input: CreatePriceTierInput!): CreatePriceTierPayload!
   deleteClient(input: DeleteClientInput!): DeleteClientPayload!
   deletePriceTier(input: DeletePriceTierInput!): DeletePriceTierPayload!
   deleteSubscriber(input: DeleteSubscriberInput!): DeleteSubscriberPayload!
   sendMessage(input: SendMessageInput!): SendMessagePayload!
   subscribeToClient(input: SubscribeToClientInput!): SubscribeToClientPayload!
+  subscribeToPlan(input: SubscribeToPlanInput!): SubscribeToPlanPayload!
   unsubscribeFromClient(
     input: UnsubscribeFromClientInput!
   ): UnsubscribeFromClientPayload!
@@ -152,24 +118,13 @@ type Client implements Node {
   subscribeLink: String!
   subscriberCount: Int!
   subscribers(
-    """
-    Returns the elements in the list that come after the specified cursor.
-    """
+    "Returns the elements in the list that come after the specified cursor."
     after: String
-
-    """
-    Returns the elements in the list that come before the specified cursor.
-    """
+    "Returns the elements in the list that come before the specified cursor."
     before: String
-
-    """
-    Returns the first _n_ elements from the list.
-    """
+    "Returns the first _n_ elements from the list."
     first: Int
-
-    """
-    Returns the last _n_ elements from the list.
-    """
+    "Returns the last _n_ elements from the list."
     last: Int
     order: [SubscriberSortInput!]
     where: SubscriberFilterInput
@@ -182,39 +137,30 @@ type ClientNotFoundError implements Error {
   message: String!
 }
 
-"""
-A connection to a list of items.
-"""
+"A connection to a list of items."
 type ClientsConnection {
-  """
-  A list of edges.
-  """
+  "A list of edges."
   edges: [ClientsEdge!]
-
-  """
-  A flattened list of the nodes.
-  """
+  "A flattened list of the nodes."
   nodes: [Client!]
-
-  """
-  Information to aid in pagination.
-  """
+  "Information to aid in pagination."
   pageInfo: PageInfo!
 }
 
-"""
-An edge in a connection.
-"""
+"An edge in a connection."
 type ClientsEdge {
-  """
-  A cursor for use in pagination.
-  """
+  "A cursor for use in pagination."
   cursor: String!
-
-  """
-  The item at the end of the edge.
-  """
+  "The item at the end of the edge."
   node: Client!
+}
+
+type CreatePlanPayload {
+  plan: Plan
+}
+
+type CreatePriceTierPayload {
+  priceTier: PriceTier
 }
 
 type DeleteClientPayload {
@@ -255,33 +201,25 @@ type DiscountCode {
   priceTierId: Int
 }
 
+type KafkaProduceError implements Error {
+  message: String!
+  type: String!
+}
+
 type NotSubscribedError implements Error {
   message: String!
   phoneNumber: String!
 }
 
-"""
-Information about pagination in a connection.
-"""
+"Information about pagination in a connection."
 type PageInfo {
-  """
-  When paginating forwards, the cursor to continue.
-  """
+  "When paginating forwards, the cursor to continue."
   endCursor: String
-
-  """
-  Indicates whether more edges exist following the set defined by the clients arguments.
-  """
+  "Indicates whether more edges exist following the set defined by the clients arguments."
   hasNextPage: Boolean!
-
-  """
-  Indicates whether more edges exist prior the set defined by the clients arguments.
-  """
+  "Indicates whether more edges exist prior the set defined by the clients arguments."
   hasPreviousPage: Boolean!
-
-  """
-  When paginating backwards, the cursor to continue.
-  """
+  "When paginating backwards, the cursor to continue."
   startCursor: String
 }
 
@@ -295,63 +233,64 @@ type Plan implements Node {
   priceTiers: [PriceTier!]!
 }
 
-"""
-A connection to a list of items.
-"""
+"A connection to a list of items."
 type PlansConnection {
-  """
-  A list of edges.
-  """
+  "A list of edges."
   edges: [PlansEdge!]
-
-  """
-  A flattened list of the nodes.
-  """
+  "A flattened list of the nodes."
   nodes: [Plan!]
-
-  """
-  Information to aid in pagination.
-  """
+  "Information to aid in pagination."
   pageInfo: PageInfo!
 }
 
-"""
-An edge in a connection.
-"""
+"An edge in a connection."
 type PlansEdge {
-  """
-  A cursor for use in pagination.
-  """
+  "A cursor for use in pagination."
   cursor: String!
-
-  """
-  The item at the end of the edge.
-  """
+  "The item at the end of the edge."
   node: Plan!
+}
+
+"A connection to a list of items."
+type PlanSubcriptionsConnection {
+  "A list of edges."
+  edges: [PlanSubcriptionsEdge!]
+  "A flattened list of the nodes."
+  nodes: [PlanSubscription!]
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+}
+
+"An edge in a connection."
+type PlanSubcriptionsEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: PlanSubscription!
 }
 
 type PlanSubscription implements Node {
   client: Client!
-  clientId: UUID!
+  clientId: ID!
   createdAt: DateTime
   discounts: [Discount!]!
   endDate: DateTime!
   id: ID!
   paymentConfirmationId: UUID!
   priceTier: PriceTier
-  priceTierId: Int
+  priceTierId: ID
   startDate: DateTime!
   status: String
   trials: [Trial!]!
 }
 
-type PriceTier {
+type PriceTier implements Node {
   createdAt: DateTime
   description: String
   discountCodes: [DiscountCode!]!
   duration: TimeSpan!
   iconUrl: String
-  id: Int!
+  id: ID!
   name: String!
   plan: Plan
   planId: Int
@@ -388,24 +327,13 @@ type SendMessagePayload {
 
 type Subscriber implements Node {
   clients(
-    """
-    Returns the elements in the list that come after the specified cursor.
-    """
+    "Returns the elements in the list that come after the specified cursor."
     after: String
-
-    """
-    Returns the elements in the list that come before the specified cursor.
-    """
+    "Returns the elements in the list that come before the specified cursor."
     before: String
-
-    """
-    Returns the first _n_ elements from the list.
-    """
+    "Returns the first _n_ elements from the list."
     first: Int
-
-    """
-    Returns the last _n_ elements from the list.
-    """
+    "Returns the last _n_ elements from the list."
     last: Int
     order: [ClientSortInput!]
     where: ClientFilterInput
@@ -427,44 +355,32 @@ type SubscriberNotFoundError implements Error {
   phoneNumber: String!
 }
 
-"""
-A connection to a list of items.
-"""
+"A connection to a list of items."
 type SubscribersConnection {
-  """
-  A list of edges.
-  """
+  "A list of edges."
   edges: [SubscribersEdge!]
-
-  """
-  A flattened list of the nodes.
-  """
+  "A flattened list of the nodes."
   nodes: [Subscriber!]
-
-  """
-  Information to aid in pagination.
-  """
+  "Information to aid in pagination."
   pageInfo: PageInfo!
 }
 
-"""
-An edge in a connection.
-"""
+"An edge in a connection."
 type SubscribersEdge {
-  """
-  A cursor for use in pagination.
-  """
+  "A cursor for use in pagination."
   cursor: String!
-
-  """
-  The item at the end of the edge.
-  """
+  "The item at the end of the edge."
   node: Subscriber!
 }
 
 type SubscribeToClientPayload {
   client: Client
   errors: [SubscribeToClientError!]
+}
+
+type SubscribeToPlanPayload {
+  errors: [SubscribeToPlanError!]
+  planSubscription: PlanSubscription
 }
 
 type Trial {
@@ -501,9 +417,7 @@ interface Error {
   message: String!
 }
 
-"""
-The node interface is implemented by entities that have a global unique identifier.
-"""
+"The node interface is implemented by entities that have a global unique identifier."
 interface Node {
   id: ID!
 }
@@ -522,6 +436,8 @@ union SubscribeToClientError =
   | ClientNotFoundError
   | SubscriberNotFoundError
   | AlreadySubscribedError
+
+union SubscribeToPlanError = KafkaProduceError
 
 union UnsubscribeFromClientError = ClientNotFoundError | NotSubscribedError
 
@@ -568,6 +484,18 @@ input ClientSortInput {
   phoneNumber: SortEnumType
   slug: SortEnumType
   subscriptionId: SortEnumType
+}
+
+input CreatePlanInput {
+  description: String!
+  name: String!
+}
+
+input CreatePriceTierInput {
+  duration: TimeSpan!
+  name: String!
+  planId: ID!
+  price: Decimal!
 }
 
 input DateTimeOperationFilterInput {
@@ -761,6 +689,18 @@ input PlanSubscriptionFilterInput {
   trials: ListFilterInputTypeOfTrialFilterInput
 }
 
+input PlanSubscriptionSortInput {
+  clientId: SortEnumType
+  createdAt: SortEnumType
+  endDate: SortEnumType
+  id: SortEnumType
+  paymentConfirmationId: SortEnumType
+  priceTier: PriceTierSortInput
+  priceTierId: SortEnumType
+  startDate: SortEnumType
+  status: SortEnumType
+}
+
 input PriceTierFeatureFilterInput {
   aiSupport: BooleanOperationFilterInput
   and: [PriceTierFeatureFilterInput!]
@@ -788,6 +728,18 @@ input PriceTierFilterInput {
   price: DecimalOperationFilterInput
   priceTierFeatures: ListFilterInputTypeOfPriceTierFeatureFilterInput
   trialOffers: ListFilterInputTypeOfTrialOfferFilterInput
+}
+
+input PriceTierSortInput {
+  createdAt: SortEnumType
+  description: SortEnumType
+  duration: SortEnumType
+  iconUrl: SortEnumType
+  id: SortEnumType
+  name: SortEnumType
+  plan: PlanSortInput
+  planId: SortEnumType
+  price: SortEnumType
 }
 
 input SendMessageInput {
@@ -828,6 +780,11 @@ input SubscriberSortInput {
 input SubscribeToClientInput {
   clientId: ID!
   subscriberId: ID!
+}
+
+input SubscribeToPlanInput {
+  clientId: ID!
+  priceTierId: ID!
 }
 
 input TimeSpanOperationFilterInput {
@@ -909,19 +866,13 @@ enum SortEnumType {
   DESC
 }
 
-scalar UUID @specifiedBy(url: "https://tools.ietf.org/html/rfc4122")
+scalar UUID
 
-"""
-The `DateTime` scalar represents an ISO-8601 compliant date time type.
-"""
-scalar DateTime @specifiedBy(url: "https://www.graphql-scalars.com/date-time")
+"The `DateTime` scalar represents an ISO-8601 compliant date time type."
+scalar DateTime
 
-"""
-The built-in `Decimal` scalar type.
-"""
+"The built-in `Decimal` scalar type."
 scalar Decimal
 
-"""
-The `TimeSpan` scalar represents an ISO-8601 compliant duration type.
-"""
+"The `TimeSpan` scalar represents an ISO-8601 compliant duration type."
 scalar TimeSpan

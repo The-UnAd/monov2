@@ -8,6 +8,8 @@ using ProductApi;
 using UnAd.Data.Products;
 using ProductApi.Models;
 using Confluent.Kafka;
+using UnAd.Kafka;
+using HotChocolate.Language;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,12 +40,10 @@ builder.Services.AddAuthentication(options => {
     };
 });
 
-builder.Services.AddSingleton(sp =>
-    new ProducerBuilder<string, string>(
-        new ProducerConfig {
-            BootstrapServers = sp.GetRequiredService<IConfiguration>().GetKafkaBrokerList(),
-            Debug = "broker,topic,msg"
-        }).Build());
+builder.Services.AddSingleton<INotificationProducer>(sp =>
+    new NotificationProducer(new ProducerConfig {
+        BootstrapServers = sp.GetRequiredService<IConfiguration>().GetKafkaBrokerList()
+    }));
 
 builder.Services.AddAuthorization();
 
@@ -65,6 +65,7 @@ builder.Services
     .RegisterService<IConnectionMultiplexer>()
     .RegisterService<IProducer<string, string>>()
     .RegisterService<IIdSerializer>()
+    .RegisterService<INotificationProducer>()
     .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true)
     .InitializeOnStartup();
 
@@ -90,6 +91,3 @@ IdentityModelEventSource.ShowPII = app.Environment.IsDevelopment();
 app.RunWithGraphQLCommands(args);
 
 public partial class Program { }
-
-
-

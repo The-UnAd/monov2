@@ -45,6 +45,10 @@ services:
       - kafka
     command: "bash -c 'echo Waiting for Kafka to be ready... && \
                cub kafka-ready -b kafka:29092 1 30 && \
-               kafka-topics --create --topic subscriptions --partitions 3 --replication-factor 1 --if-not-exists --bootstrap-server kafka:29092 && \
-               kafka-topics --create --topic payments --partitions 2 --replication-factor 1 --if-not-exists --bootstrap-server kafka:29092 && \
-               kafka-console-producer --bootstrap-server kafka:29092 --topic payments < /data/message.json'"
+               
+               kafka-topics --create --topic subscriptions  --partitions 3 --replication-factor 1 --if-not-exists --bootstrap-server kafka:29092 && \
+               kafka-topics --create --topic notifications  --partitions 3 --replication-factor 1 --if-not-exists --bootstrap-server kafka:29092 && \
+               kafka-topics --create --topic payments       --partitions 2 --replication-factor 1 --if-not-exists --bootstrap-server kafka:29092 && \
+
+               kafka-topics --create --topic test --partitions 1 --replication-factor 1 --if-not-exists --bootstrap-server kafka:29092 && \
+               kafka-console-producer --bootstrap-server kafka:29092 --topic test < /data/message.json'"

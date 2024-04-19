@@ -10,7 +10,7 @@ public class Query {
     public async Task<Plan?> GetPlan(ProductDbContext context, int id) => await context.Plans.FindAsync(id);
     public IQueryable<Plan> GetPlans(ProductDbContext context) => context.Plans;
     public IQueryable<PriceTier> GetPriceTiers(ProductDbContext context) => context.PriceTiers;
-    public IQueryable<PlanSubscription> GetPlanSubcriptions(ProductDbContext context) => context.PlanSubscriptions;
+    public IQueryable<PlanSubscription> GetPlanSubscriptions(ProductDbContext context) => context.PlanSubscriptions;
     public ValueTask<PlanSubscription?> GetPlanSubcription(ProductDbContext context, Guid id) => context.PlanSubscriptions.FindAsync(id);
     public Task<int> TotalPlans(ProductDbContext context) => context.Plans.CountAsync();
 }
@@ -28,7 +28,7 @@ public sealed class QueryType : ObjectType<Query> {
             .UseProjection()
             .UseFiltering()
             .UseSorting();
-        descriptor.Field(f => f.GetPlanSubcriptions(default!))
+        descriptor.Field(f => f.GetPlanSubscriptions(default!))
             .UsePaging()
             .UseProjection()
             .UseFiltering()

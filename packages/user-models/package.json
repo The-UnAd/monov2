@@ -1,12 +1,13 @@
 {
-  "name": "@unad/db-models",
+  "name": "@unad/user-models",
   "version": "1.0.0",
   "description": "",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "prisma generate"
+    "build": "prisma generate",
+    "pull": "prisma db pull"
   },
   "keywords": [],
   "author": "",
