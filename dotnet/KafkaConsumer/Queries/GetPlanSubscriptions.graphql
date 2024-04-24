@@ -1,0 +1,11 @@
+query GetPlanSubscription($planSubcriptionId: ID!) {
+  planSubcription(id: $planSubcriptionId) {
+    startDate
+    endDate
+    clientId
+    client {
+        id
+        phoneNumber
+    }
+  }
+}

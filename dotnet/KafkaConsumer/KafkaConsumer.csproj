@@ -11,6 +11,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <GraphQL Remove="queries\GetPlanSubscriptions.graphql" />
+    <GraphQL Remove="queries\SubscribeToPlan.graphql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Confluent.Kafka" Version="2.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.4" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
@@ -26,5 +31,9 @@
   <ItemGroup>
     <ProjectReference Include="..\UnAd.Kafka\UnAd.Kafka.csproj" />
     <ProjectReference Include="..\UnAd.Redis\UnAd.Redis.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Queries\" />
   </ItemGroup>
 </Project>

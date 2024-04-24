@@ -9,7 +9,6 @@ using UnAd.Data.Products;
 using ProductApi.Models;
 using Confluent.Kafka;
 using UnAd.Kafka;
-using HotChocolate.Language;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,9 +62,8 @@ builder.Services
     .AddDiagnosticEventListener<LoggerExecutionEventListener>()
     .RegisterDbContext<ProductDbContext>(DbContextKind.Pooled)
     .RegisterService<IConnectionMultiplexer>()
-    .RegisterService<IProducer<string, string>>()
-    .RegisterService<IIdSerializer>()
     .RegisterService<INotificationProducer>()
+    .RegisterService<IIdSerializer>()
     .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true)
     .InitializeOnStartup();
 

@@ -1,4 +1,5 @@
 using Confluent.Kafka;
+using HotChocolate.Types.Relay;
 using UnAd.Data.Products;
 using UnAd.Data.Products.Models;
 using UnAd.Kafka;
@@ -26,7 +27,12 @@ public class Mutation(ILogger<Mutation> logger) {
         return newTier.Entity;
     }
 
-    public async Task<MutationResult<PlanSubscription>> SubscribeToPlan(ProductDbContext context, SubscribeToPlanInput input, CancellationToken cancellationToken) {
+    public async Task<MutationResult<PlanSubscription, KafkaProduceError>> SubscribeToPlan(SubscribeToPlanInput input,
+                                                                                           ProductDbContext context,
+                                                                                           IIdSerializer idSerializer,
+                                                                                           INotificationProducer notificationProducer,
+                                                                                           CancellationToken cancellationToken) {
+
         var newTier = context.PlanSubscriptions.Add(new PlanSubscription {
             PriceTierId = input.PriceTierId,
             ClientId = input.ClientId, // TODO: validate client ID somehow
@@ -34,6 +40,17 @@ public class Mutation(ILogger<Mutation> logger) {
             StartDate = DateTime.UtcNow.AddDays(1),
         });
         await context.SaveChangesAsync(cancellationToken);
+
+        try {
+            var id = idSerializer.Serialize(null, nameof(PlanSubscription), newTier.Entity.Id)
+                ?? throw new InvalidOperationException("Failed to serialize node ID");
+            await notificationProducer.ProduceStartSubscriptionNotification(id, cancellationToken);
+        } catch (ProduceException<string, string> e) {
+            logger.LogException(e);
+            return new KafkaProduceError(e.Message);
+        } catch (InvalidOperationException e) {
+            logger.LogException(e);
+        }
         return newTier.Entity;
     }
 
@@ -42,6 +59,9 @@ public class Mutation(ILogger<Mutation> logger) {
                                                                                                                           IIdSerializer idSerializer,
                                                                                                                           INotificationProducer notificationProducer,
                                                                                                                           CancellationToken cancellationToken) {
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // TODO: WHY THE FUCK ISN'T THIS EXECUTING?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         var planSubscription = await context.PlanSubscriptions.FindAsync([input.Id], cancellationToken);
         if (planSubscription is null) {
             return new PlanSubscriptionNotFoundError(input.Id);
@@ -119,7 +139,7 @@ public class MutationType : ObjectType<Mutation> {
             .Argument("id", a => a.Type<NonNullType<IdType>>().ID(nameof(PriceTier)))
             .UseMutationConvention();
         descriptor
-            .Field(f => f.SubscribeToPlan(default!, default!, default!))
+            .Field(f => f.SubscribeToPlan(default!, default!, default!, default!, default!))
             .Argument("input", a => a.Type<NonNullType<SubscribeToPlanInputType>>());
         descriptor
             .Field(f => f.EndSubscription(default!, default!, default!, default!, default!))

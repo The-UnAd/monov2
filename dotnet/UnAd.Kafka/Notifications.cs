@@ -12,9 +12,12 @@ public static class Topics {
 public record NotificationKey(string EventType, string EventKey) {
     public static class Types {
         public const string EndSubscription = nameof(EndSubscription);
+        public const string StartSubscription = nameof(StartSubscription);
     }
     public static NotificationKey EndSubscription(string planSubscriptionNodeId) =>
         new(Types.EndSubscription, planSubscriptionNodeId);
+    public static NotificationKey StartSubscription(string planSubscriptionNodeId) =>
+        new(Types.StartSubscription, planSubscriptionNodeId);
 
     public override string ToString() => $"{EventType}:{EventKey}";
 }
@@ -25,6 +28,7 @@ public record NotificationEvent {
 
 public interface INotificationProducer : IDisposable {
     Task<DeliveryResult<NotificationKey, NotificationEvent>> ProduceEndSubscriptionNotification(string planSubscriptionNodeId, CancellationToken cancellationToken = default);
+    Task<DeliveryResult<NotificationKey, NotificationEvent>> ProduceStartSubscriptionNotification(string planSubscriptionNodeId, CancellationToken cancellationToken = default);
 }
 
 public sealed class NotificationProducer(ProducerConfig producerConfig) : INotificationProducer {
@@ -53,6 +57,15 @@ public sealed class NotificationProducer(ProducerConfig producerConfig) : INotif
 
         return _producer.ProduceAsync(Topic, new Message<NotificationKey, NotificationEvent> {
             Key = NotificationKey.EndSubscription(planSubscriptionNodeId),
+            Value = NotificationEvent.Empty
+        }, cancellationToken);
+    }
+
+    public Task<DeliveryResult<NotificationKey, NotificationEvent>> ProduceStartSubscriptionNotification(string planSubscriptionNodeId, CancellationToken cancellationToken = default) {
+        ArgumentNullException.ThrowIfNull(planSubscriptionNodeId);
+
+        return _producer.ProduceAsync(Topic, new Message<NotificationKey, NotificationEvent> {
+            Key = NotificationKey.StartSubscription(planSubscriptionNodeId),
             Value = NotificationEvent.Empty
         }, cancellationToken);
     }
