@@ -7,6 +7,7 @@ CREATE TABLE plan (
     description TEXT,
     icon_url VARCHAR(1000),
     is_active BOOLEAN DEFAULT TRUE,
+    status VARCHAR(20) DEFAULT 'inactive', -- active, inactive, deleted, archived
 
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -21,6 +22,7 @@ CREATE TABLE price_tier (
     name VARCHAR(100) NOT NULL,
     description TEXT,
     icon_url VARCHAR(1000),
+    status VARCHAR(20) DEFAULT 'inactive', -- active, inactive, deleted, archived
 
     -- TODO: model bits to control things like refunds cancellation policies
     created_at TIMESTAMPTZ DEFAULT NOW()

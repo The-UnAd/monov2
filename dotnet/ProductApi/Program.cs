@@ -1,13 +1,13 @@
+using Confluent.Kafka;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
-using StackExchange.Redis;
 using ProductApi;
-using UnAd.Data.Products;
 using ProductApi.Models;
-using Confluent.Kafka;
+using StackExchange.Redis;
+using UnAd.Data.Products;
 using UnAd.Kafka;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,13 +38,12 @@ builder.Services.AddAuthentication(options => {
         }
     };
 });
+builder.Services.AddAuthorization();
 
 builder.Services.AddSingleton<INotificationProducer>(sp =>
     new NotificationProducer(new ProducerConfig {
         BootstrapServers = sp.GetRequiredService<IConfiguration>().GetKafkaBrokerList()
     }));
-
-builder.Services.AddAuthorization();
 
 builder.Services
     .AddGraphQLServer()
@@ -56,15 +55,14 @@ builder.Services
     .AddGlobalObjectIdentification()
     .AddQueryType<QueryType>()
     .AddMutationType<MutationType>()
-    .AddTypeExtension<PlanType>()
     .AddTypeExtension<PriceTierType>()
-    .AddTypeExtension<PlanSubscriptionType>()
     .AddDiagnosticEventListener<LoggerExecutionEventListener>()
     .RegisterDbContext<ProductDbContext>(DbContextKind.Pooled)
     .RegisterService<IConnectionMultiplexer>()
     .RegisterService<INotificationProducer>()
     .RegisterService<IIdSerializer>()
-    .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = true)
+    .ModifyRequestOptions(opt =>
+        opt.IncludeExceptionDetails = builder.Environment.IsDevelopment())
     .InitializeOnStartup();
 
 builder.Services.AddHealthChecks();
@@ -76,13 +74,13 @@ app.UseHealthChecks("/health");
 if (!app.Environment.IsDevelopment()) {
     app.UseAuthentication();
     app.UseAuthorization();
-
 }
+
 app.MapGraphQL()
     .RequireAuthorization(
-    !builder.Environment.IsDevelopment()
-    ? new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()
-    : new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build());
+        !builder.Environment.IsDevelopment()
+            ? new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()
+            : new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build());
 
 IdentityModelEventSource.ShowPII = app.Environment.IsDevelopment();
 

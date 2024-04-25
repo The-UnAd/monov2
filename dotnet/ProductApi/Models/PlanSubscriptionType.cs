@@ -18,6 +18,15 @@ public class PlanSubscriptionType : ObjectType<PlanSubscription> {
             });
         descriptor.Field(f => f.PriceTierId).ID(nameof(PriceTier));
         descriptor.Field(f => f.ClientId).ID("Client");
+        descriptor.Field("client").Type<ClientType>().Resolve(new Client(Guid.Empty));
+    }
+}
+
+public record Client(Guid Id);
+
+public class ClientType : ObjectType<Client> {
+    protected override void Configure(IObjectTypeDescriptor<Client> descriptor) {
+        descriptor.Field(f => f.Id).ID();
     }
 }
 

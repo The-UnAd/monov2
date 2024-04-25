@@ -23,6 +23,8 @@ internal class NotificationHandler(ILogger<NotificationHandler> logger,
                     await (cr switch {
                         { Message.Key.EventKey: var planSubscriptionNodeId, Message.Key.EventType: NotificationKey.Types.EndSubscription } =>
                             HandleEndSubscription(planSubscriptionNodeId, cancellationToken),
+                        { Message.Key.EventKey: var planSubscriptionNodeId, Message.Key.EventType: NotificationKey.Types.StartSubscription } =>
+                            HandleStartSubscription(planSubscriptionNodeId, cancellationToken),
                         _ => Task.CompletedTask,
                     });
 
@@ -43,6 +45,18 @@ internal class NotificationHandler(ILogger<NotificationHandler> logger,
     }
 
     private async Task HandleEndSubscription(string planSubscriptionId, CancellationToken cancellationToken = default) {
+        logger.LogAction($"Handling EndSubscription for {planSubscriptionId}");
+        var result = await unAdClient.GetPlanSubscription.ExecuteAsync(planSubscriptionId, cancellationToken);
+        if (result.Data?.PlanSubcription is not IGetPlanSubscription_PlanSubcription subscription) {
+            // TODO: log error
+            return;
+        }
+        var clientPhone = subscription.Client.PhoneNumber;
+        logger.LogAction($"Sending SMS to {clientPhone}");
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleStartSubscription(string planSubscriptionId, CancellationToken cancellationToken = default) {
         logger.LogAction($"Handling EndSubscription for {planSubscriptionId}");
         var result = await unAdClient.GetPlanSubscription.ExecuteAsync(planSubscriptionId, cancellationToken);
         if (result.Data?.PlanSubcription is not IGetPlanSubscription_PlanSubcription subscription) {
