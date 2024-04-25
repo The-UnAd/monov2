@@ -1,31 +1,38 @@
+import type { price_tier as PriceTier, Prisma } from '@unad/product-models';
 import Head from 'next/head';
 import Image from 'next/image';
-import Script from 'next/script';
 import type { GetServerSidePropsContext } from 'next/types';
 import { useTranslations } from 'next-intl';
 import type { ParsedUrlQuery } from 'querystring';
-import Stripe from 'stripe';
 
-import { prisma } from '@/lib/db';
+import ProductTable from '@/Components/ProductTable';
+import { ProductDb, UserDb } from '@/lib/db';
 import { createTranslator, importMessages } from '@/lib/i18n';
 
+type PlanWithTier = Prisma.planGetPayload<{
+  include: { price_tier: true };
+}>;
+
 type PageData = Readonly<{
-  clientId: string;
-  pricingTableId: string;
+  plans: PlanWithTier[];
 }>;
 
 type ServerProps = ParsedUrlQuery & {
   clientId: string;
 };
 
-function Pay({ clientId, pricingTableId }: PageData) {
+function Pay({ plans }: PageData) {
   const t = useTranslations('pages/pay/[clientId]');
+
+  const onSelect = (tier: PriceTier) => {
+    console.log('Selected tier:', tier);
+  };
+
   return (
     <>
       <Head>
         <title>{t('title')}</title>
       </Head>
-      <Script async src="https://js.stripe.com/v3/pricing-table.js" />
       <section className="app">
         <div className="container-app h95 d-flex align-items-center">
           <div className="col-12 text-center">
@@ -60,11 +67,7 @@ function Pay({ clientId, pricingTableId }: PageData) {
                 </div>
               </div>
               <div className="my-2">
-                <stripe-pricing-table
-                  pricing-table-id={pricingTableId}
-                  publishable-key={process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY}
-                  client-reference-id={clientId}
-                ></stripe-pricing-table>
+                <ProductTable plans={plans} onSelect={onSelect} />
               </div>
             </div>
           </div>
@@ -81,7 +84,7 @@ export async function getServerSideProps(
   const { clientId } = context.params as ServerProps;
 
   try {
-    const client = await prisma.client.findUnique({ where: { id: clientId } });
+    const client = await UserDb.client.findUnique({ where: { id: clientId } });
     if (!client) {
       return {
         props: {
@@ -92,23 +95,29 @@ export async function getServerSideProps(
         },
       };
     }
-    const stripe = new Stripe(process.env.STRIPE_API_KEY as string, {
-      apiVersion: '2023-10-16',
-    });
+
     if (!client.subscription_id) {
       // this is the happy path: client created, but no subscription
+
+      const plans = await ProductDb.plan.findMany({
+        where: { status: 'active' },
+        include: {
+          price_tier: true,
+        },
+      });
+
       return {
         props: {
           messages: await importMessages(context.locale),
           clientId,
-          pricingTableId: process.env.STRIPE_PRODUCT_BASIC_PRICING_TABLE,
+          plans,
         },
       };
     }
-    const subscription = await stripe.subscriptions.retrieve(
-      client.subscription_id
-    );
-    if (subscription.status === 'active') {
+    const subscription = await ProductDb.plan_subscription.findMany({
+      where: { client_id: client.id, status: 'active' },
+    });
+    if (subscription.length > 0) {
       return {
         props: {
           error: {

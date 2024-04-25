@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { generateSlug } from '@/lib/crypto';
-import { prisma } from '@/lib/db';
+import { UserDb } from '@/lib/db';
 import { createTranslator, DefaultLocale, getRequestLocale } from '@/lib/i18n';
 import mixpanel from '@/lib/mixpanel';
 import { validateToken } from '@/lib/otp';
@@ -45,7 +45,7 @@ export default async function handler(
 
     const locale = getRequestLocale(req) ?? DefaultLocale;
 
-    const client = await prisma.client.create({
+    const client = await UserDb.client.create({
       data: {
         phone_number: phone,
         name,

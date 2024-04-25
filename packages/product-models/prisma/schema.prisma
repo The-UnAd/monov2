@@ -21,7 +21,7 @@ model discount_code {
   id            Int                      @id @default(autoincrement())
   price_tier_id Int?
   code          String                   @db.VarChar(100)
-  value      Decimal                  @db.Decimal(10, 2)
+  value         Decimal                  @db.Decimal(10, 2)
   duration      Unsupported("interval")?
   name          String                   @db.VarChar(100)
   description   String?
@@ -38,6 +38,7 @@ model plan {
   icon_url    String?      @db.VarChar(1000)
   is_active   Boolean?     @default(true)
   created_at  DateTime?    @default(now()) @db.Timestamptz(6)
+  status      String?      @default("inactive") @db.VarChar(20)
   price_tier  price_tier[]
 }
 
@@ -64,6 +65,7 @@ model price_tier {
   description         String?
   icon_url            String?                 @db.VarChar(1000)
   created_at          DateTime?               @default(now()) @db.Timestamptz(6)
+  status              String?                 @default("inactive") @db.VarChar(20)
   discount_code       discount_code[]
   plan_subscription   plan_subscription[]
   plan                plan?                   @relation(fields: [plan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -99,4 +101,11 @@ model trial_offer {
   created_at    DateTime?               @default(now()) @db.Timestamptz(6)
   trial         trial[]
   price_tier    price_tier?             @relation(fields: [price_tier_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model EFMigrationsHistory {
+  MigrationId    String @id(map: "PK___EFMigrationsHistory") @db.VarChar(150)
+  ProductVersion String @db.VarChar(32)
+
+  @@map("__EFMigrationsHistory")
 }

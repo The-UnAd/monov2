@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { prisma } from '@/lib/db';
+import { UserDb } from '@/lib/db';
 import { createTranslator, DefaultLocale, getRequestLocale } from '@/lib/i18n';
 import mixpanel from '@/lib/mixpanel';
 import { sendSms } from '@/lib/twilio';
@@ -25,7 +25,7 @@ export default async function handler(
   const { phone, clientId } = req.body;
 
   try {
-    const client = await prisma.client.findUnique({ where: { id: clientId } });
+    const client = await UserDb.client.findUnique({ where: { id: clientId } });
     if (!client) {
       return res.status(404).json({
         message: t('errors.invalidClient'),
@@ -35,8 +35,8 @@ export default async function handler(
 
     const locale = getRequestLocale(req) ?? DefaultLocale;
 
-    await prisma.$transaction([
-      prisma.subscriber.upsert({
+    await UserDb.$transaction([
+      UserDb.subscriber.upsert({
         create: {
           phone_number: phone,
           locale,
@@ -48,7 +48,7 @@ export default async function handler(
           phone_number: phone,
         },
       }),
-      prisma.client_subscriber.create({
+      UserDb.client_subscriber.create({
         data: {
           client_id: clientId,
           subscriber_phone_number: phone,
@@ -70,7 +70,7 @@ export default async function handler(
       client: client.phone_number,
     });
 
-    const subCount = await prisma.client_subscriber.count({
+    const subCount = await UserDb.client_subscriber.count({
       where: { client_id: clientId },
     });
 

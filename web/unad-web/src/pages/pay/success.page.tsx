@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import Stripe from 'stripe';
 
-import { prisma } from '@/lib/db';
+import { UserDb } from '@/lib/db';
 import { createTranslator, importMessages } from '@/lib/i18n';
 import { createModelFactory } from '@/lib/redis';
 
@@ -119,7 +119,7 @@ export async function getServerSideProps(
   }
 
   try {
-    const client = await prisma.client.findUnique({
+    const client = await UserDb.client.findUnique({
       where: { id: session.client_reference_id! },
     });
     if (!client) {

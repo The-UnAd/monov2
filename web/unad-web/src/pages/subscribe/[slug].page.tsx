@@ -10,7 +10,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import OtpForm, { OtpFormData } from '@/Components/OtpForm';
 import SubscribeForm, { SubscribeData } from '@/Components/SubscribeForm';
 import { generateOtp, subscribeToClient, validateOtp } from '@/lib/api';
-import { prisma } from '@/lib/db';
+import { UserDb } from '@/lib/db';
 import { importMessages } from '@/lib/i18n';
 import { sanitizePhoneNumber } from '@/lib/util';
 
@@ -202,7 +202,7 @@ export async function getServerSideProps(
 ) {
   const { slug } = context.params as ServerProps;
   try {
-    const client = await prisma.client.findUnique({
+    const client = await UserDb.client.findUnique({
       where: { slug },
       select: { name: true, id: true },
     });

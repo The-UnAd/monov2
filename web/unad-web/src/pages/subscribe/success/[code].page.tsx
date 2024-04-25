@@ -4,7 +4,7 @@ import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { useTranslations } from 'next-intl';
 
-import { prisma } from '@/lib/db';
+import { UserDb } from '@/lib/db';
 import { createTranslator, importMessages } from '@/lib/i18n';
 import { createModelFactory } from '@/lib/redis';
 
@@ -77,10 +77,8 @@ export async function getServerSideProps(
   using models = createModelFactory();
   await models.connect();
   try {
-    const phone = await models.getClientPhoneFromSubscriberConfirmation(
-      code as string
-    );
-    const client = await prisma.client.findUnique({
+    const phone = await models.getClientPhoneFromSubscriberConfirmation(code);
+    const client = await UserDb.client.findUnique({
       where: { phone_number: phone },
     });
     if (!client) {

@@ -4,7 +4,7 @@ import type { GetServerSidePropsContext } from 'next/types';
 import { useTranslations } from 'next-intl';
 import { ParsedUrlQuery } from 'querystring';
 
-import { prisma } from '@/lib/db';
+import { UserDb } from '@/lib/db';
 import { importMessages } from '@/lib/i18n';
 
 interface PageData {
@@ -65,7 +65,7 @@ export async function getServerSideProps(
 ) {
   const { slug } = context.params as ServerProps;
   try {
-    const client = await prisma.client.findUnique({ where: { slug } });
+    const client = await UserDb.client.findUnique({ where: { slug } });
     if (!client) {
       return {
         notFound: true,

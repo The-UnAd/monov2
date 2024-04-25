@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { prisma } from '@/lib/db';
+import { UserDb } from '@/lib/db';
 import { createTranslator } from '@/lib/i18n';
 import { generateSecret, generateToken } from '@/lib/otp';
 import { createModelFactory } from '@/lib/redis';
@@ -30,7 +30,7 @@ export default async function handler(
     if (!validatePhone(phone)) {
       throw new Error(t('errors.invalidPhoneNumber'));
     }
-    const client = await prisma.client.findUnique({
+    const client = await UserDb.client.findUnique({
       where: { phone_number: phone },
     });
     if (client) {
@@ -57,5 +57,5 @@ export default async function handler(
 }
 
 function validatePhone(phone: string) {
-  return phone.match(/^\+[1-9]\d{1,14}$/);
+  return RegExp(/^\+[1-9]\d{1,14}$/).exec(phone);
 }

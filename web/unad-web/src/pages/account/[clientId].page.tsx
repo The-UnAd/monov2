@@ -5,7 +5,7 @@ import type { GetServerSidePropsContext } from 'next/types';
 import { useTranslations } from 'next-intl';
 import type { ParsedUrlQuery } from 'querystring';
 
-import { prisma } from '@/lib/db';
+import { UserDb } from '@/lib/db';
 import { createTranslator, importMessages } from '@/lib/i18n';
 import { verifyJwt } from '@/lib/jwt';
 import { createModelFactory } from '@/lib/redis';
@@ -98,7 +98,7 @@ export async function getServerSideProps(
 ) {
   const { clientId } = context.params as ServerProps;
   try {
-    const client = await prisma.client.findUnique({
+    const client = await UserDb.client.findUnique({
       where: { id: clientId },
     });
     if (!client) {
@@ -124,10 +124,10 @@ export async function getServerSideProps(
     if (jwt !== null) {
       const { sub } = await verifyJwt(jwt);
       if (sub === clientId) {
-        const subscribers = await prisma.client_subscriber.count({
+        const subscribers = await UserDb.client_subscriber.count({
           where: { client_id: clientId },
         });
-        const announcementCount = await prisma.announcement.count({
+        const announcementCount = await UserDb.announcement.count({
           where: { client_id: clientId },
         });
         return {

@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { prisma } from '@/lib/db';
+import { UserDb } from '@/lib/db';
 import { createTranslator } from '@/lib/i18n';
 import { signJwt } from '@/lib/jwt';
 import { validateToken } from '@/lib/otp';
@@ -31,7 +31,7 @@ export default async function handler(
     using models = createModelFactory();
     await models.connect();
 
-    const client = await prisma.client.findUnique({
+    const client = await UserDb.client.findUnique({
       where: { phone_number: phone },
     });
     if (!client) {
