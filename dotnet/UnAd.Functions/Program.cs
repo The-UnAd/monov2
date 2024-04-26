@@ -16,7 +16,6 @@ builder.Configuration
     .AddEnvironmentVariables();
 builder.Logging.AddSimpleConsole(o => {
     o.SingleLine = true;
-    o.TimestampFormat = "[yyyy-MM-ddTHH:mm:ss] ";
     o.UseUtcTimestamp = true;
 });
 

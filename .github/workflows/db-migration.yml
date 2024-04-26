@@ -15,6 +15,7 @@ jobs:
   run-dev:
     runs-on: ubuntu-latest
     environment: development
+    if: inputs.environment == 'development'
 
     steps:
       - name: Checkout code
@@ -52,7 +53,8 @@ jobs:
 
   run-prod:
     runs-on: ubuntu-latest
-    environment: development
+    environment: production
+    if: inputs.environment == 'production'
 
     steps:
       - name: Checkout code
