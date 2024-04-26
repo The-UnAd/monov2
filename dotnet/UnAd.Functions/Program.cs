@@ -14,6 +14,11 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.Configuration
     .AddUserSecrets(typeof(Program).Assembly)
     .AddEnvironmentVariables();
+builder.Logging.AddSimpleConsole(o => {
+    o.SingleLine = true;
+    o.TimestampFormat = "[yyyy-MM-ddTHH:mm:ss] ";
+    o.UseUtcTimestamp = true;
+});
 
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default));
