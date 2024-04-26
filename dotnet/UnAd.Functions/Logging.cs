@@ -35,6 +35,10 @@ internal static class Logging {
     private static readonly Action<ILogger<StripeSubscriptionWebhook>, string, Exception?> StripeSubscriptionWebhookException =
         LoggerMessage.Define<string>(LogLevel.Error, new EventId(700, nameof(StripeSubscriptionWebhookException)), "Unhandled exception: {Message}");
 
+    private static readonly Action<ILogger<StripeSubscriptionWebhook>, string, Exception?> StripeSubscriptionWebhookHandlingEvent =
+        LoggerMessage.Define<string>(LogLevel.Information, new EventId(701, nameof(StripeSubscriptionWebhookHandlingEvent)),
+            "StripeSubscriptionWebhook|Handling event: {EventType}");
+
     private static readonly Action<ILogger<MessageHandler>, string, Exception?> MessageHandlerException =
         LoggerMessage.Define<string>(LogLevel.Error, new EventId(800, nameof(MessageHandlerException)), "Unhandled exception: {Message}");
 
@@ -56,6 +60,8 @@ internal static class Logging {
         StripeCustomerWebhookUnhandledEvent(logger, type, null);
     internal static void LogUnhandledEvent(this ILogger<StripeSubscriptionWebhook> logger, string type) =>
         StripeSubscriptionWebhookException(logger, type, null);
+    internal static void LogHandlingEvent(this ILogger<StripeSubscriptionWebhook> logger, string type) =>
+        StripeSubscriptionWebhookHandlingEvent(logger, type, null);
     internal static void LogException(this ILogger<StripeCustomerWebhook> logger, Exception ex) =>
         StripeCustomerWebhookException(logger, ex.Message, ex);
     internal static void LogException(this ILogger<StripeSubscriptionWebhook> logger, Exception ex) =>

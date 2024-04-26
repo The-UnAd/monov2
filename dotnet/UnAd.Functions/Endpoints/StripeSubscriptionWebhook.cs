@@ -54,13 +54,14 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
             });
         }
 
+        logger.LogHandlingEvent(stripeEvent?.Type ?? "null");
         try {
             if (stripeEvent?.Type == Events.CustomerSubscriptionDeleted) {
                 await HandleSubscriptionUpdated(stripeEvent);
             } else if (stripeEvent?.Type == Events.CustomerSubscriptionUpdated) {
                 await HandleSubscriptionUpdated(stripeEvent);
             } else if (stripeEvent?.Type == Events.CustomerSubscriptionResumed) {
-                await HandleSubscriptionUpdated(stripeEvent);
+                await HandleSubscriptionResumed(stripeEvent);
             } else if (stripeEvent?.Type == Events.CheckoutSessionCompleted) {
                 await HandleCheckoutSessionCompleted(stripeEvent);
             } else if (stripeEvent?.Type == Events.CustomerSubscriptionCreated) {
@@ -80,18 +81,14 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
 
     private async Task HandleCheckoutSessionCompleted(Event stripeEvent) {
         if (stripeEvent.Data.Object is not Stripe.Checkout.Session session) {
-            logger.LogWarning("Could not find session in event data");
-            return;
+            throw new StripeEventParsingException<Stripe.Checkout.Session>(stripeEvent.Type);
         }
         var id = session.ClientReferenceId;
         var subscriptionId = session.SubscriptionId;
         var db = redis.GetDatabase();
         await using var context = await dbFactory.CreateDbContextAsync();
-        var client = context.Clients.FirstOrDefault(c => c.Id == Guid.Parse(id));
-        if (client is null) {
-            logger.LogWarning("Could not find client with id {id}", id);
-            return;
-        }
+        var client = context.Clients.FirstOrDefault(c => c.Id == Guid.Parse(id))
+            ?? throw new ClientNotFoundException(id);
         SetThreadCulture(client.Locale);
         client.SubscriptionId = subscriptionId;
         await context.SaveChangesAsync();
@@ -111,21 +108,18 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
 
     private async Task HandleSubscriptionCreated(Event stripeEvent) {
         if (stripeEvent.Data.Object is not Subscription subscription) {
-            logger.LogWarning("Could not find subscription in event data");
-            return;
+            throw new StripeEventParsingException<Subscription>(stripeEvent.Type);
         }
         await using var context = await dbFactory.CreateDbContextAsync();
-        var client = context.Clients.FirstOrDefault(c => c.CustomerId == subscription.CustomerId);
-        if (client is null) {
-            logger.LogWarning("Could not find client with customerId {customerId}", subscription.CustomerId);
-            return;
-        }
+        var client = context.Clients.FirstOrDefault(c => c.CustomerId == subscription.CustomerId)
+            ?? throw new StripeCustomerNotFoundException(subscription.CustomerId);
         SetThreadCulture(client.Locale);
         client.CustomerId = subscription.CustomerId;
         client.SubscriptionId = subscription.Id;
         await context.SaveChangesAsync();
 
-        var priceId = subscription?.Items?.FirstOrDefault()?.Price.Id;
+        var priceId = subscription.Items?.FirstOrDefault()?.Price.Id
+            ?? throw new StripeEventDataException<Subscription>("Price");
         var db = redis.GetDatabase();
         var maxMessages = db.GetPriceLimitValue(priceId, "maxMessages");
         db.SetClientPriceLimit(client.PhoneNumber, "maxMessages", maxMessages);
@@ -151,21 +145,18 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
 
     private async Task HandleSubscriptionResumed(Event stripeEvent) {
         if (stripeEvent.Data.Object is not Subscription subscription) {
-            logger.LogWarning("Could not find subscription in event data");
-            return;
+            throw new StripeEventParsingException<Subscription>(stripeEvent.Type);
         }
         await using var context = await dbFactory.CreateDbContextAsync();
-        var client = context.Clients.FirstOrDefault(c => c.CustomerId == subscription.CustomerId);
-        if (client is null) {
-            logger.LogWarning("Could not find client with customerId {customerId}", subscription.CustomerId);
-            return;
-        }
+        var client = context.Clients.FirstOrDefault(c => c.CustomerId == subscription.CustomerId)
+            ?? throw new StripeCustomerNotFoundException(subscription.CustomerId);
         SetThreadCulture(client.Locale);
         client.CustomerId = subscription.CustomerId;
         client.SubscriptionId = subscription.Id;
         await context.SaveChangesAsync();
 
-        var priceId = subscription?.Items?.FirstOrDefault()?.Price.Id;
+        var priceId = subscription.Items?.FirstOrDefault()?.Price.Id
+            ?? throw new StripeEventDataException<Subscription>("Price");
         var db = redis.GetDatabase();
         var maxMessages = db.GetPriceLimitValue(priceId, "maxMessages");
         db.SetClientPriceLimit(client.PhoneNumber, "maxMessages", maxMessages);
@@ -191,16 +182,12 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
 
     private async Task HandleSubscriptionUpdated(Event stripeEvent) {
         if (stripeEvent.Data.Object is not Subscription subscription) {
-            logger.LogWarning("Could not find subscription in event data");
-            return;
+            throw new StripeEventParsingException<Subscription>(stripeEvent.Type);
         }
 
         await using var context = await dbFactory.CreateDbContextAsync();
-        var client = context.Clients.FirstOrDefault(c => c.CustomerId == subscription.CustomerId);
-        if (client is null) {
-            logger.LogWarning("Could not find client with id {CustomerId}", subscription.CustomerId);
-            return;
-        }
+        var client = context.Clients.FirstOrDefault(c => c.CustomerId == subscription.CustomerId)
+            ?? throw new StripeCustomerNotFoundException(subscription.CustomerId);
         SetThreadCulture(client.Locale);
 
         var db = redis.GetDatabase();
@@ -220,7 +207,8 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
             return;
         }
 
-        var priceId = subscription.Items?.FirstOrDefault()?.Price.Id;
+        var priceId = subscription.Items?.FirstOrDefault()?.Price.Id
+            ?? throw new StripeEventDataException<Subscription>("Price");
         // TODO: store the product id in the client's subscription data
         // so we don't have to look it up later from Stripe
         var maxMessages = db.GetPriceLimitValue(priceId, "maxMessages");
@@ -247,16 +235,12 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
 
     private async Task UpdateClient(Event stripeEvent, string resourceName, object? replacements = default) {
         if (stripeEvent.Data.Object is not Subscription subscription) {
-            logger.LogWarning("Could not find subscription in event data");
-            return;
+            throw new StripeEventParsingException<Subscription>(stripeEvent.Type);
         }
 
         await using var context = await dbFactory.CreateDbContextAsync();
-        var client = context.Clients.FirstOrDefault(c => c.CustomerId == subscription.CustomerId);
-        if (client is null) {
-            logger.LogWarning("Could not find client with customerId {customerId}", subscription.CustomerId);
-            return;
-        }
+        var client = context.Clients.FirstOrDefault(c => c.CustomerId == subscription.CustomerId)
+            ?? throw new StripeCustomerNotFoundException(subscription.CustomerId);
         SetThreadCulture(client.Locale);
         await mixpanelClient.Track(MixpanelClient.Events.StripeEvent(stripeEvent.Type), new() {
                 { "subscriptionId", subscription.Id! },
@@ -267,3 +251,10 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
         });
     }
 }
+
+public interface IRetryable { }
+public class WebhookException(string message) : Exception(message) { }
+public class StripeCustomerNotFoundException(string customerId) : WebhookException($"Customer with ID '{customerId}' not found."), IRetryable { }
+public class ClientNotFoundException(string clientId) : WebhookException($"Customer with ID '{clientId}' not found.") { }
+public class StripeEventParsingException<T>(string type) : WebhookException($"Could not parse {typeof(T).Name} data for event type '{type}'.") { }
+public class StripeEventDataException<T>(string type) : WebhookException($"Could not find {type} data in event type '{typeof(T).Name}'.") { }
