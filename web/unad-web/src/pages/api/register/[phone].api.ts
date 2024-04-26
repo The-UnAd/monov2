@@ -40,7 +40,7 @@ export default async function handler(
     const secret = generateSecret();
     using models = createModelFactory();
     await models.connect();
-    await models.setOtpSecret(phone, secret, 0);
+    await models.setOtpSecret(phone, secret, 30);
     const otp = generateToken(secret);
 
     await twilio.sendSms(phone, t('otpMessage', { otp }));
