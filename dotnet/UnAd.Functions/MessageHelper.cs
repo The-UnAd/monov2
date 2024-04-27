@@ -28,23 +28,24 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
                 .Message(message);
 
     public MessagingResponse ProcessMessage(string smsBody, string smsFrom) {
+        var sanitized = SanitizeBody(smsBody);
 
-        if ("commands".Equals(smsBody, StringComparison.OrdinalIgnoreCase)) {
+        if ("commands".Equals(sanitized, StringComparison.OrdinalIgnoreCase)) {
             return ProcessHelpMessage(smsFrom);
         }
-        if (int.TryParse(_stopRegex.Match(smsBody).Groups[1].Value, out var num)) {
+        if (int.TryParse(_stopRegex.Match(sanitized).Groups[1].Value, out var num)) {
             return ProcessStopSubscriptionMessage(num, smsFrom);
         }
-        if ("stop all".Equals(smsBody, StringComparison.OrdinalIgnoreCase)) {
-            return ProcessStopAllMessage(smsBody, smsFrom);
+        if ("stop all".Equals(sanitized, StringComparison.OrdinalIgnoreCase)) {
+            return ProcessStopAllMessage(sanitized, smsFrom);
         }
-        if ("unsubscribe".Equals(smsBody, StringComparison.OrdinalIgnoreCase)) {
+        if ("unsubscribe".Equals(sanitized, StringComparison.OrdinalIgnoreCase)) {
             return ProcessUnsubscribeMessage(smsFrom);
         }
-        if ("send".Equals(smsBody, StringComparison.OrdinalIgnoreCase)) {
+        if ("send".Equals(sanitized, StringComparison.OrdinalIgnoreCase)) {
             return ProcessConfirmAnnouncementMessage(smsFrom);
         }
-        if ("cancel".Equals(smsBody, StringComparison.OrdinalIgnoreCase)) {
+        if ("cancel".Equals(sanitized, StringComparison.OrdinalIgnoreCase)) {
             return ProcessCancelAnnouncementMessage(smsFrom);
         }
         // TODO: Add a "support" command to get support number
@@ -53,6 +54,8 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
         // TODO: what to do when they send us stuff that the opt-in service will catch?
         return ProcessAnnouncementMessage(smsBody, smsFrom);
     }
+
+    private static string SanitizeBody(string smsBody) => smsBody.Trim();
 
     private MessagingResponse ProcessStopAllMessage(string smsBody, string smsFrom) {
         using var context = dbContextFactory.CreateDbContext();
