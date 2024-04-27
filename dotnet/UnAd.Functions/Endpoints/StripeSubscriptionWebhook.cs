@@ -111,8 +111,11 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
             throw new StripeEventParsingException<Subscription>(stripeEvent.Type);
         }
         await using var context = await dbFactory.CreateDbContextAsync();
-        var client = context.Clients.FirstOrDefault(c => c.CustomerId == subscription.CustomerId)
+        var customerService = new CustomerService(stripeClient);
+        var customer = await customerService.GetAsync(subscription.CustomerId)
             ?? throw new StripeCustomerNotFoundException(subscription.CustomerId);
+        var client = context.Clients.FirstOrDefault(c => c.PhoneNumber == customer.Phone)
+            ?? throw new StripeCustomerPhoneNotFoundException(customer.Phone);
         SetThreadCulture(client.Locale);
         client.CustomerId = subscription.CustomerId;
         client.SubscriptionId = subscription.Id;
@@ -275,6 +278,7 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
 public interface IRetryable { }
 public class WebhookException(string message) : Exception(message) { }
 public class StripeCustomerNotFoundException(string customerId) : WebhookException($"Customer with ID '{customerId}' not found."), IRetryable { }
+public class StripeCustomerPhoneNotFoundException(string phoneNumber) : WebhookException($"Customer with phone number '{phoneNumber}' not found."), IRetryable { }
 public class ClientNotFoundException(string clientId) : WebhookException($"Customer with ID '{clientId}' not found.") { }
 public class StripeEventParsingException<T>(string type) : WebhookException($"Could not parse {typeof(T).Name} data for event type '{type}'.") { }
 public class StripeEventDataException<T>(string type) : WebhookException($"Could not find {type} data in event type '{typeof(T).Name}'.") { }
