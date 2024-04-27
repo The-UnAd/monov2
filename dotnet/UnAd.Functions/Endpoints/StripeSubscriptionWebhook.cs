@@ -57,7 +57,7 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
         logger.LogHandlingEvent(stripeEvent?.Type ?? "null");
         try {
             if (stripeEvent?.Type == Events.CustomerSubscriptionDeleted) {
-                await HandleSubscriptionUpdated(stripeEvent);
+                await HandleSubscriptionDeleted(stripeEvent);
             } else if (stripeEvent?.Type == Events.CustomerSubscriptionUpdated) {
                 await HandleSubscriptionUpdated(stripeEvent);
             } else if (stripeEvent?.Type == Events.CustomerSubscriptionResumed) {
@@ -181,6 +181,26 @@ public class StripeSubscriptionWebhook(IStripeClient stripeClient,
     }
 
     private async Task HandleSubscriptionUpdated(Event stripeEvent) {
+        if (stripeEvent.Data.Object is not Subscription subscription) {
+            throw new StripeEventParsingException<Subscription>(stripeEvent.Type);
+        }
+
+        await using var context = await dbFactory.CreateDbContextAsync();
+        var client = context.Clients.FirstOrDefault(c => c.CustomerId == subscription.CustomerId)
+            ?? throw new StripeCustomerNotFoundException(subscription.CustomerId);
+        SetThreadCulture(client.Locale);
+
+
+        // TODO
+        logger.LogInformation("TODO: Handle subscription updated event");
+
+
+        await mixpanelClient.Track(MixpanelClient.Events.StripeEvent(stripeEvent.Type), new() {
+                { "subscriptionId", subscription.Id},
+            }, client.PhoneNumber);
+    }
+
+    private async Task HandleSubscriptionDeleted(Event stripeEvent) {
         if (stripeEvent.Data.Object is not Subscription subscription) {
             throw new StripeEventParsingException<Subscription>(stripeEvent.Type);
         }
