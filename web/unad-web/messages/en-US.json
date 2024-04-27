@@ -200,7 +200,7 @@
       "invalidClient": "Business not found"
     },
     "sms": {
-      "welcome": "You will now receive announcements from {name} every time they send one out. You can unsubscribe at any time by replying to any message with the word 'STOP' or 'UNSUBSCRIBE'.",
+      "welcome": "Thank you for subscribing to {name}! 🎉\nYou'll receive messages from us here in the future\n\nYou can unsubscribe at any time by replying to any message with the word 'STOP' or 'UNSUBSCRIBE'.",
       "newSub": "You just got a new subscriber!  That makes {subCount} so far!"
     }
   },
