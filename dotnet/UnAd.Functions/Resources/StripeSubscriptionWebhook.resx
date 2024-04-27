@@ -130,12 +130,15 @@
     <value>Your subscription has been resumed.  You may now use the service again.</value>
   </data>
   <data name="SubscriptionStartedMessage" xml:space="preserve">
-    <value>Your subscription has started.  You may now use the service.
+    <value>Welcome to UnAd! 🎉 Your subscription has started. 
 
 Your subscription link to share is {shareLink}
 
-You can manage your subscription at {subLink}
-You can get more information any time by texting 'help' to this number.{trialInfo}</value>
+*** To send annoucements to your customers, simply reply to this number at any time as if you were texting your customers directly. ***
+
+You can get more information any time by texting 'help' to this number.{trialInfo}
+
+📲 Don't forget to save this number in your contacts! ❤️</value>
   </data>
   <data name="TrailEndsSoon" xml:space="preserve">
     <value>Your trial subscription will end soon. Please contact support@theunad.com to continue using the service.</value>
