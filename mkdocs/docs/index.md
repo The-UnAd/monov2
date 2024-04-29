@@ -38,5 +38,3 @@ These values can be found in the AWS Console.
 - `AWS_ECR_ACCOUNT_URL` is constructed using this format: `<AWS_ACCOUNT_NUMBER>.dkr.ecr.<AWS_REGION>.amazonaws.com`, replacing the placeholders her with the values from above.
 
 Once this file is populated, you may then run the [init script](scripts#init).
-
-
