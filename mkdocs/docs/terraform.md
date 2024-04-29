@@ -1,5 +1,1 @@
 # Terraform Infrastructure Guide
-
-TODO
-
-

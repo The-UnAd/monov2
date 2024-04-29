@@ -9,12 +9,23 @@ nav:
   - "Scripts": "scripts.md"
   - "Docker": "docker.md"
   - "npm.md"
+  - "infrastructure.md"
+  - Integrations:
+    - "Stripe": "stripe.md"
+    - "Twilio": "twilio.md"
   - "terraform.md"
-  - "AWS Services":
-    - "S3": "services/s3.md"
+  - AWS Services:
+    - "S3": "s3.md"
 
 
 extra_css: [css/docs.css]
+
+plugins:
+  - d2
+  - search
+  - exclude:
+      glob:
+        - snippets/*
 
 theme:
   name: material
@@ -31,6 +42,7 @@ theme:
         name: Switch to light mode
 
 markdown_extensions:
+  - pymdownx.snippets
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
