@@ -76,7 +76,7 @@ function Register() {
 
     if (resp.ok) {
       const data = await resp.json();
-      router.push(`/pay/${data.clientId}`);
+      window.location.href = `/pay/${data.clientId}`;
     } else {
       const data = await resp.json();
       setError(data.message);
