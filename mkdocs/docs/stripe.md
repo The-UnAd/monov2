@@ -1,3 +1,0 @@
-# Stripe Integrations
-
-TODO
