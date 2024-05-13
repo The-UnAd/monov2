@@ -1,4 +1,5 @@
 import { Head, Html, Main, NextScript } from 'next/document';
+import Script from 'next/script';
 
 export default function MyDocument() {
   return (
@@ -27,19 +28,18 @@ export default function MyDocument() {
           })(window, document, "clarity", "script", "mbjvc7zj0r");
         `}
         </script>
-        <script type="text/javascript">
+        <Script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-L2SWP1F1TF"
+        ></Script>
+        <script>
           {`
-            <!-- Google tag (gtag.js) -->
-            <script async src="https://www.googletagmanager.com/gtag/js?id=G-L2SWP1F1TF"></script>
-            <script>
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
 
-              gtag('config', 'G-L2SWP1F1TF');
-            </script>
-
-          `}
+          gtag('config', 'G-L2SWP1F1TF');
+        `}
         </script>
       </Head>
       <body>
