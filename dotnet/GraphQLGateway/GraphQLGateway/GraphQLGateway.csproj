@@ -18,7 +18,7 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
       <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
-      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
       <PackageReference Include="HotChocolate.AspNetCore" Version="13.9.0" />
       <PackageReference Include="HotChocolate.Data.EntityFramework" Version="13.9.0" />
       <PackageReference Include="Polly" Version="8.3.1" />
