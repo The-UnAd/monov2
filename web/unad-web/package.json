@@ -41,7 +41,7 @@
     "redis": "^4.6.12",
     "sass": "^1.69.5",
     "speakeasy": "^2.0.0",
-    "stripe": "^14.9.0",
+    "stripe": "^15.6.0",
     "twilio": "^4.20.0",
     "typeorm": "^0.3.20",
     "typescript": "5.3.3",
