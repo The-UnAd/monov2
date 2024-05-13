@@ -1,7 +1,7 @@
 # Development Machine Setup
 
 !!! important
-    Most on this team are currently using MacOS for development, so this guide will include only settings for MacOS.
+    We are currently using Windows for development, so this guide will include only settings for that platform.
 
 When setting up a new machine for development in UnAd, there is a standard list of tools to install.
 

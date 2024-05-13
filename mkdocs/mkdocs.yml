@@ -10,18 +10,23 @@ nav:
   - "Docker": "docker.md"
   - "npm.md"
   - "infrastructure.md"
-  - Integrations:
-    - "Stripe": "stripe.md"
-    - "Twilio": "twilio.md"
   - "terraform.md"
+  - Integrations:
+    - "Stripe": "integrations/stripe.md"
+    - "Twilio": "integrations/twilio.md"
   - AWS Services:
-    - "S3": "s3.md"
-
+    - "S3": "services/s3.md"
+    - "Cognito": "services/cognito.md"
+    - "ECS": "services/ecs.md"
+  - Components:
+    - "unad-functions": "components/unad-functions.md"
 
 extra_css: [css/docs.css]
 
 plugins:
-  - d2
+  - d2:
+      theme: 0
+      dark_theme: 200
   - search
   - exclude:
       glob:
@@ -52,6 +57,3 @@ markdown_extensions:
   - attr_list
   - toc:
       permalink: True
-
-
-

@@ -101,7 +101,7 @@ export async function getServerSideProps(
   const { session_id } = context.query as ServerProps;
 
   const stripe = new Stripe(process.env.STRIPE_API_KEY as string, {
-    apiVersion: '2023-10-16',
+    apiVersion: '2024-04-10',
   });
   using models = createModelFactory();
   await models.connect();
