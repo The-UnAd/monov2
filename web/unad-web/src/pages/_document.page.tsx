@@ -27,6 +27,20 @@ export default function MyDocument() {
           })(window, document, "clarity", "script", "mbjvc7zj0r");
         `}
         </script>
+        <script type="text/javascript">
+          {`
+            <!-- Google tag (gtag.js) -->
+            <script async src="https://www.googletagmanager.com/gtag/js?id=G-L2SWP1F1TF"></script>
+            <script>
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+
+              gtag('config', 'G-L2SWP1F1TF');
+            </script>
+
+          `}
+        </script>
       </Head>
       <body>
         <Main />
