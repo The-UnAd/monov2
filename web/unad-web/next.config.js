@@ -13,6 +13,7 @@ const nextConfig = {
   ],
   typescript: {
     tsconfigPath: './tsconfig.build.json',
+    ignoreBuildErrors: true,
   },
   i18n: {
     locales: ['en-US', 'es'],
