@@ -93,7 +93,7 @@ export async function getServerSideProps(
       };
     }
     const stripe = new Stripe(process.env.STRIPE_API_KEY as string, {
-      apiVersion: '2023-10-16',
+      apiVersion: '2024-04-10',
     });
     if (!client.subscription_id) {
       // this is the happy path: client created, but no subscription
