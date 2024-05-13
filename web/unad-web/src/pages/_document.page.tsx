@@ -29,14 +29,15 @@ export default function MyDocument() {
         </Script>
         <Script
           async
+          strategy="lazyOnload"
           src="https://www.googletagmanager.com/gtag/js?id=G-L2SWP1F1TF"
         ></Script>
         <Script id="ga">
           {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-L2SWP1F1TF');
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-L2SWP1F1TF');
           `}
         </Script>
       </Head>
