@@ -20,10 +20,10 @@ export default function MyDocument() {
         <link rel="preconnect" href="https://fonts.gstatic.com" />
         <Script
           async
-          strategy="lazyOnload"
+          strategy="beforeInteractive"
           src="https://www.googletagmanager.com/gtag/js?id=G-L2SWP1F1TF"
         ></Script>
-        <Script id="ga">
+        <Script id="ga" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
@@ -31,7 +31,7 @@ export default function MyDocument() {
             gtag('config', 'G-L2SWP1F1TF');
           `}
         </Script>
-        <Script id="clarity">
+        <Script id="clarity" strategy="beforeInteractive">
           {`
             (function(c,l,a,r,i,t,y){
               c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
