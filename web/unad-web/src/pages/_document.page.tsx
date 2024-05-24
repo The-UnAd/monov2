@@ -30,7 +30,7 @@ export default function MyDocument() {
       <body>
         <noscript>
           <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-NKZDQ2WJ"
+            src="https://www.googletagmanager.com/ns.html?id=GTM-NCMZLRQC"
             height="0"
             width="0"
             style={{ display: 'none', visibility: 'hidden' }}
