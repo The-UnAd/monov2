@@ -34,7 +34,6 @@ async function fetchRetry(
 function Register() {
   const [registerData, setRegisterData] = useState<RegisterData>();
   const [error, setError] = useState<string | null>();
-  const router = useRouter();
   const t = useTranslations('pages/register');
 
   const clickRegister = async ({ phone, name }: RegisterData) => {
@@ -56,6 +55,10 @@ function Register() {
 
     if (resp.ok) {
       setRegisterData(data);
+      window.dataLayer.push({
+        event: 'phoneNumberCaptured',
+        phoneNumber: phone,
+      });
     } else {
       setError(data.message);
     }

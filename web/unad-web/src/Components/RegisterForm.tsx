@@ -39,7 +39,7 @@ function RegisterForm({ onSubmit }: RegisterFormProps) {
     <div data-testid="RegisterForm__container">
       <FormProvider {...methods}>
         <div className="form my-2">
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit(onSubmit)} id="registerForm">
             <div className="row">
               <TextInput
                 data-testid="RegisterForm__name"

@@ -26,6 +26,11 @@ function Pay({ clientId, pricingTableId }: PageData) {
         <title>{t('title')}</title>
       </Head>
       <Script async src="https://js.stripe.com/v3/pricing-table.js" />
+      <Script id="gtag_begin_checkout">
+        {`
+          gtag("event", "beginCheckout");
+        `}
+      </Script>
       <section className="app">
         <div className="container-app h95 d-flex align-items-center">
           <div className="col-12 text-center">
