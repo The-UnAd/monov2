@@ -10,7 +10,7 @@ COPY web/admin-ui ./web/admin-ui
 WORKDIR /app/web/admin-ui
 RUN npm run build
 
-FROM nginx:1.25-alpine AS runner
+FROM nginx:1.27.3-alpine AS runner
 
 RUN rm /etc/nginx/conf.d/default.conf
 
