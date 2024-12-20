@@ -1,0 +1,38 @@
+# https://icons.terrastruct.com/ for icons
+
+Twilio: {
+  shape: image
+  icon: ./icons/twilio.svg
+}
+
+Stripe: {
+  shape: image
+  icon: ./icons/stripe.svg
+}
+
+Browser: {
+  shape: image
+  icon: ./icons/browser.svg
+}
+
+Redis: {
+  icon: ./icons/redis.svg
+  shape: cloud
+  label: "Redis Labs"
+}
+
+Vercel: {
+  shape: cloud
+    Main Server: {
+      shape: image
+      icon: "./icons/vercel.svg"
+    }
+    label.near: bottom-center
+}
+
+Vercel -> Redis
+
+Twilio -> Vercel.Main Server: Webhooks
+Stripe -> Vercel.Main Server: Webhooks
+
+Browser -> Vercel.Main Server: signup.unad.tech

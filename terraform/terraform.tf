@@ -1,7 +1,3 @@
-terraform {
-  backend "s3" {
-  }
-}
 
 module "aws" {
   source             = "./aws"

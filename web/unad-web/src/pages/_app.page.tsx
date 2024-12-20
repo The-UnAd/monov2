@@ -6,6 +6,8 @@ import Error from 'next/error';
 import { useRouter } from 'next/router';
 import { NextIntlClientProvider } from 'next-intl';
 
+import ConsentBanner from '@/Components/ConsentBanner';
+
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   if (pageProps.error) {
@@ -56,6 +58,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           &emsp;<a href="mailto:support@theunad.com">Contact Support</a>
         </p>
       </div>
+      <ConsentBanner />
     </NextIntlClientProvider>
   );
 }

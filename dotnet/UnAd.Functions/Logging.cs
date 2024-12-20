@@ -1,71 +1,43 @@
 namespace UnAd.Functions;
 
-internal static class Logging {
+internal static partial class Logging {
 
-    private static readonly Action<ILogger<Program>, string, Exception?> LogProgramException =
-        LoggerMessage.Define<string>(LogLevel.Critical, new EventId(100, "UnhandledException"), "Unexpected Error: {Message}");
+    [LoggerMessage(Level = LogLevel.Warning, EventId = 1000, EventName = "Application Error")]
+    internal static partial void LogException(this ILogger<Program> logger, Exception exception);
 
-    private static readonly Action<ILogger<MixpanelClient>, string, Exception?> MixpanelResponse =
-        LoggerMessage.Define<string>(LogLevel.Information, new EventId(200, nameof(MixpanelResponse)), "Mixpanel Response: {Response}");
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Stripe signature verification failed")]
+    internal static partial void LogStripeVerificationFailure(this ILogger<StripeVerifier> logger, Exception exception);
 
-    private static readonly Action<ILogger<MixpanelClient>, string, Exception?> MixpanelErrorResponse =
-        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(201, nameof(MixpanelErrorResponse)), "Mixpanel Error Response: {Response}");
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Skipped event type: {Type}")]
+    internal static partial void LogUnhandledType(this ILogger<StripePaymentWebhook> logger, string type);
 
-    private static readonly Action<ILogger<MixpanelClient>, Exception?> MixpanelSendException =
-        LoggerMessage.Define(LogLevel.Warning, new EventId(202, nameof(MixpanelSendException)), "Error sending Mixpanel request");
+    [LoggerMessage(Level = LogLevel.Warning)]
+    internal static partial void LogException(this ILogger<StripePaymentWebhook> logger, Exception ex);
 
-    private static readonly Action<ILogger<StripeVerifier>, string, Exception?> StripeVerificationFailure =
-        LoggerMessage.Define<string>(LogLevel.Error, new EventId(300, nameof(StripeVerificationFailure)), "Stripe signature verification failed: {Message}");
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Error sending Mixpanel request")]
+    internal static partial void LogMixpanelSendException(this ILogger<MixpanelClient> logger, Exception exception);
 
-    private static readonly Action<ILogger<StripePaymentWebhook>, string, Exception?> StripePaymentWebhookUnhandledType =
-        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(301, nameof(StripePaymentWebhookUnhandledType)), "Skipped event type: {Type}");
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Mixpanel Error Response: {Response}")]
+    internal static partial void LogMixpanelErrorResponse(this ILogger<MixpanelClient> logger, string response);
 
-    private static readonly Action<ILogger<StripePaymentWebhook>, string, Exception?> StripePaymentWebhookException =
-        LoggerMessage.Define<string>(LogLevel.Error, new EventId(400, nameof(StripePaymentWebhookException)), "Unhandled exception: {Message}");
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Unhandled event: {Type}")]
+    internal static partial void LogUnhandledEvent(this ILogger<StripeCustomerWebhook> logger, string type);
 
-    private static readonly Action<ILogger<StripeCustomerWebhook>, string, Exception?> StripeCustomerWebhookException =
-        LoggerMessage.Define<string>(LogLevel.Error, new EventId(500, nameof(StripeCustomerWebhookException)), "Unhandled exception: {Message}");
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Unhandled event: {Type}")]
+    internal static partial void LogUnhandledEvent(this ILogger<StripeSubscriptionWebhook> logger, string type);
 
-    private static readonly Action<ILogger<StripeCustomerWebhook>, string, Exception?> StripeCustomerWebhookUnhandledEvent =
-        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(501, nameof(StripeCustomerWebhookUnhandledEvent)), "Skipped event type: {Type}");
+    [LoggerMessage(Level = LogLevel.Information, Message = "Handling event: {Type}")]
+    internal static partial void LogHandlingEvent(this ILogger<StripeSubscriptionWebhook> logger, string type);
 
-    private static readonly Action<ILogger<StripeSubscriptionWebhook>, string, Exception?> StripeSubscriptionWebhookUnhandledEvent =
-        LoggerMessage.Define<string>(LogLevel.Warning, new EventId(601, nameof(StripeSubscriptionWebhookUnhandledEvent)), "Skipped event type: {Type}");
+    [LoggerMessage(Level = LogLevel.Warning)]
+    internal static partial void LogException(this ILogger<StripeCustomerWebhook> logger, Exception ex);
 
-    private static readonly Action<ILogger<StripeSubscriptionWebhook>, string, Exception?> StripeSubscriptionWebhookException =
-        LoggerMessage.Define<string>(LogLevel.Error, new EventId(700, nameof(StripeSubscriptionWebhookException)), "Unhandled exception: {Message}");
+    [LoggerMessage(Level = LogLevel.Warning)]
+    internal static partial void LogException(this ILogger<StripeSubscriptionWebhook> logger, Exception ex);
 
-    private static readonly Action<ILogger<StripeSubscriptionWebhook>, string, Exception?> StripeSubscriptionWebhookHandlingEvent =
-        LoggerMessage.Define<string>(LogLevel.Information, new EventId(701, nameof(StripeSubscriptionWebhookHandlingEvent)),
-            "StripeSubscriptionWebhook|Handling event: {EventType}");
+    [LoggerMessage(Level = LogLevel.Warning)]
+    internal static partial void LogException(this ILogger<MessageHandler> logger, Exception ex);
 
-    private static readonly Action<ILogger<MessageHandler>, string, Exception?> MessageHandlerException =
-        LoggerMessage.Define<string>(LogLevel.Error, new EventId(800, nameof(MessageHandlerException)), "Unhandled exception: {Message}");
-
-    internal static void LogStripeVerificationFailure(this ILogger<StripeVerifier> logger, Exception exception) =>
-        StripeVerificationFailure(logger, exception.Message, exception);
-    internal static void LogUnhandledType(this ILogger<StripePaymentWebhook> logger, string type) =>
-        StripePaymentWebhookUnhandledType(logger, type, null);
-    internal static void LogException(this ILogger<StripePaymentWebhook> logger, Exception ex) =>
-        StripePaymentWebhookException(logger, ex.Message, ex);
-    internal static void LogMixpanelErrorResponse(this ILogger<MixpanelClient> logger, string response, Exception? exception = null) =>
-        MixpanelErrorResponse(logger, response, exception);
-    internal static void LogMixpanelSendException(this ILogger<MixpanelClient> logger, Exception? exception = null) =>
-        MixpanelSendException(logger, exception);
-    internal static void LogMixpanelResponse(this ILogger<MixpanelClient> logger, string response, Exception? exception = null) =>
-        MixpanelResponse(logger, response, exception);
-    internal static void LogException(this ILogger<Program> logger, Exception exception) =>
-        LogProgramException(logger, exception.Message, exception);
-    internal static void LogUnhandledEvent(this ILogger<StripeCustomerWebhook> logger, string type) =>
-        StripeCustomerWebhookUnhandledEvent(logger, type, null);
-    internal static void LogUnhandledEvent(this ILogger<StripeSubscriptionWebhook> logger, string type) =>
-        StripeSubscriptionWebhookException(logger, type, null);
-    internal static void LogHandlingEvent(this ILogger<StripeSubscriptionWebhook> logger, string type) =>
-        StripeSubscriptionWebhookHandlingEvent(logger, type, null);
-    internal static void LogException(this ILogger<StripeCustomerWebhook> logger, Exception ex) =>
-        StripeCustomerWebhookException(logger, ex.Message, ex);
-    internal static void LogException(this ILogger<StripeSubscriptionWebhook> logger, Exception ex) =>
-        StripeSubscriptionWebhookException(logger, ex.Message, ex);
-    internal static void LogException(this ILogger<MessageHandler> logger, Exception ex) =>
-        MessageHandlerException(logger, ex.Message, ex);
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Subscriber {SmsFrom} not found")]
+    internal static partial void LogSubscriberNotFound(this ILogger<MessageHelper> logger, string smsFrom);
 }

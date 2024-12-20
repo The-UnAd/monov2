@@ -28,7 +28,7 @@ function Pay({ clientId, pricingTableId }: PageData) {
       <Script async src="https://js.stripe.com/v3/pricing-table.js" />
       <Script id="gtag_begin_checkout">
         {`
-          gtag("event", "beginCheckout");
+          gtag("event", "begin_checkout");
         `}
       </Script>
       <section className="app">

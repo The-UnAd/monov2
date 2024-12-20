@@ -61,7 +61,7 @@ public partial class MessageHelper(IConnectionMultiplexer redis,
         using var context = dbContextFactory.CreateDbContext();
         var subscriber = context.Subscribers.Find(smsFrom);
         if (subscriber is null) {
-            logger.LogWarning("Subscriber {smsFrom} not found", smsFrom);
+            logger.LogSubscriberNotFound(smsFrom);
             return CreateSmsResponseContent(localizer.GetString("NotSubscriber"));
         }
 

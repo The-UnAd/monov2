@@ -28,21 +28,22 @@ RDS: {
   label: "RDS"
   userdb: {
     label: "userdb"
-    icon: ./icons/postgres.svg
+    label.near: "top-center"
     shape: cylinder
-    label.near: bottom-center
-    icon.near: top-center
+    icon: ./icons/postgres.svg
+    icon.near: "bottom-center"
     style.multiple: true
   }
+}
+
+unad-functions: {
+  shape: image
+  icon: ./icons/lambda.svg
 }
 
 ECS: {
   icon: "./icons/ecs.svg"
   unad-cluster: {
-    unad-functions: {
-      shape: image
-      icon: ./icons/ecs-instance.svg
-    }
     signup-site: {
       shape: image
       icon: ./icons/ecs-instance.svg
@@ -52,7 +53,6 @@ ECS: {
 
 S3: {
   icon: ./icons/s3.svg
-  link: "/services/s3/#amazon-s3"
   Cloudwatch: {
     shape: image
     icon: ./icons/cloudwatch.svg
@@ -63,7 +63,8 @@ ECS.unad-cluster -> RDS.userdb
 ECS.unad-cluster -> ElastiCache
 ECS.unad-cluster -> S3.Cloudwatch: Logs
 
-Twilio -> ECS.unad-cluster.unad-functions: Webhooks
-Stripe -> ECS.unad-cluster.unad-functions: Webhooks
+Twilio -> unad-functions: Webhooks
+Stripe -> unad-functions: Webhooks
+unad-functions -> RDS.userdb
 
 Browser -> ECS.unad-cluster.signup-site: signup.unad.tech
